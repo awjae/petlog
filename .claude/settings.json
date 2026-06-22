@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"작업이 완료되었습니다.\" with title \"Claude Code\" sound name \"Glass\"' 2>/dev/null || true",
+            "timeout": 10,
+            "statusMessage": "알림 전송 중..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file\" ] && [[ \"$file\" =~ \\.(ts|tsx)$ ]]; then if [[ \"$file\" == */backend/* ]]; then cd /Users/jason/Documents/vscode/petlog/backend && npx tsc --noEmit 2>&1 | tail -10 || true; elif [[ \"$file\" == */frontend/* ]]; then cd /Users/jason/Documents/vscode/petlog/frontend && npx tsc --noEmit 2>&1 | tail -10 || true; fi; fi",
+            "timeout": 30,
+            "statusMessage": "타입 체크 중..."
+          },
+          {
+            "type": "command",
+            "command": "file=$(jq -r '.tool_input.file_path // empty' 2>/dev/null); if [ -n \"$file\" ] && [[ \"$file\" =~ \\.(ts|tsx|js|jsx|json|css)$ ]]; then npx prettier --write \"$file\" 2>/dev/null || true; fi",
+            "timeout": 15,
+            "statusMessage": "포맷팅 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

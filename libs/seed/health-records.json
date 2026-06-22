@@ -1,0 +1,83 @@
+[
+  {
+    "id": "hr-001",
+    "petId": "pet-001",
+    "type": "weight",
+    "value": "4.2",
+    "note": null,
+    "recordedAt": "2024-06-01T09:00:00Z",
+    "createdAt": "2024-06-01T09:00:00Z"
+  },
+  {
+    "id": "hr-002",
+    "petId": "pet-001",
+    "type": "appetite",
+    "value": "normal",
+    "note": "사료를 잘 먹었음",
+    "recordedAt": "2024-06-01T09:00:00Z",
+    "createdAt": "2024-06-01T09:00:00Z"
+  },
+  {
+    "id": "hr-003",
+    "petId": "pet-001",
+    "type": "weight",
+    "value": "4.3",
+    "note": null,
+    "recordedAt": "2024-06-08T09:00:00Z",
+    "createdAt": "2024-06-08T09:00:00Z"
+  },
+  {
+    "id": "hr-004",
+    "petId": "pet-001",
+    "type": "symptom",
+    "value": "기침",
+    "note": "아침에 3회 기침함. 저녁에 괜찮아짐",
+    "recordedAt": "2024-06-10T09:00:00Z",
+    "createdAt": "2024-06-10T09:00:00Z"
+  },
+  {
+    "id": "hr-005",
+    "petId": "pet-001",
+    "type": "activity",
+    "value": "low",
+    "note": "평소보다 덜 움직임",
+    "recordedAt": "2024-06-10T09:00:00Z",
+    "createdAt": "2024-06-10T09:00:00Z"
+  },
+  {
+    "id": "hr-006",
+    "petId": "pet-001",
+    "type": "weight",
+    "value": "4.1",
+    "note": null,
+    "recordedAt": "2024-06-15T09:00:00Z",
+    "createdAt": "2024-06-15T09:00:00Z"
+  },
+  {
+    "id": "hr-007",
+    "petId": "pet-001",
+    "type": "appetite",
+    "value": "low",
+    "note": "사료 절반만 먹음",
+    "recordedAt": "2024-06-15T09:00:00Z",
+    "createdAt": "2024-06-15T09:00:00Z"
+  },
+  {
+    "id": "hr-008",
+    "petId": "pet-002",
+    "type": "weight",
+    "value": "3.8",
+    "note": null,
+    "recordedAt": "2024-06-01T10:00:00Z",
+    "createdAt": "2024-06-01T10:00:00Z"
+  },
+  {
+    "id": "hr-009",
+    "petId": "pet-002",
+    "type": "appetite",
+    "value": "high",
+    "note": null,
+    "recordedAt": "2024-06-01T10:00:00Z",
+    "createdAt": "2024-06-01T10:00:00Z"
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "me-001",
+    "petId": "pet-001",
+    "hospitalName": "행복한동물병원",
+    "visitDate": "2024-05-20T10:00:00Z",
+    "description": "정기 건강검진. 심장사상충 예방약 처방. 체중 4.2kg으로 정상 범위.",
+    "attachmentUrl": null,
+    "createdAt": "2024-05-20T11:00:00Z"
+  },
+  {
+    "id": "me-002",
+    "petId": "pet-001",
+    "hospitalName": "행복한동물병원",
+    "visitDate": "2024-06-12T14:00:00Z",
+    "description": "기침 증상으로 내원. 기관지염 초기 진단. 항생제 5일치 처방.",
+    "attachmentUrl": null,
+    "createdAt": "2024-06-12T15:00:00Z"
+  },
+  {
+    "id": "me-003",
+    "petId": "pet-002",
+    "hospitalName": "고양이전문클리닉",
+    "visitDate": "2024-04-10T11:00:00Z",
+    "description": "중성화 수술 후 1년 검진. 이상 없음.",
+    "attachmentUrl": null,
+    "createdAt": "2024-04-10T12:00:00Z"
+  }
+]

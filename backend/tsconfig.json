@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@petlog/types": ["../libs/types"],
+      "@petlog/types/*": ["../libs/types/*"],
+      "@petlog/utils": ["../libs/utils"],
+      "@petlog/utils/*": ["../libs/utils/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [{ "path": "../libs" }]
+}
