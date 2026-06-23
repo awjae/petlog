@@ -1,4 +1,22 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx prettier --write*)",
+      "Bash(npx eslint*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run test*)",
+      "Bash(npm run build*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(find . -name*)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(grep*)"
+    ]
+  },
   "hooks": {
     "Stop": [
       {

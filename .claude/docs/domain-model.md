@@ -61,6 +61,7 @@ User는 여러 Pet을 가질 수 있다.
 
 관계: User 1:N Pet
 
+
 ---
 
 # 4. Pet Domain
@@ -253,7 +254,7 @@ endDate
 
 ## Purpose
 
-건강 데이터를 기반으로 생성되는 분석 리포트.
+건강 데이터를 기반으로 생성되는 AI 분석 리포트. 핵심 차별화 기능이다.
 
 ## Responsibility
 
@@ -278,10 +279,17 @@ summary
 
 generatedBy
 - 생성 방식
-- 예: mock, ai
+- 예: mock, llm
+
+periodStart
+- 분석 기간 시작일
+
+periodEnd
+- 분석 기간 종료일
 
 createdAt
 - 생성 시간
+
 
 ---
 

@@ -4,7 +4,7 @@
 
 병원 기록, 증상, 식욕, 체중 등 반려동물의 건강 데이터를 한 곳에 기록하고, AI 기반 분석을 통해 건강 변화 흐름을 파악할 수 있도록 돕는 모바일 우선 웹 애플리케이션입니다.
 
-> **포트폴리오 프로젝트** — 풀스택/프로덕트 엔지니어 역량을 보여주기 위한 목적으로 설계되었습니다.
+실제 반려동물 보호자가 일상에서 사용하는 서비스를 목표로 합니다.
 
 ---
 
@@ -41,8 +41,8 @@
 - **PostgreSQL**
 
 ### AI
-- 현재: Mock AI Service
-- 향후: LLM API 연동 (교체 가능한 추상화 구조)
+- 현재: Mock AI Service (구조 검증용)
+- 향후: OpenAI Fine-tuned 모델 연동 — 반려동물 건강 데이터 기반 학습 (교체 가능한 추상화 구조)
 
 ### 공유 모듈 (`libs/`)
 - 프론트엔드/백엔드 공통 타입, 유틸, 시드 데이터
@@ -117,11 +117,11 @@ AI 기능은 교체 가능한 구조로 설계되어 있습니다.
 
 ```
 HealthReportGenerator (interface)
- ├── MockHealthReportGenerator  ← 현재 사용
- └── LLMHealthReportGenerator   ← 향후 연동
+ ├── MockHealthReportGenerator        ← 현재 사용
+ └── OpenAIHealthReportGenerator      ← 향후 연동 (Fine-tuned)
 ```
 
-Mock → 실제 LLM 전환 시 비즈니스 로직 변경 없이 Provider만 교체합니다.
+Mock → Fine-tuned 모델 전환 시 비즈니스 로직 변경 없이 Provider만 교체합니다.
 
 ---
 
@@ -144,7 +144,7 @@ Mock → 실제 LLM 전환 시 비즈니스 로직 변경 없이 Provider만 교
 - [ ] 건강 타임라인 UI
 - [ ] Mock AI 리포트 생성
 - [ ] 배포 (Vercel + Railway)
-- [ ] 실제 LLM 연동
+- [ ] 실제 AI 연동 (Claude API)
 
 ---
 

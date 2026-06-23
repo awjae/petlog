@@ -11,20 +11,11 @@ Petlog
 Petlog는 반려동물 보호자가 반려동물의 건강 데이터를 기록하고 관리하며,
 AI 기반 분석을 통해 건강 변화를 이해할 수 있도록 돕는 모바일 우선 웹 서비스이다.
 
-이 프로젝트는 풀스택 / 프로덕트 엔지니어 이직용 포트폴리오 프로젝트이다.
+상용화를 목표로 하는 실제 제품이며, 동시에 풀스택 / 프로덕트 엔지니어 이직용 포트폴리오이다.
 
-단순 기능 구현이 아니라 실제 제품 개발 과정에서 필요한:
+상용화까지의 전 과정(문제 정의 → 설계 → 개발 → 출시 → 사용자 반응)을 포트폴리오로 활용한다.
 
-- 사용자 문제 정의
-- 제품 설계
-- 도메인 모델링
-- 프론트엔드 아키텍처
-- 백엔드 아키텍처
-- 데이터 설계
-- AI 확장 구조
-- 배포 및 운영 경험
-
-을 보여주는 것을 목표로 한다.
+목표: 실제 사용자가 쓰는 서비스를 만든다. 실사용자 확보가 곧 성공이다.
 
 
 # Product Vision
@@ -45,8 +36,9 @@ Petlog는 다음 가치를 제공한다.
 
 - 반려동물 건강 기록 관리
 - 건강 변화 흐름 확인
-- 건강 데이터 기반 요약
+- AI 기반 건강 리포트 (핵심 차별화 기능)
 - 보호자가 이해하기 쉬운 정보 제공
+- 정기 건강 알림으로 지속적인 기록 유도
 
 
 # Product Positioning
@@ -64,6 +56,16 @@ Petlog는 의료 진단 서비스가 아니다.
 - 건강 데이터 기록
 - 변화 확인
 - 보호자의 의사결정 지원
+- AI 기반 건강 요약 리포트 (유료)
+
+
+## 리텐션 전략
+
+사용자가 앱을 주기적으로 열 이유를 만든다.
+
+- 정기 건강 체크 알림 ("이번 주 기록을 남겨보세요")
+- 백신 / 투약 만료 알림
+- 주간 건강 요약 푸시
 
 
 # Engineering Goal
@@ -102,13 +104,16 @@ Petlog는 의료 진단 서비스가 아니다.
 
 현재:
 
-- Mock AI Service
+- Mock AI Service (초기 개발용)
 
-향후:
+향후 (상용화 단계):
 
-- LLM API Integration
+- OpenAI Fine-tuned 모델 연동
+- 반려동물 건강 데이터 기반 학습 데이터 구축
+- AI 리포트가 핵심 차별화 기능
 
 AI 기능은 교체 가능한 구조로 설계한다.
+Mock → Fine-tuned 모델 전환 시 비즈니스 로직 변경 없이 Provider만 교체한다.
 
 
 # Architecture Principles
@@ -388,11 +393,13 @@ Petlog는 모바일 우선 서비스다.
 3. NestJS API
 4. Frontend User Flow
 5. Health Timeline
-6. Mock AI Report
-7. Deployment
-8. Real AI Integration
+6. Mock AI Report (구조 검증용)
+7. Deployment (Vercel + Railway)
+8. Real AI Integration (OpenAI Fine-tuned Model)
 
 기능 추가보다 핵심 사용자 흐름 완성을 우선한다.
+
+AI 연동은 후반부이지만, 데이터 모델은 처음부터 AI가 소비할 구조로 설계한다.
 
 
 # Portfolio Perspective

@@ -93,6 +93,7 @@ created_at
 updated_at
 - 수정 시간
 
+
 ---
 
 # 5. pets Table
@@ -244,7 +245,7 @@ created_at
 
 ## Purpose
 
-건강 데이터 분석 결과 저장.
+건강 데이터 AI 분석 결과 저장.
 
 ## Schema
 
@@ -258,14 +259,20 @@ pet_id
 
 type
 - 리포트 종류
-- 예: weekly, monthly
+- ENUM: weekly, monthly
 
 summary
-- 분석 결과
+- 분석 결과 (JSON 또는 TEXT)
 
 generated_by
 - 생성 방식
-- 예: mock, ai
+- ENUM: mock, llm
+
+period_start
+- 분석 기간 시작일
+
+period_end
+- 분석 기간 종료일
 
 created_at
 - 생성 시간
