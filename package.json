@@ -13,7 +13,14 @@
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "tsc --build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "db:logs": "docker compose logs -f db",
+    "db:migrate": "npm run db:up && npm run prisma:migrate --workspace=@petlog/backend",
+    "prisma:migrate": "npm run prisma:migrate --workspace=@petlog/backend",
+    "prisma:studio": "npm run prisma:studio --workspace=@petlog/backend"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",

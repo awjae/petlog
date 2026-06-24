@@ -13,15 +13,15 @@ const accessCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
-  maxAge: 15 * 60 * 1000, // 15분
+  maxAge: 15 * 60 * 1000,
 };
 
 const refreshCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
-  path: '/api/auth/refresh', // refresh 엔드포인트에서만 전송
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  path: '/api/auth/refresh',
 };
 
 @ApiTags('auth')
@@ -37,9 +37,10 @@ export class AuthController {
     const user = { id: 'placeholder', email: dto.email };
     const { accessToken, refreshToken } = this.authService.createTokens(user);
 
+    await this.authService.storeRefreshToken(user.id, refreshToken);
+
     res.cookie(ACCESS_COOKIE, accessToken, accessCookieOptions);
     res.cookie(REFRESH_COOKIE, refreshToken, refreshCookieOptions);
-
     return { message: '로그인 성공' };
   }
 
@@ -47,20 +48,39 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(JwtRefreshGuard)
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Access token 재발급' })
-  refresh(
+  @ApiOperation({ summary: 'Access/Refresh token 재발급 (RTR)' })
+  async refresh(
     @Req() req: Request & { user: { id: string; email: string } },
     @Res({ passthrough: true }) res: Response,
   ) {
-    const newAccessToken = this.authService.refreshAccessToken(req.user);
-    res.cookie(ACCESS_COOKIE, newAccessToken, accessCookieOptions);
+    const oldRefreshToken = req.cookies[REFRESH_COOKIE] as string;
+
+    const { accessToken, refreshToken } = await this.authService.rotateRefreshToken(
+      req.user.id,
+      oldRefreshToken,
+      req.user,
+    );
+
+    res.cookie(ACCESS_COOKIE, accessToken, accessCookieOptions);
+    res.cookie(REFRESH_COOKIE, refreshToken, refreshCookieOptions);
     return { message: '토큰 갱신 성공' };
   }
 
   @Post('logout')
   @HttpCode(200)
-  @ApiOperation({ summary: '로그아웃 — 쿠키 삭제' })
-  logout(@Res({ passthrough: true }) res: Response) {
+  @ApiOperation({ summary: '로그아웃 — 쿠키 삭제 및 Refresh Token 폐기' })
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const rawToken = req.cookies?.[REFRESH_COOKIE] as string | undefined;
+
+    if (rawToken) {
+      try {
+        const payload = this.authService.verifyRefreshToken(rawToken);
+        await this.authService.revokeRefreshToken(payload.sub, rawToken);
+      } catch {
+        // 만료된 토큰이어도 쿠키는 삭제
+      }
+    }
+
     res.clearCookie(ACCESS_COOKIE, accessCookieOptions);
     res.clearCookie(REFRESH_COOKIE, refreshCookieOptions);
     return { message: '로그아웃 성공' };

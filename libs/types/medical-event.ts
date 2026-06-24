@@ -4,19 +4,16 @@ export interface MedicalEvent {
   hospitalName: string;
   visitDate: Date;
   description: string;
-  attachmentUrl: string | null;
+  attachmentUrls: string[];
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export type CreateMedicalEventInput = Pick<
   MedicalEvent,
-  "hospitalName" | "visitDate" | "description"
-> &
-  Partial<Pick<MedicalEvent, "attachmentUrl">>;
+  'hospitalName' | 'visitDate' | 'description'
+> & { attachmentUrls?: string[] };
 
 export type UpdateMedicalEventInput = Partial<
-  Pick<
-    MedicalEvent,
-    "hospitalName" | "visitDate" | "description" | "attachmentUrl"
-  >
+  Pick<MedicalEvent, 'hospitalName' | 'visitDate' | 'description' | 'attachmentUrls'>
 >;

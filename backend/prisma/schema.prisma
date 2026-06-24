@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pets          Pet[]
+  notifications Notification[]
+  pushTokens    PushToken[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// ─── Pet ─────────────────────────────────────────────────────────────────────
+
+model Pet {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  name      String
+  species   Species
+  breed     String?
+  birthDate DateTime? @map("birth_date")
+  gender    Gender
+  weight    Decimal?  @db.Decimal(5, 2)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthRecords HealthRecord[]
+  medicalEvents MedicalEvent[]
+  medications   Medication[]
+  vaccinations  Vaccination[]
+  appointments  Appointment[]
+  reports       Report[]
+
+  @@index([userId])
+  @@index([userId, deletedAt])
+  @@map("pets")
+}
+
+// ─── HealthRecord ─────────────────────────────────────────────────────────────
+
+model HealthRecord {
+  id         String           @id @default(uuid())
+  petId      String           @map("pet_id")
+  type      HealthRecordType
+  numValue  Decimal?         @map("num_value") @db.Decimal(8, 2)
+  textValue String?          @map("text_value")
+  note      String?
+  recordedAt DateTime         @map("recorded_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+  deletedAt  DateTime?        @map("deleted_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, recordedAt(sort: Desc)])
+  @@index([petId, deletedAt])
+  @@map("health_records")
+}
+
+// ─── MedicalEvent ────────────────────────────────────────────────────────────
+
+model MedicalEvent {
+  id             String   @id @default(uuid())
+  petId          String   @map("pet_id")
+  hospitalName   String   @map("hospital_name")
+  visitDate      DateTime @map("visit_date")
+  description    String
+  attachmentUrls String[] @default([]) @map("attachment_urls")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, visitDate(sort: Desc)])
+  @@map("medical_events")
+}
+
+// ─── Medication ───────────────────────────────────────────────────────────────
+
+model Medication {
+  id        String    @id @default(uuid())
+  petId     String    @map("pet_id")
+  name      String
+  dosage    String
+  frequency String
+  startDate DateTime  @map("start_date")
+  endDate   DateTime? @map("end_date")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+  @@index([petId, endDate])
+  @@map("medications")
+}
+
+// ─── Vaccination ──────────────────────────────────────────────────────────────
+
+model Vaccination {
+  id           String    @id @default(uuid())
+  petId        String    @map("pet_id")
+  name         String
+  code         String?
+  vaccinatedAt DateTime  @map("vaccinated_at")
+  nextDueAt    DateTime? @map("next_due_at")
+  memo         String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, vaccinatedAt(sort: Desc)])
+  @@index([petId, nextDueAt])
+  @@map("vaccinations")
+}
+
+// ─── Appointment ──────────────────────────────────────────────────────────────
+
+model Appointment {
+  id           String            @id @default(uuid())
+  petId        String            @map("pet_id")
+  hospitalName String            @map("hospital_name")
+  scheduledAt  DateTime          @map("scheduled_at")
+  reason       String?
+  status       AppointmentStatus @default(scheduled)
+  memo         String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@index([petId, scheduledAt(sort: Desc)])
+  @@map("appointments")
+}
+
+// ─── Report ───────────────────────────────────────────────────────────────────
+
+model Report {
+  id              String            @id @default(uuid())
+  petId           String            @map("pet_id")
+  type            ReportType
+  overview        String
+  highlights      String[]
+  concerns        String[]
+  recommendations String[]
+  generatedBy     ReportGeneratedBy @map("generated_by")
+  periodStart     DateTime          @map("period_start")
+  periodEnd       DateTime          @map("period_end")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@unique([petId, type, periodStart, periodEnd])
+  @@index([petId, createdAt(sort: Desc)])
+  @@map("reports")
+}
+
+// ─── PushToken ────────────────────────────────────────────────────────────────
+// 기기별 FCM 토큰 — 한 사용자가 여러 기기를 쓸 수 있어 1:N
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+// 발송된 알림 로그 — 인앱 알림 목록 표시 + 중복 발송 방지에 활용
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String           @map("user_id")
+  type        NotificationType
+  title       String
+  body        String
+  referenceId   String?                    @map("reference_id")
+  referenceType NotificationReferenceType? @map("reference_type")
+  sentAt        DateTime?                  @map("sent_at")
+  readAt      DateTime?        @map("read_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+// ─── RefreshToken ─────────────────────────────────────────────────────────────
+// 평문 저장 금지 — tokenHash(SHA-256)만 저장
+// revokedAt이 null이고 expiresAt > now()인 경우만 유효
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Species {
+  dog
+  cat
+}
+
+enum Gender {
+  male
+  female
+  unknown
+}
+
+enum HealthRecordType {
+  weight
+  appetite
+  activity
+  symptom
+  stool
+  vomit
+  mood
+}
+
+enum ReportType {
+  weekly
+  monthly
+}
+
+enum ReportGeneratedBy {
+  mock
+  ai
+}
+
+enum AppointmentStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+enum NotificationType {
+  appointmentReminder
+  vaccinationDue
+  medicationReminder
+  weeklyCheckin
+}
+
+enum NotificationReferenceType {
+  appointment
+  vaccination
+  medication
+}

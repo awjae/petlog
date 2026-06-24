@@ -1,11 +1,11 @@
 export enum ReportType {
-  Weekly = "weekly",
-  Monthly = "monthly",
+  Weekly = 'weekly',
+  Monthly = 'monthly',
 }
 
 export enum ReportGeneratedBy {
-  Mock = "mock",
-  AI = "ai",
+  Mock = 'mock',
+  AI = 'ai',
 }
 
 export interface ReportSummary {
@@ -21,7 +21,9 @@ export interface Report {
   type: ReportType;
   summary: ReportSummary;
   generatedBy: ReportGeneratedBy;
+  periodStart: Date;
+  periodEnd: Date;
   createdAt: Date;
 }
 
-export type CreateReportInput = Pick<Report, "type">;
+export type CreateReportInput = Pick<Report, 'type'>;

@@ -7,14 +7,15 @@ export interface Medication {
   startDate: Date;
   endDate: Date | null;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export type CreateMedicationInput = Pick<
   Medication,
-  "name" | "dosage" | "frequency" | "startDate"
+  'name' | 'dosage' | 'frequency' | 'startDate'
 > &
-  Partial<Pick<Medication, "endDate">>;
+  Partial<Pick<Medication, 'endDate'>>;
 
 export type UpdateMedicationInput = Partial<
-  Pick<Medication, "name" | "dosage" | "frequency" | "startDate" | "endDate">
+  Pick<Medication, 'name' | 'dosage' | 'frequency' | 'startDate' | 'endDate'>
 >;
