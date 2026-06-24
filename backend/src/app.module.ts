@@ -1,6 +1,7 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -9,13 +10,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: "postgres",
-        url: config.get<string>("DATABASE_URL"),
+        type: 'postgres',
+        url: config.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: config.get<string>("NODE_ENV") !== "production",
-        logging: config.get<string>("NODE_ENV") === "development",
+        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        logging: config.get<string>('NODE_ENV') === 'development',
       }),
     }),
+    AuthModule,
   ],
 })
 export class AppModule {}
