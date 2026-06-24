@@ -1,0 +1,237 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Appointment {
+  createdAt: DateTime!
+  hospitalName: String!
+  id: ID!
+  memo: String
+  petId: ID!
+  reason: String
+  scheduledAt: DateTime!
+  status: AppointmentStatus!
+  updatedAt: DateTime!
+}
+
+enum AppointmentStatus {
+  cancelled
+  completed
+  scheduled
+}
+
+input CreateAppointmentInput {
+  hospitalName: String!
+  memo: String
+  petId: ID!
+  reason: String
+  scheduledAt: DateTime!
+}
+
+input CreateHealthRecordInput {
+  note: String
+  numValue: Float
+  petId: ID!
+  recordedAt: DateTime!
+  textValue: String
+  type: HealthRecordType!
+}
+
+input CreateMedicalEventInput {
+  attachmentUrls: [String!]
+  description: String!
+  hospitalName: String!
+  petId: ID!
+  visitDate: DateTime!
+}
+
+input CreateMedicationInput {
+  dosage: String!
+  endDate: DateTime
+  frequency: String!
+  name: String!
+  petId: ID!
+  startDate: DateTime!
+}
+
+input CreatePetInput {
+  birthDate: DateTime
+  breed: String
+  gender: Gender!
+  name: String!
+  species: Species!
+  weight: Float
+}
+
+input CreateVaccinationInput {
+  code: String
+  memo: String
+  name: String!
+  nextDueAt: DateTime
+  petId: ID!
+  vaccinatedAt: DateTime!
+}
+
+"""ISO 8601 DateTime"""
+scalar DateTime
+
+enum Gender {
+  female
+  male
+  unknown
+}
+
+type HealthRecord {
+  createdAt: DateTime!
+  id: ID!
+  note: String
+  numValue: Float
+  petId: ID!
+  recordedAt: DateTime!
+  textValue: String
+  type: HealthRecordType!
+  updatedAt: DateTime!
+}
+
+enum HealthRecordType {
+  activity
+  appetite
+  mood
+  stool
+  symptom
+  vomit
+  weight
+}
+
+type MedicalEvent {
+  attachmentUrls: [String!]!
+  createdAt: DateTime!
+  description: String!
+  hospitalName: String!
+  id: ID!
+  petId: ID!
+  updatedAt: DateTime!
+  visitDate: DateTime!
+}
+
+type Medication {
+  createdAt: DateTime!
+  dosage: String!
+  endDate: DateTime
+  frequency: String!
+  id: ID!
+  name: String!
+  petId: ID!
+  startDate: DateTime!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  createAppointment(input: CreateAppointmentInput!): Appointment!
+  createHealthRecord(input: CreateHealthRecordInput!): HealthRecord!
+  createMedicalEvent(input: CreateMedicalEventInput!): MedicalEvent!
+  createMedication(input: CreateMedicationInput!): Medication!
+  createPet(input: CreatePetInput!): Pet!
+  createVaccination(input: CreateVaccinationInput!): Vaccination!
+  deleteAppointment(id: ID!): Boolean!
+  deleteHealthRecord(id: ID!): Boolean!
+  deleteMedicalEvent(id: ID!): Boolean!
+  deleteMedication(id: ID!): Boolean!
+  deletePet(id: ID!): Boolean!
+  deleteVaccination(id: ID!): Boolean!
+  updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
+  updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
+  updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
+  updateMedication(id: ID!, input: UpdateMedicationInput!): Medication!
+  updatePet(id: ID!, input: UpdatePetInput!): Pet!
+  updateVaccination(id: ID!, input: UpdateVaccinationInput!): Vaccination!
+}
+
+type Pet {
+  birthDate: DateTime
+  breed: String
+  createdAt: DateTime!
+  gender: Gender!
+  id: ID!
+  name: String!
+  species: Species!
+  updatedAt: DateTime!
+  weight: Float
+}
+
+type Query {
+  activeMedications(petId: ID!): [Medication!]!
+  appointments(petId: ID!): [Appointment!]!
+  healthRecords(petId: ID!): [HealthRecord!]!
+  medicalEvents(petId: ID!): [MedicalEvent!]!
+  medications(petId: ID!): [Medication!]!
+  pet(id: ID!): Pet!
+  pets: [Pet!]!
+  upcomingAppointments: [Appointment!]!
+  upcomingVaccinations: [Vaccination!]!
+  vaccinations(petId: ID!): [Vaccination!]!
+}
+
+enum Species {
+  cat
+  dog
+}
+
+input UpdateAppointmentInput {
+  hospitalName: String
+  memo: String
+  reason: String
+  scheduledAt: DateTime
+  status: AppointmentStatus
+}
+
+input UpdateHealthRecordInput {
+  note: String
+  numValue: Float
+  recordedAt: DateTime
+  textValue: String
+}
+
+input UpdateMedicalEventInput {
+  attachmentUrls: [String!]
+  description: String
+  hospitalName: String
+  visitDate: DateTime
+}
+
+input UpdateMedicationInput {
+  dosage: String
+  endDate: DateTime
+  frequency: String
+  name: String
+  startDate: DateTime
+}
+
+input UpdatePetInput {
+  birthDate: DateTime
+  breed: String
+  gender: Gender
+  name: String
+  species: Species
+  weight: Float
+}
+
+input UpdateVaccinationInput {
+  code: String
+  memo: String
+  name: String
+  nextDueAt: DateTime
+  vaccinatedAt: DateTime
+}
+
+type Vaccination {
+  code: String
+  createdAt: DateTime!
+  id: ID!
+  memo: String
+  name: String!
+  nextDueAt: DateTime
+  petId: ID!
+  updatedAt: DateTime!
+  vaccinatedAt: DateTime!
+}

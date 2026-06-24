@@ -83,12 +83,14 @@ model MedicalEvent {
   visitDate      DateTime @map("visit_date")
   description    String
   attachmentUrls String[] @default([]) @map("attachment_urls")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
 
   pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
   @@index([petId, visitDate(sort: Desc)])
+  @@index([petId, deletedAt])
   @@map("medical_events")
 }
 
@@ -104,11 +106,13 @@ model Medication {
   endDate   DateTime? @map("end_date")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
   @@index([petId])
   @@index([petId, endDate])
+  @@index([petId, deletedAt])
   @@map("medications")
 }
 
@@ -124,11 +128,13 @@ model Vaccination {
   memo         String?
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
   @@index([petId, vaccinatedAt(sort: Desc)])
   @@index([petId, nextDueAt])
+  @@index([petId, deletedAt])
   @@map("vaccinations")
 }
 
@@ -144,10 +150,12 @@ model Appointment {
   memo         String?
   createdAt    DateTime          @default(now()) @map("created_at")
   updatedAt    DateTime          @updatedAt @map("updated_at")
+  deletedAt    DateTime?         @map("deleted_at")
 
   pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
   @@index([petId, scheduledAt(sort: Desc)])
+  @@index([petId, deletedAt])
   @@map("appointments")
 }
 
