@@ -1,7 +1,13 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { PetService } from './pet.service';
-import { Pet, CreatePetInput, UpdatePetInput } from './pet.types';
+import {
+  Pet,
+  CreatePetInput,
+  UpdatePetInput,
+  RecentWeight,
+  HealthRecordSummary,
+} from './pet.types';
 import { GqlAuthGuard } from '../common/guards/gql-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthUser } from '../auth/auth.service';
@@ -38,5 +44,23 @@ export class PetResolver {
   @Mutation(() => Boolean)
   deletePet(@CurrentUser() user: AuthUser, @Args('id', { type: () => ID }) id: string) {
     return this.petService.remove(user.id, id);
+  }
+
+  @ResolveField(() => RecentWeight, { nullable: true })
+  recentWeight(@Parent() pet: Pet): Promise<RecentWeight | null> {
+    return this.petService.findRecentWeight(pet.id);
+  }
+
+  @ResolveField(() => Int)
+  todayRecordCount(@Parent() pet: Pet): Promise<number> {
+    return this.petService.countTodayRecords(pet.id);
+  }
+
+  @ResolveField(() => [HealthRecordSummary])
+  recentHealthRecords(
+    @Parent() pet: Pet,
+    @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
+  ): Promise<HealthRecordSummary[]> {
+    return this.petService.findRecentHealthRecords(pet.id, limit);
   }
 }

@@ -1,0 +1,96 @@
+/* filepath: src/features/home/components/PetSummaryCard.module.css */
+
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatarPlaceholder {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name {
+  font: var(--font-title-l);
+  color: var(--color-gray-900);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  font: var(--font-caption);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-gray-100);
+  margin: 16px 0;
+}
+
+.weightRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.weightLabel {
+  font: var(--font-label);
+  color: var(--color-gray-600);
+}
+
+.weightValue {
+  font: var(--font-body);
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.weightDate {
+  font: var(--font-caption);
+  color: var(--color-gray-600);
+  margin-left: auto;
+}
+
+.noWeight {
+  font: var(--font-caption);
+  color: var(--color-gray-300);
+}

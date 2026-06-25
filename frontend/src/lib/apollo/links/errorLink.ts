@@ -38,7 +38,9 @@ export const errorLink = new ErrorLink(({ error, operation, forward }) => {
       })
       .catch(() => {
         pendingRequests = [];
-        if (typeof window !== 'undefined') window.location.href = '/login';
+        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+          window.location.href = '/login';
+        }
         observer.error(new Error('Session expired'));
       })
       .finally(() => {

@@ -1,0 +1,134 @@
+/* filepath: src/app/page.module.css */
+
+.main {
+  min-height: 100dvh;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 32px;
+  text-align: center;
+  min-height: calc(100dvh - 52px - 60px - env(safe-area-inset-bottom));
+}
+
+.emptyIcon {
+  font-size: 56px;
+}
+
+.emptyTitle {
+  font: var(--font-title-m);
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.emptyDesc {
+  font: var(--font-body);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.emptyButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 28px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  text-decoration: none;
+  min-width: 160px;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 32px;
+  text-align: center;
+}
+
+.errorText {
+  font: var(--font-body);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.retryButton {
+  height: 44px;
+  padding: 0 20px;
+  background: none;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  font: var(--font-body);
+  cursor: pointer;
+}
+
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 64px 32px;
+  text-align: center;
+  min-height: 100dvh;
+}
+
+.landingIcon {
+  font-size: 72px;
+}
+
+.landingTitle {
+  font: var(--font-title-l);
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.landingDesc {
+  font: var(--font-body);
+  color: var(--color-gray-600);
+  margin: 0;
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+.landingCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 40px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  text-decoration: none;
+  margin-top: 8px;
+}
+
+.landingLogin {
+  font: var(--font-body);
+  color: var(--color-gray-600);
+  text-decoration: none;
+}
+
+.landingLogin span {
+  color: var(--color-primary);
+}

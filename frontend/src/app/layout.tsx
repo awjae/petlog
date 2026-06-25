@@ -1,5 +1,8 @@
+// filepath: src/app/layout.tsx
+
 import type { Metadata } from 'next';
 import { ApolloProvider } from '@/providers/ApolloProvider';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Petlog',

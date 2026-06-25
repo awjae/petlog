@@ -1,8 +1,6 @@
-import { ObjectType, Field, ID, Float, InputType, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Float, InputType } from '@nestjs/graphql';
 import { IsString, IsOptional, IsEnum, IsNumber, IsDate, IsUUID } from 'class-validator';
 import { HealthRecordType } from '@prisma/client';
-
-registerEnumType(HealthRecordType, { name: 'HealthRecordType' });
 
 export const HEALTH_RECORD_VALUE_KIND: Record<HealthRecordType, 'numeric' | 'text'> = {
   [HealthRecordType.weight]: 'numeric',

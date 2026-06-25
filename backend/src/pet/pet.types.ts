@@ -1,9 +1,34 @@
-import { ObjectType, Field, ID, Float, InputType, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Float, Int, InputType, registerEnumType } from '@nestjs/graphql';
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, IsDate } from 'class-validator';
-import { Species, Gender } from '@prisma/client';
+import { Species, Gender, HealthRecordType } from '@prisma/client';
 
 registerEnumType(Species, { name: 'Species' });
 registerEnumType(Gender, { name: 'Gender' });
+registerEnumType(HealthRecordType, { name: 'HealthRecordType' });
+
+@ObjectType()
+export class RecentWeight {
+  @Field(() => Float)
+  value!: number;
+
+  @Field(() => Date)
+  recordedAt!: Date;
+}
+
+@ObjectType()
+export class HealthRecordSummary {
+  @Field(() => ID)
+  id!: string;
+
+  @Field(() => HealthRecordType)
+  type!: HealthRecordType;
+
+  @Field(() => Date)
+  recordedAt!: Date;
+
+  @Field()
+  summary!: string;
+}
 
 @ObjectType()
 export class Pet {
@@ -27,6 +52,18 @@ export class Pet {
 
   @Field(() => Float, { nullable: true })
   weight?: number;
+
+  @Field({ nullable: true })
+  profileImageUrl?: string;
+
+  @Field(() => RecentWeight, { nullable: true })
+  recentWeight?: RecentWeight;
+
+  @Field(() => Int)
+  todayRecordCount?: number;
+
+  @Field(() => [HealthRecordSummary])
+  recentHealthRecords?: HealthRecordSummary[];
 
   @Field(() => Date)
   createdAt!: Date;

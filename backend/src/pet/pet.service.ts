@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import type { Pet as PrismaPet } from '@prisma/client';
-import { CreatePetInput, UpdatePetInput } from './pet.types';
+import { HealthRecordType } from '@prisma/client';
+import { CreatePetInput, UpdatePetInput, RecentWeight, HealthRecordSummary } from './pet.types';
 
 @Injectable()
 export class PetService {
@@ -62,6 +63,39 @@ export class PetService {
     const pet = await this.prisma.pet.findFirst({ where: { id: petId, userId } });
     if (!pet) throw new ForbiddenException('접근 권한이 없습니다.');
     return pet;
+  }
+
+  async findRecentWeight(petId: string): Promise<RecentWeight | null> {
+    const record = await this.prisma.healthRecord.findFirst({
+      where: { petId, type: HealthRecordType.weight },
+      orderBy: { recordedAt: 'desc' },
+    });
+    if (!record || record.numValue == null) return null;
+    return { value: Number(record.numValue), recordedAt: record.recordedAt };
+  }
+
+  async countTodayRecords(petId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return this.prisma.healthRecord.count({
+      where: { petId, recordedAt: { gte: today, lt: tomorrow } },
+    });
+  }
+
+  async findRecentHealthRecords(petId: string, limit: number): Promise<HealthRecordSummary[]> {
+    const records = await this.prisma.healthRecord.findMany({
+      where: { petId },
+      orderBy: { recordedAt: 'desc' },
+      take: limit,
+    });
+    return records.map((r) => ({
+      id: r.id,
+      type: r.type,
+      recordedAt: r.recordedAt,
+      summary: r.numValue != null ? `${Number(r.numValue)} kg` : (r.textValue ?? ''),
+    }));
   }
 
   private serialize(pet: PrismaPet) {
