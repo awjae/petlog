@@ -10,11 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "^15.0.0",
+    "@apollo/client": "^4.2.3",
+    "graphql": "^16.14.2",
+    "next": "^16.2.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@tanstack/react-query": "^5.56.0",
-    "axios": "^1.7.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
