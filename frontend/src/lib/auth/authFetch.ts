@@ -1,7 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
-
 export async function authFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(`/api${path}`, {
     ...options,
     credentials: 'include',
     headers: {

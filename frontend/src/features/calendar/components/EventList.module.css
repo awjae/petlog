@@ -1,0 +1,50 @@
+.container {
+  padding: 16px 16px 24px;
+}
+
+/* 날짜 레이블: 다이어리 날짜 표기처럼 */
+.dateLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.dateLabel::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 빈 상태: 다이어리 페이지 느낌 */
+.empty {
+  margin: 8px 0;
+  padding: 32px 20px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  background: var(--color-surface);
+  border: 1.5px dashed var(--color-border);
+}
+
+.emptyText {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.emptyHint {
+  margin-top: 4px;
+  font: var(--font-caption);
+  color: var(--color-border);
+}

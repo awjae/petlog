@@ -1,0 +1,216 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  height: 52px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 80;
+}
+
+.title {
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ===== 잠금 상태 ===== */
+.lockedState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px;
+  gap: 20px;
+  text-align: center;
+}
+
+.iconWrap {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.bigIcon {
+  display: block;
+  color: var(--color-primary);
+  opacity: 0.4;
+}
+
+.lockBadge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.heading {
+  font: var(--font-title-l);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.desc {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.65;
+}
+
+/* 진행 바 */
+.progressWrap {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.progressLabel {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.progressCount {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.progressCount strong {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.progressBar {
+  height: 10px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+  min-width: 6px;
+}
+
+.progressHint {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 36px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+}
+
+/* 미리보기 카드 (블러 처리) */
+.previewCard {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.previewLabel {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.previewRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.previewBar {
+  height: 12px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.previewBlur {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.previewOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-surface) 0%, transparent) 0%,
+    color-mix(in srgb, var(--color-surface) 90%, transparent) 50%,
+    var(--color-surface) 100%
+  );
+  backdrop-filter: blur(2px);
+}
+
+/* ===== 잠금 해제 상태 (placeholder) ===== */
+.unlockedState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comingSoon {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

@@ -17,7 +17,7 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async create(email: string, password: string, name: string): Promise<PrismaUser> {
+  async create(email: string, password: string, name?: string): Promise<PrismaUser> {
     const existing = await this.findByEmail(email);
     if (existing) throw new ConflictException('이미 사용 중인 이메일입니다.');
 

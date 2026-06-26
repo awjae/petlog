@@ -1,0 +1,188 @@
+.wrapper {
+  background: var(--color-bg);
+}
+
+/* ===== 헤더 (sticky) ===== */
+.stickyHeader {
+  position: sticky;
+  top: 52px;
+  z-index: 10;
+  background: var(--color-bg);
+  padding: 8px 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.headerCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.navBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  transition:
+    background 120ms,
+    color 120ms;
+}
+
+.navBtn:active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.monthLabel {
+  font: var(--font-title-m);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--color-text-primary);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 120ms;
+}
+
+.monthLabel:not(:disabled):active {
+  background: var(--color-primary-light);
+}
+
+.monthLabel:disabled {
+  cursor: default;
+}
+
+.todayDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.viewToggle {
+  display: flex;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggleBtn {
+  padding: 4px 18px;
+  border-radius: var(--radius-full);
+  font: var(--font-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.toggleActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 요일 레이블 */
+.dayLabels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding-bottom: 6px;
+}
+
+.dayLabel {
+  text-align: center;
+  font: var(--font-label);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ===== 날짜 그리드 ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 6px 16px 16px;
+  background: var(--color-bg);
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  min-height: 46px;
+}
+
+.otherMonth .dayNum {
+  color: var(--color-border);
+}
+
+.dayNum {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font: var(--font-caption);
+  color: var(--color-text-primary);
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out;
+}
+
+.today {
+  color: var(--color-primary);
+  font-weight: 700;
+  border: 2px solid var(--color-primary);
+}
+
+.selected {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+}
+
+.cell:active .dayNum:not(.selected) {
+  background: var(--color-primary-light);
+}
+
+.dots {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.dotMore {
+  background: var(--color-border);
+}

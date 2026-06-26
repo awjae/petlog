@@ -1,9 +1,6 @@
-// filepath: src/features/home/api/home.queries.ts
+import { gql } from '@/generated/gql';
 
-import { gql } from '@apollo/client';
-import type { DocumentNode } from 'graphql';
-
-export const HOME_QUERY: DocumentNode = gql`
+export const HOME_QUERY = gql(`
   query HomeQuery {
     me {
       pets {
@@ -36,4 +33,4 @@ export const HOME_QUERY: DocumentNode = gql`
       }
     }
   }
-`;
+`);

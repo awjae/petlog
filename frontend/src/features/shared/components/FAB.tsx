@@ -1,6 +1,5 @@
-// filepath: src/features/shared/components/FAB.tsx
-
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import styles from './FAB.module.css';
 
 type FABProps = {
@@ -11,7 +10,7 @@ type FABProps = {
 export function FAB({ href, label }: FABProps) {
   return (
     <Link href={href} className={styles.fab} aria-label={label}>
-      <span aria-hidden="true">+</span>
+      <Plus size={28} strokeWidth={2.5} aria-hidden="true" />
     </Link>
   );
 }

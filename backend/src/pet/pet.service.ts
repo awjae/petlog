@@ -32,6 +32,8 @@ export class PetService {
         birthDate: input.birthDate ?? undefined,
         gender: input.gender,
         weight: input.weight ?? undefined,
+        isNeutered: input.isNeutered ?? false,
+        profileImageUrl: input.profileImageUrl ?? undefined,
       },
     });
     return this.serialize(pet);
@@ -48,6 +50,8 @@ export class PetService {
         birthDate: input.birthDate ?? undefined,
         gender: input.gender ?? undefined,
         weight: input.weight ?? undefined,
+        isNeutered: input.isNeutered ?? undefined,
+        profileImageUrl: input.profileImageUrl ?? undefined,
       },
     });
     return this.serialize(pet);

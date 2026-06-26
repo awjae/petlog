@@ -1,5 +1,13 @@
 import { ObjectType, Field, ID, Float, Int, InputType, registerEnumType } from '@nestjs/graphql';
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, IsDate } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsDate,
+  IsBoolean,
+} from 'class-validator';
 import { Species, Gender, HealthRecordType } from '@prisma/client';
 
 registerEnumType(Species, { name: 'Species' });
@@ -53,6 +61,9 @@ export class Pet {
   @Field(() => Float, { nullable: true })
   weight?: number;
 
+  @Field()
+  isNeutered!: boolean;
+
   @Field({ nullable: true })
   profileImageUrl?: string;
 
@@ -101,6 +112,16 @@ export class CreatePetInput {
   @IsOptional()
   @IsNumber()
   weight?: number;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isNeutered?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  profileImageUrl?: string;
 }
 
 @InputType()
@@ -135,4 +156,14 @@ export class UpdatePetInput {
   @IsOptional()
   @IsNumber()
   weight?: number;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isNeutered?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  profileImageUrl?: string;
 }

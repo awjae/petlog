@@ -26,7 +26,6 @@ function formatWeightDate(iso: string): string {
 const SPECIES_LABEL: Record<Pet['species'], string> = {
   dog: '강아지',
   cat: '고양이',
-  other: '기타',
 };
 
 export function PetSummaryCard({ pet }: PetSummaryCardProps) {

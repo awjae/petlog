@@ -13,7 +13,7 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  name      String
+  name      String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -34,9 +34,11 @@ model Pet {
   species   Species
   breed     String?
   birthDate DateTime? @map("birth_date")
-  gender    Gender
-  weight    Decimal?  @db.Decimal(5, 2)
-  createdAt DateTime  @default(now()) @map("created_at")
+  gender          Gender
+  weight          Decimal?  @db.Decimal(5, 2)
+  isNeutered      Boolean   @default(false) @map("is_neutered")
+  profileImageUrl String?   @map("profile_image_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 

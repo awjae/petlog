@@ -3,7 +3,7 @@ import { errorLink } from './links/errorLink';
 
 export function makeClient() {
   const httpLink = new HttpLink({
-    uri: `${process.env.NEXT_PUBLIC_API_URL}/graphql`,
+    uri: '/api/graphql',
     credentials: 'include',
   });
 

@@ -1,0 +1,145 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ===== 히어로 카드 ===== */
+.heroCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 28px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  border-top: 3px solid var(--color-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroCard::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  pointer-events: none;
+}
+
+/* 일러스트 */
+.illustrationWrap {
+  padding: 4px 0;
+}
+
+.illustrationRing {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.illustrationIcon {
+  color: var(--color-primary);
+}
+
+/* 텍스트 */
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heroTitle {
+  font: var(--font-title-l);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.heroDesc {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* CTA 버튼 */
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  transition: opacity 120ms;
+}
+
+.ctaBtn:active {
+  opacity: 0.85;
+}
+
+/* ===== 기능 안내 ===== */
+.featureSection {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+
+.featureTitle {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.featureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.featureIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.featureText {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+}

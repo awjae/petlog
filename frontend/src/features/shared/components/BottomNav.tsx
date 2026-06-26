@@ -1,22 +1,21 @@
-// filepath: src/features/shared/components/BottomNav.tsx
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, CalendarDays, BarChart2, Settings, type LucideIcon } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 type NavItem = {
   href: string;
-  icon: string;
+  Icon: LucideIcon;
   label: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/', icon: '🏠', label: '홈' },
-  { href: '/records', icon: '📋', label: '기록' },
-  { href: '/reports', icon: '📊', label: '리포트' },
-  { href: '/settings', icon: '⚙️', label: '설정' },
+  { href: '/home', Icon: Home, label: '홈' },
+  { href: '/records', Icon: CalendarDays, label: '기록' },
+  { href: '/reports', Icon: BarChart2, label: '리포트' },
+  { href: '/settings', Icon: Settings, label: '설정' },
 ];
 
 export function BottomNav() {
@@ -26,7 +25,7 @@ export function BottomNav() {
     <nav className={styles.nav} aria-label="메인 내비게이션">
       <ul className={styles.list}>
         {NAV_ITEMS.map((item) => {
-          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+          const isActive = pathname.startsWith(item.href);
           return (
             <li key={item.href} className={styles.item}>
               <Link
@@ -35,9 +34,7 @@ export function BottomNav() {
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.label}
               >
-                <span className={styles.icon} aria-hidden="true">
-                  {item.icon}
-                </span>
+                <item.Icon size={20} strokeWidth={isActive ? 2 : 1.75} className={styles.icon} />
                 <span className={styles.label}>{item.label}</span>
               </Link>
             </li>

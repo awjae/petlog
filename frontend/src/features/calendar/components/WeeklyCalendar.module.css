@@ -1,0 +1,177 @@
+/* 다이어리 헤더: 종이 배경, 따뜻한 하단 경계 */
+.wrapper {
+  background: var(--color-bg);
+  padding: 8px 16px 12px;
+  position: sticky;
+  top: 52px;
+  z-index: 10;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 4px;
+}
+
+.headerCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+.navBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  transition:
+    background 120ms,
+    color 120ms;
+}
+
+.navBtn:active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.monthLabel {
+  font: var(--font-title-m);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--color-text-primary);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 120ms;
+}
+
+.monthLabel:not(:disabled):active {
+  background: var(--color-primary-light);
+}
+
+.monthLabel:disabled {
+  cursor: default;
+}
+
+.todayDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* 뷰 토글: 알약 형태, 다이어리 탭 느낌 */
+.viewToggle {
+  display: flex;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggleBtn {
+  padding: 4px 18px;
+  border-radius: var(--radius-full);
+  font: var(--font-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.toggleActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== 날짜 그리드 ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.dayLabel {
+  text-align: center;
+  font: var(--font-label);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  padding-bottom: 6px;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  min-height: 54px;
+}
+
+.dayNum {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out,
+    transform 80ms ease-out;
+}
+
+/* 오늘: 테두리 원 + 컬러 */
+.today {
+  color: var(--color-primary);
+  font-weight: 700;
+  border: 2px solid var(--color-primary);
+}
+
+/* 선택: 꽉 찬 원 */
+.selected {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+}
+
+.cell:active .dayNum:not(.selected) {
+  transform: scale(0.88);
+  background: var(--color-primary-light);
+}
+
+.dots {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+  align-items: center;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.dotMore {
+  background: var(--color-border);
+}

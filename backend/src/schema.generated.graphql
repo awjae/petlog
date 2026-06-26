@@ -58,7 +58,9 @@ input CreatePetInput {
   birthDate: DateTime
   breed: String
   gender: Gender!
+  isNeutered: Boolean
   name: String!
+  profileImageUrl: String
   species: Species!
   weight: Float
 }
@@ -91,6 +93,13 @@ type HealthRecord {
   textValue: String
   type: HealthRecordType!
   updatedAt: DateTime!
+}
+
+type HealthRecordSummary {
+  id: ID!
+  recordedAt: DateTime!
+  summary: String!
+  type: HealthRecordType!
 }
 
 enum HealthRecordType {
@@ -144,6 +153,7 @@ type Mutation {
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
   updateMedication(id: ID!, input: UpdateMedicationInput!): Medication!
   updatePet(id: ID!, input: UpdatePetInput!): Pet!
+  updateProfile(input: UpdateProfileInput!): User!
   updateVaccination(id: ID!, input: UpdateVaccinationInput!): Vaccination!
 }
 
@@ -153,8 +163,13 @@ type Pet {
   createdAt: DateTime!
   gender: Gender!
   id: ID!
+  isNeutered: Boolean!
   name: String!
+  profileImageUrl: String
+  recentHealthRecords(limit: Int! = 3): [HealthRecordSummary!]!
+  recentWeight: RecentWeight
   species: Species!
+  todayRecordCount: Int!
   updatedAt: DateTime!
   weight: Float
 }
@@ -163,6 +178,7 @@ type Query {
   activeMedications(petId: ID!): [Medication!]!
   appointments(petId: ID!): [Appointment!]!
   healthRecords(petId: ID!): [HealthRecord!]!
+  me: User!
   medicalEvents(petId: ID!): [MedicalEvent!]!
   medications(petId: ID!): [Medication!]!
   pet(id: ID!): Pet!
@@ -172,9 +188,30 @@ type Query {
   vaccinations(petId: ID!): [Vaccination!]!
 }
 
+type RecentWeight {
+  recordedAt: DateTime!
+  value: Float!
+}
+
+enum ScheduleType {
+  appointment
+  medication
+  vaccination
+}
+
 enum Species {
   cat
   dog
+}
+
+type UpcomingSchedule {
+  dueDate: DateTime!
+  id: ID!
+  petId: ID!
+  petName: String!
+  petProfileImageUrl: String
+  title: String!
+  type: ScheduleType!
 }
 
 input UpdateAppointmentInput {
@@ -211,9 +248,15 @@ input UpdatePetInput {
   birthDate: DateTime
   breed: String
   gender: Gender
+  isNeutered: Boolean
   name: String
+  profileImageUrl: String
   species: Species
   weight: Float
+}
+
+input UpdateProfileInput {
+  name: String
 }
 
 input UpdateVaccinationInput {
@@ -222,6 +265,16 @@ input UpdateVaccinationInput {
   name: String
   nextDueAt: DateTime
   vaccinatedAt: DateTime
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  name: String
+  pets: [Pet!]!
+  upcomingSchedules(limit: Int! = 3): [UpcomingSchedule!]!
+  updatedAt: DateTime!
 }
 
 type Vaccination {

@@ -1,0 +1,163 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* ===== 웰컴 카드 ===== */
+.welcomeCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  /* 좌측 마커: primary 색상 */
+  border-top: 3px solid var(--color-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 배경 장식 */
+.welcomeCard::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  pointer-events: none;
+}
+
+.topRow {
+  align-self: flex-start;
+}
+
+.welcomeBadge {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+/* 일러스트 */
+.illustrationWrap {
+  padding: 8px 0 4px;
+}
+
+.illustrationRing {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+.illustrationIcon {
+  color: var(--color-primary);
+}
+
+/* 텍스트 */
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.welcomeTitle {
+  font: var(--font-title-l);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.welcomeDesc {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* CTA 버튼 */
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  transition: opacity 120ms;
+}
+
+.ctaBtn:active {
+  opacity: 0.85;
+}
+
+/* ===== 기록 유형 안내 ===== */
+.guideSection {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+}
+
+.guideTitle {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.guideGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.guideItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.guideItemIcon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.guideItemLabel {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.guideItemDesc {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+}

@@ -1,0 +1,150 @@
+.main {
+  min-height: 100dvh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  height: 52px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 4px;
+  z-index: 80;
+}
+
+.backBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 28px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+}
+
+.backBtn:active {
+  background: var(--color-border);
+}
+
+.title {
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.headerRight {
+  width: 44px;
+}
+
+.inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px 20px calc(env(safe-area-inset-bottom) + 32px);
+}
+
+/* ===== 폼 ===== */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  height: 52px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 100ms;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+
+.inputError {
+  border-color: var(--color-danger);
+}
+
+.fieldError {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.errorMsg {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.submitBtn {
+  height: 54px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  cursor: pointer;
+  margin-top: 4px;
+  box-shadow: var(--shadow-md);
+  transition: opacity 150ms;
+}
+
+.submitBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ===== 푸터 ===== */
+.footer {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+.footerLink {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}

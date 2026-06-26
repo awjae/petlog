@@ -1,10 +1,9 @@
-// filepath: src/features/home/components/PetSelector.tsx
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { PawPrint, ChevronDown, Plus, Check } from 'lucide-react';
 import type { Pet } from '../types/home.types';
 import styles from './PetSelector.module.css';
 
@@ -49,16 +48,16 @@ export function PetSelector({ pets, selectedPetId, onSelect }: PetSelectorProps)
           />
         ) : (
           <span className={styles.avatarPlaceholder} aria-hidden="true">
-            🐾
+            <PawPrint size={14} strokeWidth={1.75} />
           </span>
         )}
         <span className={styles.name}>{selectedPet?.name ?? '반려동물 없음'}</span>
-        <span
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
           className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
           aria-hidden="true"
-        >
-          ▼
-        </span>
+        />
       </button>
 
       {isOpen && (
@@ -76,20 +75,23 @@ export function PetSelector({ pets, selectedPetId, onSelect }: PetSelectorProps)
                       <Image
                         src={pet.profileImageUrl}
                         alt={pet.name}
-                        width={36}
-                        height={36}
+                        width={40}
+                        height={40}
                         className={styles.dropdownAvatar}
                       />
                     ) : (
                       <span className={styles.dropdownAvatarPlaceholder} aria-hidden="true">
-                        🐾
+                        <PawPrint size={20} strokeWidth={1.5} />
                       </span>
                     )}
                     <span className={styles.dropdownName}>{pet.name}</span>
                     {pet.id === selectedPetId && (
-                      <span className={styles.dropdownActiveMark} aria-hidden="true">
-                        ✓
-                      </span>
+                      <Check
+                        size={16}
+                        strokeWidth={2.5}
+                        className={styles.dropdownActiveMark}
+                        aria-hidden="true"
+                      />
                     )}
                   </button>
                 </li>
@@ -98,7 +100,7 @@ export function PetSelector({ pets, selectedPetId, onSelect }: PetSelectorProps)
             <div className={styles.divider} />
             <button className={styles.addButton} onClick={handleAddPet}>
               <span className={styles.addIcon} aria-hidden="true">
-                +
+                <Plus size={20} strokeWidth={2} />
               </span>
               반려동물 추가
             </button>

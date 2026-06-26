@@ -2,6 +2,8 @@
 
 import type { Metadata } from 'next';
 import { ApolloProvider } from '@/providers/ApolloProvider';
+import { MSWProvider } from '@/providers/MSWProvider';
+import { ThemeProvider } from '@/providers/ThemeProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,7 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body>
-        <ApolloProvider>{children}</ApolloProvider>
+        <ThemeProvider>
+          <MSWProvider>
+            <ApolloProvider>{children}</ApolloProvider>
+          </MSWProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

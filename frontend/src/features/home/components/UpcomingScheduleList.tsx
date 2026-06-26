@@ -1,7 +1,6 @@
-// filepath: src/features/home/components/UpcomingScheduleList.tsx
-
 import Link from 'next/link';
 import Image from 'next/image';
+import { Syringe, Pill, Stethoscope, PawPrint, type LucideIcon } from 'lucide-react';
 import type { UpcomingSchedule } from '../types/home.types';
 import styles from './UpcomingScheduleList.module.css';
 
@@ -9,10 +8,10 @@ type UpcomingScheduleListProps = {
   schedules: UpcomingSchedule[];
 };
 
-const TYPE_ICON: Record<UpcomingSchedule['type'], string> = {
-  vaccination: '💉',
-  medication: '💊',
-  appointment: '🏥',
+const TYPE_ICON: Record<UpcomingSchedule['type'], LucideIcon> = {
+  vaccination: Syringe,
+  medication: Pill,
+  appointment: Stethoscope,
 };
 
 function getScheduleHref(schedule: UpcomingSchedule): string {
@@ -37,6 +36,7 @@ export function UpcomingScheduleList({ schedules }: UpcomingScheduleListProps) {
       <ul className={styles.list}>
         {schedules.map((schedule) => {
           const isUrgent = schedule.daysUntil <= 1;
+          const Icon = TYPE_ICON[schedule.type];
           return (
             <li key={schedule.id} className={styles.item}>
               <Link
@@ -45,7 +45,7 @@ export function UpcomingScheduleList({ schedules }: UpcomingScheduleListProps) {
                 aria-label={`${schedule.title}, ${schedule.petName}, ${formatDDay(schedule.daysUntil)}`}
               >
                 <span className={styles.typeIcon} aria-hidden="true">
-                  {TYPE_ICON[schedule.type]}
+                  <Icon size={18} strokeWidth={1.75} />
                 </span>
                 <div className={styles.content}>
                   <p className={styles.title}>{schedule.title}</p>
@@ -54,13 +54,13 @@ export function UpcomingScheduleList({ schedules }: UpcomingScheduleListProps) {
                       <Image
                         src={schedule.petProfileImageUrl}
                         alt={schedule.petName}
-                        width={20}
-                        height={20}
+                        width={16}
+                        height={16}
                         className={styles.petAvatar}
                       />
                     ) : (
                       <span className={styles.petAvatarPlaceholder} aria-hidden="true">
-                        🐾
+                        <PawPrint size={10} strokeWidth={1.5} />
                       </span>
                     )}
                     <span className={styles.petName}>{schedule.petName}</span>
