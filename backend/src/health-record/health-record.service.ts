@@ -3,11 +3,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
 import type { HealthRecord as PrismaHealthRecord } from '@prisma/client';
 import { HealthRecordType } from '@prisma/client';
-import {
-  CreateHealthRecordInput,
-  UpdateHealthRecordInput,
-  HEALTH_RECORD_VALUE_KIND,
-} from './health-record.types';
+import { CreateHealthRecordInput, UpdateHealthRecordInput } from './health-record.types';
 
 @Injectable()
 export class HealthRecordService {
@@ -76,12 +72,34 @@ export class HealthRecordService {
     type: HealthRecordType,
     input: { numValue?: number | null; textValue?: string | null },
   ) {
-    if (HEALTH_RECORD_VALUE_KIND[type] === 'numeric') {
-      if (input.numValue == null)
-        throw new BadRequestException(`${type} 기록에는 numValue가 필요합니다.`);
-    } else {
-      if (!input.textValue)
-        throw new BadRequestException(`${type} 기록에는 textValue가 필요합니다.`);
+    switch (type) {
+      case HealthRecordType.weight:
+        if (input.numValue == null)
+          throw new BadRequestException('체중 기록에는 numValue가 필요합니다.');
+        break;
+      case HealthRecordType.appetite:
+      case HealthRecordType.mood:
+        if (!input.textValue)
+          throw new BadRequestException(`${type} 기록에는 textValue가 필요합니다.`);
+        break;
+      case HealthRecordType.activity:
+        if (input.numValue == null)
+          throw new BadRequestException('산책 기록에는 numValue(시간)가 필요합니다.');
+        break;
+      case HealthRecordType.symptom:
+        if (!input.textValue)
+          throw new BadRequestException('증상 기록에는 textValue(증상 목록)가 필요합니다.');
+        if (input.numValue == null)
+          throw new BadRequestException('증상 기록에는 numValue(심각도)가 필요합니다.');
+        break;
+      case HealthRecordType.stool:
+        if (!input.textValue)
+          throw new BadRequestException('배변 기록에는 textValue(형태)가 필요합니다.');
+        break;
+      case HealthRecordType.vomit:
+        if (input.numValue == null)
+          throw new BadRequestException('구토 기록에는 numValue(횟수)가 필요합니다.');
+        break;
     }
   }
 

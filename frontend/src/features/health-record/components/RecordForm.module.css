@@ -250,6 +250,24 @@
   font: inherit;
 }
 
+/* ===== 건강 이상 기록 링크 ===== */
+.healthAlertLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+  font: var(--font-caption);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+.healthAlertLink:active {
+  opacity: 0.5;
+}
+
 /* ===== 저장 버튼 ===== */
 .saveBtn {
   width: 100%;

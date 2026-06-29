@@ -276,7 +276,7 @@
 }
 
 .segBtnActive {
-  background: var(--color-primary);
+  background: var(--seg-active-bg, var(--color-primary));
   color: #fff;
   font-weight: 700;
 }
@@ -382,4 +382,95 @@
   padding: 10px 14px;
   background: color-mix(in srgb, var(--color-danger) 8%, transparent);
   border-radius: var(--radius-sm);
+}
+
+/* ===== 건강 이상 기록 유형 ===== */
+.typeGridHealth {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.typeGroupDivider {
+  font: var(--font-caption);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+  margin: 12px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== 증상 칩 ===== */
+.symptomChipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.symptomChip {
+  height: 36px;
+  padding: 0 14px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition:
+    border-color 100ms,
+    background 100ms,
+    color 100ms;
+  white-space: nowrap;
+}
+
+.symptomChipSelected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.symptomChipDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== 경고 배너 ===== */
+.warningBanner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--color-warning, #ff9f0a) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-warning, #ff9f0a) 30%, transparent);
+  border-radius: var(--radius-sm);
+  font: var(--font-caption);
+  font-size: 12px;
+  color: #b36800;
+  margin-top: 10px;
+}
+
+/* ===== 기타 증상 메모 영역 ===== */
+.otherMemoArea {
+  margin-top: 10px;
+}
+
+/* ===== 토스트 메시지 ===== */
+.toastMessage {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 84px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font: var(--font-caption);
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  z-index: 200;
+  pointer-events: none;
 }

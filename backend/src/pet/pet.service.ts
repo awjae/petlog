@@ -107,6 +107,9 @@ export class PetService {
   }
 
   private buildSummary(type: string, numValue: number | null, textValue: string | null): string {
+    const COUNT_LABEL: Record<number, string> = { 1: '1회', 2: '2-3회', 3: '4회 이상' };
+    const SEVERITY_LABEL: Record<number, string> = { 1: '경미함', 2: '보통', 3: '심각함' };
+
     switch (type) {
       case 'weight':
         return numValue != null ? `${numValue} kg` : '';
@@ -119,6 +122,22 @@ export class PetService {
       }
       case 'mood':
         return textValue ?? '';
+      case 'symptom': {
+        const severity = numValue != null ? SEVERITY_LABEL[numValue] : null;
+        if (textValue && severity) return `${textValue} · ${severity}`;
+        return textValue ?? '';
+      }
+      case 'stool': {
+        const count = numValue != null ? COUNT_LABEL[numValue] : null;
+        if (textValue && count) return `${textValue} · ${count}`;
+        return textValue ?? '';
+      }
+      case 'vomit': {
+        const count = numValue != null ? COUNT_LABEL[numValue] : null;
+        if (textValue && count) return `${textValue} · ${count}`;
+        if (count) return count;
+        return textValue ?? '';
+      }
       default:
         return textValue ?? '';
     }

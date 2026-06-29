@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Scale,
   Utensils,
@@ -11,6 +12,7 @@ import {
   Frown,
   Check,
   Loader2,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
 import { useCreateHealthRecord } from '../hooks/useCreateHealthRecord';
@@ -102,6 +104,14 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
               </button>
             ))}
           </div>
+          <Link
+            href={`/records/new?petId=${petId}&type=symptom`}
+            className={styles.healthAlertLink}
+            aria-label="증상·배변·구토 등 건강 이상 기록 상세 입력하기"
+          >
+            증상·배변·구토 기록하기
+            <ChevronRight size={14} strokeWidth={2} aria-hidden="true" />
+          </Link>
         </section>
 
         {/* 날짜 */}

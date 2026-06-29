@@ -29,6 +29,25 @@ export function buildSummary(
     }
     case 'mood':
       return textValue ?? '';
+    case 'symptom': {
+      const SEVERITY: Record<number, string> = { 1: '경미함', 2: '보통', 3: '심각함' };
+      const severity = numValue != null ? SEVERITY[numValue] : null;
+      if (textValue && severity) return `${textValue} · ${severity}`;
+      return textValue ?? '';
+    }
+    case 'stool': {
+      const COUNT: Record<number, string> = { 1: '1회', 2: '2-3회', 3: '4회 이상' };
+      const count = numValue != null ? COUNT[numValue] : null;
+      if (textValue && count) return `${textValue} · ${count}`;
+      return textValue ?? '';
+    }
+    case 'vomit': {
+      const COUNT: Record<number, string> = { 1: '1회', 2: '2-3회', 3: '4회 이상' };
+      const count = numValue != null ? COUNT[numValue] : null;
+      if (textValue && count) return `${textValue} · ${count}`;
+      if (count) return count;
+      return textValue ?? '';
+    }
     default:
       return textValue ?? '';
   }
