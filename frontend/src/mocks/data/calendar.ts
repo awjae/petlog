@@ -1,4 +1,4 @@
-import type { CalendarQueryQuery } from '@/generated/graphql';
+import type { CalendarEvent, CalendarPet } from '@/features/calendar/types/calendar.types';
 
 function daysFromToday(offset: number): string {
   const d = new Date();
@@ -6,7 +6,9 @@ function daysFromToday(offset: number): string {
   return d.toISOString();
 }
 
-export const mockCalendarData: CalendarQueryQuery = {
+type MockCalendarData = { me: { pets: CalendarPet[]; calendarEvents: CalendarEvent[] } };
+
+export const mockCalendarData: MockCalendarData = {
   me: {
     pets: [
       { id: 'pet-1', name: '초코', profileImageUrl: null },

@@ -1,0 +1,111 @@
+/* ===== 루트 래퍼 ===== */
+/* position:fixed로 전체 화면 덮음. pointer-events 제어로 오버레이/시트 활성화 */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.rootVisible {
+  pointer-events: auto;
+}
+
+/* ===== 오버레이 ===== */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 60, 72, 0.5);
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.rootVisible .overlay {
+  opacity: 1;
+}
+
+/* ===== 시트 ===== */
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 500px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border-radius: 20px 20px 0 0;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  /* 닫힌 상태: 아래로 숨김 */
+  transform: translateY(100%);
+  opacity: 0;
+  transition:
+    transform 300ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* 열린 상태 */
+.sheetVisible {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+/* ===== 드래그 핸들 영역 ===== */
+.dragHandleArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 8px;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.dragHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+/* ===== 헤더 ===== */
+.sheetHeader {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.sheetTitle {
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ===== 닫기 버튼 ===== */
+.closeBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  transition: background 100ms;
+  /* 헤더의 touch-action: none을 벗어나 클릭 이벤트가 정상 동작하도록 */
+  touch-action: auto;
+}
+
+.closeBtn:active {
+  background: var(--color-border);
+}

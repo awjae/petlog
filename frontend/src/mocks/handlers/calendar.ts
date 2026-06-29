@@ -9,7 +9,7 @@ export const calendarHandlers = [
       ...mockCalendarData,
       me: {
         ...mockCalendarData.me,
-        calendarEvents: mockCalendarData.me.calendarEvents.filter((e) => {
+        calendarEvents: mockCalendarData.me.calendarEvents.filter((e: { date: string }) => {
           const d = e.date.slice(0, 10);
           return d >= startDate && d <= endDate;
         }),

@@ -59,7 +59,7 @@ export class PetResolver {
   @ResolveField(() => [HealthRecordSummary])
   recentHealthRecords(
     @Parent() pet: Pet,
-    @Args('limit', { type: () => Int, defaultValue: 3 }) limit: number,
+    @Args('limit', { type: () => Int, defaultValue: 5 }) limit: number,
   ): Promise<HealthRecordSummary[]> {
     return this.petService.findRecentHealthRecords(pet.id, limit);
   }

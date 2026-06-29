@@ -71,8 +71,8 @@ export class PetService {
 
   async findRecentWeight(petId: string): Promise<RecentWeight | null> {
     const record = await this.prisma.healthRecord.findFirst({
-      where: { petId, type: HealthRecordType.weight },
-      orderBy: { recordedAt: 'desc' },
+      where: { petId, type: HealthRecordType.weight, deletedAt: null },
+      orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
     });
     if (!record || record.numValue == null) return null;
     return { value: Number(record.numValue), recordedAt: record.recordedAt };
@@ -84,22 +84,44 @@ export class PetService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     return this.prisma.healthRecord.count({
-      where: { petId, recordedAt: { gte: today, lt: tomorrow } },
+      where: { petId, deletedAt: null, recordedAt: { gte: today, lt: tomorrow } },
     });
   }
 
   async findRecentHealthRecords(petId: string, limit: number): Promise<HealthRecordSummary[]> {
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId },
-      orderBy: { recordedAt: 'desc' },
+      where: { petId, deletedAt: null },
+      orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
       take: limit,
     });
     return records.map((r) => ({
       id: r.id,
       type: r.type,
       recordedAt: r.recordedAt,
-      summary: r.numValue != null ? `${Number(r.numValue)} kg` : (r.textValue ?? ''),
+      summary: this.buildSummary(
+        r.type,
+        r.numValue != null ? Number(r.numValue) : null,
+        r.textValue,
+      ),
     }));
+  }
+
+  private buildSummary(type: string, numValue: number | null, textValue: string | null): string {
+    switch (type) {
+      case 'weight':
+        return numValue != null ? `${numValue} kg` : '';
+      case 'appetite':
+        return textValue ?? '';
+      case 'activity': {
+        const duration = numValue != null ? `${numValue}분` : '';
+        const distance = textValue ? ` · ${textValue}km` : '';
+        return duration + distance;
+      }
+      case 'mood':
+        return textValue ?? '';
+      default:
+        return textValue ?? '';
+    }
   }
 
   private serialize(pet: PrismaPet) {

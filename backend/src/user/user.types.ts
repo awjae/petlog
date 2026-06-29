@@ -48,6 +48,9 @@ export class User {
   @Field(() => [Pet])
   pets!: Pet[];
 
+  @Field(() => [String])
+  recordDates!: string[];
+
   @Field(() => [UpcomingSchedule])
   upcomingSchedules!: UpcomingSchedule[];
 

@@ -1,6 +1,20 @@
-import { gql } from '@/generated/gql';
+import { gql } from '@apollo/client';
+import type { TypedDocumentNode } from '@apollo/client';
+import type { CalendarEvent, CalendarPet } from '../types/calendar.types';
 
-export const CALENDAR_QUERY = gql(`
+type CalendarQueryResult = {
+  me: {
+    pets: CalendarPet[];
+    calendarEvents: CalendarEvent[];
+  } | null;
+};
+
+type CalendarQueryVariables = {
+  startDate: string;
+  endDate: string;
+};
+
+export const CALENDAR_QUERY: TypedDocumentNode<CalendarQueryResult, CalendarQueryVariables> = gql`
   query CalendarQuery($startDate: String!, $endDate: String!) {
     me {
       pets {
@@ -18,4 +32,4 @@ export const CALENDAR_QUERY = gql(`
       }
     }
   }
-`);
+`;

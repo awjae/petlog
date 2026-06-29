@@ -1,10 +1,25 @@
-import type { CalendarQueryQuery } from '@/generated/graphql';
+export type CalendarPet = {
+  id: string;
+  name: string;
+  profileImageUrl: string | null;
+};
 
-type MeData = NonNullable<CalendarQueryQuery['me']>;
+export type CalendarEventType =
+  | 'health_record'
+  | 'vaccination'
+  | 'medication'
+  | 'appointment'
+  | 'medical_event';
 
-export type CalendarPet = MeData['pets'][number];
-export type CalendarEvent = MeData['calendarEvents'][number];
-export type CalendarEventType = CalendarEvent['type'];
+export type CalendarEvent = {
+  id: string;
+  date: string;
+  type: CalendarEventType;
+  title: string;
+  subtitle: string | null;
+  petId: string;
+};
+
 export type CalendarView = 'week' | 'month';
 
 export type PetColorMap = Record<string, string>;
@@ -65,13 +80,11 @@ export function getMonthGridDays(baseDate: Date): string[] {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
-  // 월요일 기준 그리드 시작
   const firstDow = firstDay.getDay();
   const diffToMon = firstDow === 0 ? -6 : 1 - firstDow;
   const gridStart = new Date(firstDay);
   gridStart.setDate(firstDay.getDate() + diffToMon);
 
-  // 일요일 기준 그리드 끝
   const lastDow = lastDay.getDay();
   const diffToSun = lastDow === 0 ? 0 : 7 - lastDow;
   const gridEnd = new Date(lastDay);

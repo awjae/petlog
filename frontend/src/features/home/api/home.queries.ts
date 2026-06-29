@@ -1,8 +1,11 @@
-import { gql } from '@/generated/gql';
+import { gql } from '@apollo/client';
+import type { TypedDocumentNode } from '@apollo/client';
+import type { HomeQueryQuery, HomeQueryQueryVariables } from '@/generated/graphql';
 
-export const HOME_QUERY = gql(`
+export const HOME_QUERY: TypedDocumentNode<HomeQueryQuery, HomeQueryQueryVariables> = gql`
   query HomeQuery {
     me {
+      recordDates(limit: 90)
       pets {
         id
         name
@@ -15,7 +18,7 @@ export const HOME_QUERY = gql(`
           recordedAt
         }
         todayRecordCount
-        recentHealthRecords(limit: 3) {
+        recentHealthRecords(limit: 5) {
           id
           type
           recordedAt
@@ -33,4 +36,4 @@ export const HOME_QUERY = gql(`
       }
     }
   }
-`);
+`;

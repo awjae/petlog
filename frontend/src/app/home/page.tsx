@@ -15,9 +15,6 @@ import { BottomNav } from '@/features/shared/components/BottomNav';
 import { FAB } from '@/features/shared/components/FAB';
 import styles from './page.module.css';
 
-// TODO: API streak 필드 연동 전까지 임시 목값
-const MOCK_STREAK = 7;
-
 // 데모용 페이즈 강제 설정: null = 자동 감지, 1 = 온보딩, 2 = 습관 형성, 3 = AI 해금
 // TODO: 백엔드 totalHealthRecordCount 연동 후 null로 고정
 const DEMO_PHASE: null | 1 | 2 | 3 = null;
@@ -96,7 +93,7 @@ export default function HomePage() {
           <TodayRecordBanner
             count={selectedPet.todayRecordCount}
             petName={selectedPet.name}
-            streak={MOCK_STREAK}
+            streak={data.streak}
           />
 
           <QuickRecordButtons petId={activePetId} />

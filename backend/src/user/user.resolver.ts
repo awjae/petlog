@@ -36,6 +36,14 @@ export class UserResolver {
     return this.petService.findAll(user.id);
   }
 
+  @ResolveField(() => [String])
+  recordDates(
+    @Parent() user: User,
+    @Args('limit', { type: () => Int, defaultValue: 90 }) limit: number,
+  ): Promise<string[]> {
+    return this.userService.getRecordDates(user.id, limit);
+  }
+
   @ResolveField(() => [UpcomingSchedule])
   async upcomingSchedules(
     @Parent() user: User,

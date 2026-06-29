@@ -1,0 +1,140 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── 필터 칩 바 ── */
+.filterBar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background);
+  position: sticky;
+  top: 56px;
+  z-index: 10;
+}
+
+.filterBar::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font: var(--font-caption);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  min-height: 36px;
+  transition:
+    background 120ms,
+    border-color 120ms,
+    color 120ms;
+}
+
+.chipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ── 날짜별 그룹 ── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 24px;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dateLabel {
+  font: var(--font-caption);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* ── 기록 카드 ── */
+.recordList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recordCard {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 3px solid var(--color-border);
+  transition: border-color 100ms;
+}
+
+.recordCard:active {
+  border-left-color: var(--color-primary);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typeBadge {
+  font: var(--font-caption);
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.time {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+.summary {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.note {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+}
+
+/* ── Empty state ── */
+.empty {
+  padding: 64px 16px;
+  text-align: center;
+}
+
+.emptyText {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

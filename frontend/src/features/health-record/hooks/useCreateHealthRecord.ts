@@ -9,6 +9,12 @@ import {
 
 type AppetiteLevel = 'good' | 'normal' | 'bad';
 
+const APPETITE_LABEL: Record<AppetiteLevel, string> = {
+  good: '잘 먹음',
+  normal: '보통',
+  bad: '안 먹음',
+};
+
 export interface CreateHealthRecordFormInput {
   petId: string;
   type: HealthRecordType;
@@ -28,7 +34,11 @@ function buildVariables(input: CreateHealthRecordFormInput) {
     case 'weight':
       return { ...base, numValue: parseFloat(input.weight ?? '0'), note: input.memo || undefined };
     case 'appetite':
-      return { ...base, textValue: input.appetite, note: input.memo || undefined };
+      return {
+        ...base,
+        textValue: APPETITE_LABEL[input.appetite ?? 'normal'],
+        note: input.memo || undefined,
+      };
     case 'activity':
       return {
         ...base,

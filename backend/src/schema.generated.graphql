@@ -166,7 +166,7 @@ type Pet {
   isNeutered: Boolean!
   name: String!
   profileImageUrl: String
-  recentHealthRecords(limit: Int! = 3): [HealthRecordSummary!]!
+  recentHealthRecords(limit: Int! = 5): [HealthRecordSummary!]!
   recentWeight: RecentWeight
   species: Species!
   todayRecordCount: Int!
@@ -273,6 +273,7 @@ type User {
   id: ID!
   name: String
   pets: [Pet!]!
+  recordDates(limit: Int! = 90): [String!]!
   upcomingSchedules(limit: Int! = 3): [UpcomingSchedule!]!
   updatedAt: DateTime!
 }

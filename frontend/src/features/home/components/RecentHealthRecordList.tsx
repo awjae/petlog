@@ -14,6 +14,20 @@ function formatDate(iso: string): string {
   return `${date.getMonth() + 1}.${date.getDate()}`;
 }
 
+const TYPE_LABEL: Record<string, string> = {
+  weight: '체중',
+  appetite: '식사',
+  activity: '산책',
+  mood: '메모',
+  symptom: '증상',
+  stool: '배변',
+  vomit: '구토',
+};
+
+function getLabel(type: string): string {
+  return TYPE_LABEL[type] ?? type;
+}
+
 export function RecentHealthRecordList({ petId, records }: RecentHealthRecordListProps) {
   return (
     <section className={styles.section} aria-label="최근 건강 기록">
@@ -33,7 +47,7 @@ export function RecentHealthRecordList({ petId, records }: RecentHealthRecordLis
           {records.map((record) => (
             <li key={record.id} className={styles.item}>
               <div className={styles.topRow}>
-                <span className={styles.type}>{record.type}</span>
+                <span className={styles.type}>{getLabel(record.type)}</span>
                 <span className={styles.date}>{formatDate(record.recordedAt)}</span>
               </div>
               <p className={styles.summary}>{record.summary}</p>

@@ -4,6 +4,7 @@ import type { HomeQueryQuery } from '@/generated/graphql';
 // 사용법: homeHandlers에서 mockHomeData → mockHomeDataPhase1 으로 교체
 export const mockHomeDataPhase1: HomeQueryQuery = {
   me: {
+    recordDates: [],
     pets: [
       {
         id: 'pet-1',
@@ -32,8 +33,17 @@ export const mockHomeDataPhase1: HomeQueryQuery = {
 };
 
 // Phase 2 (기본) — 습관 형성: 1-29건
+function pastDays(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toISOString();
+  });
+}
+
 export const mockHomeData: HomeQueryQuery = {
   me: {
+    recordDates: pastDays(7),
     pets: [
       {
         id: 'pet-1',
@@ -64,7 +74,19 @@ export const mockHomeData: HomeQueryQuery = {
             id: 'hr-3',
             type: 'activity',
             recordedAt: '2026-06-18T07:00:00.000Z',
-            summary: '활발함',
+            summary: '30분 · 1.2km',
+          },
+          {
+            id: 'hr-4',
+            type: 'mood',
+            recordedAt: '2026-06-17T08:00:00.000Z',
+            summary: '오늘 유독 활발하게 놀았어요',
+          },
+          {
+            id: 'hr-5',
+            type: 'weight',
+            recordedAt: '2026-06-15T09:00:00.000Z',
+            summary: '3.1 kg',
           },
         ],
       },

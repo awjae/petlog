@@ -19,8 +19,8 @@ export class HealthRecordService {
   async findAll(userId: string, petId: string) {
     await this.petService.assertOwnership(userId, petId);
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId },
-      orderBy: { recordedAt: 'desc' },
+      where: { petId, deletedAt: null },
+      orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
     });
     return records.map(this.serialize);
   }

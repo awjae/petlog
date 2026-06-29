@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import { PawPrint, ArrowRight } from 'lucide-react';
 import type { Pet, UpcomingSchedule } from '../types/home.types';
 import { QuickRecordButtons } from './QuickRecordButtons';
 import { UpcomingScheduleList } from './UpcomingScheduleList';
+import { RecordBottomSheet } from '@/features/health-record/components/RecordBottomSheet';
 import styles from './HomePhase1Content.module.css';
 
 type HomePhase1ContentProps = {
@@ -20,6 +21,8 @@ const GUIDE_ITEMS = [
 ];
 
 export function HomePhase1Content({ pet, upcomingSchedules }: HomePhase1ContentProps) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   return (
     <div className={styles.content}>
       {/* ── 웰컴 카드 ── */}
@@ -43,11 +46,18 @@ export function HomePhase1Content({ pet, upcomingSchedules }: HomePhase1ContentP
           </p>
         </div>
 
-        <Link href={`/records/new?petId=${pet.id}&type=weight`} className={styles.ctaBtn}>
+        <button type="button" className={styles.ctaBtn} onClick={() => setIsSheetOpen(true)}>
           첫 기록 남기기
           <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
-        </Link>
+        </button>
       </div>
+
+      <RecordBottomSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        petId={pet.id}
+        defaultType="weight"
+      />
 
       {/* ── 기록 유형 안내 ── */}
       <section className={styles.guideSection} aria-label="기록할 수 있는 항목">

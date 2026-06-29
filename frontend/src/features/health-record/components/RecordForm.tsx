@@ -1,10 +1,7 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import {
-  X,
-  PawPrint,
   Scale,
   Utensils,
   Footprints,
@@ -13,14 +10,20 @@ import {
   Meh,
   Frown,
   Check,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
-import { useHomeData } from '@/features/home/hooks/useHomeData';
-import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
-import styles from './page.module.css';
+import { useCreateHealthRecord } from '../hooks/useCreateHealthRecord';
+import styles from './RecordForm.module.css';
 
-type RecordType = 'weight' | 'appetite' | 'activity' | 'mood';
+export type RecordType = 'weight' | 'appetite' | 'activity' | 'mood';
 type AppetiteLevel = 'good' | 'normal' | 'bad';
+
+export interface RecordFormProps {
+  petId: string;
+  defaultType?: RecordType;
+  onSuccess: () => void;
+}
 
 const RECORD_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
   { type: 'weight', Icon: Scale, label: '체중' },
@@ -35,16 +38,9 @@ const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string 
   { value: 'bad', Icon: Frown, label: '안 먹음' },
 ];
 
-function NewRecordContent() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const { data } = useHomeData();
+export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordFormProps) {
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
 
-  const defaultPetId = params.get('petId') ?? data?.pets[0]?.id ?? '';
-  const defaultType = (params.get('type') as RecordType | null) ?? 'weight';
-
-  const [petId, setPetId] = useState(defaultPetId);
   const [recordType, setRecordType] = useState<RecordType>(defaultType);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weight, setWeight] = useState('');
@@ -53,8 +49,6 @@ function NewRecordContent() {
   const [distance, setDistance] = useState('');
   const [memo, setMemo] = useState('');
   const [success, setSuccess] = useState(false);
-
-  const pets = data?.pets ?? [];
 
   function isValid(): boolean {
     if (!petId) return false;
@@ -66,7 +60,8 @@ function NewRecordContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isValid()) return;
+    if (!isValid() || submitting || success) return;
+
     const ok = await createHealthRecord({
       petId,
       type: recordType,
@@ -77,66 +72,20 @@ function NewRecordContent() {
       distance,
       memo,
     });
+
     if (ok) {
       setSuccess(true);
-      setTimeout(() => router.back(), 800);
+      setTimeout(onSuccess, 800);
     }
   }
 
-  if (success) {
-    return (
-      <div className={styles.successOverlay} role="status">
-        <span className={styles.successIcon} aria-hidden="true">
-          <Check size={36} strokeWidth={3} />
-        </span>
-        <p className={styles.successText}>기록했어요!</p>
-      </div>
-    );
-  }
+  const isSaveBtnDisabled = (!isValid() && !success) || submitting;
 
   return (
-    <div className={styles.inner}>
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.closeBtn}
-          onClick={() => router.back()}
-          aria-label="닫기"
-        >
-          <X size={20} strokeWidth={2} aria-hidden="true" />
-        </button>
-        <h1 className={styles.title}>기록 추가</h1>
-        <div className={styles.headerRight} aria-hidden="true" />
-      </header>
-
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        {/* ── 반려동물 선택 ── */}
-        {pets.length > 1 && (
-          <section className={styles.section}>
-            <h2 className={styles.sectionLabel}>반려동물</h2>
-            <div className={styles.petButtons} role="group" aria-label="반려동물 선택">
-              {pets.map((pet) => (
-                <button
-                  key={pet.id}
-                  type="button"
-                  className={`${styles.petBtn} ${petId === pet.id ? styles.petBtnActive : ''}`}
-                  onClick={() => setPetId(pet.id)}
-                  aria-pressed={petId === pet.id}
-                >
-                  <PawPrint
-                    size={14}
-                    strokeWidth={1.75}
-                    className={styles.petBtnIcon}
-                    aria-hidden="true"
-                  />
-                  {pet.name}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── 기록 유형 ── */}
+    <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      {/* ── 스크롤 영역 ── */}
+      <div className={styles.formContent}>
+        {/* 기록 유형 */}
         <section className={styles.section}>
           <h2 className={styles.sectionLabel}>기록 유형</h2>
           <div className={styles.typeGrid} role="group" aria-label="기록 유형 선택">
@@ -148,19 +97,14 @@ function NewRecordContent() {
                 onClick={() => setRecordType(t.type)}
                 aria-pressed={recordType === t.type}
               >
-                <t.Icon
-                  size={22}
-                  strokeWidth={1.5}
-                  className={styles.typeBtnIcon}
-                  aria-hidden="true"
-                />
+                <t.Icon size={22} strokeWidth={1.5} aria-hidden="true" />
                 {t.label}
               </button>
             ))}
           </div>
         </section>
 
-        {/* ── 날짜 ── */}
+        {/* 날짜 */}
         <section className={styles.section}>
           <h2 className={styles.sectionLabel}>날짜</h2>
           <input
@@ -173,7 +117,7 @@ function NewRecordContent() {
           />
         </section>
 
-        {/* ── 유형별 입력 ── */}
+        {/* 체중 */}
         {recordType === 'weight' && (
           <section className={styles.section}>
             <h2 className={styles.sectionLabel}>체중</h2>
@@ -195,10 +139,11 @@ function NewRecordContent() {
           </section>
         )}
 
+        {/* 식욕 */}
         {recordType === 'appetite' && (
           <section className={styles.section}>
-            <h2 className={styles.sectionLabel}>식사</h2>
-            <div className={styles.segmented} role="group" aria-label="식사 상태">
+            <h2 className={styles.sectionLabel}>식욕</h2>
+            <div className={styles.segmented} role="group" aria-label="식욕 상태">
               {APPETITE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -215,6 +160,7 @@ function NewRecordContent() {
           </section>
         )}
 
+        {/* 산책 */}
         {recordType === 'activity' && (
           <section className={styles.section}>
             <h2 className={styles.sectionLabel}>산책</h2>
@@ -250,6 +196,7 @@ function NewRecordContent() {
           </section>
         )}
 
+        {/* 메모 */}
         {recordType === 'mood' && (
           <section className={styles.section}>
             <h2 className={styles.sectionLabel}>메모</h2>
@@ -267,6 +214,7 @@ function NewRecordContent() {
           </section>
         )}
 
+        {/* 추가 메모 (선택) */}
         {recordType !== 'mood' && (
           <section className={styles.section}>
             <h2 className={styles.sectionLabel}>
@@ -283,34 +231,37 @@ function NewRecordContent() {
             />
           </section>
         )}
+      </div>
 
-        {error && (
-          <p className={styles.errorMsg} role="alert">
-            {error}
-          </p>
+      {/* ── 푸터 (sticky) ── */}
+      <div className={styles.sheetFooter}>
+        {error && !success && (
+          <div className={styles.errorBanner} role="alert">
+            저장에 실패했어요. 다시 시도해주세요.
+          </div>
         )}
 
-        <div className={styles.footer}>
-          <button
-            type="submit"
-            className={styles.submitBtn}
-            disabled={!isValid() || submitting}
-            aria-disabled={!isValid() || submitting}
-          >
-            {submitting ? '저장 중...' : '저장하기'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-export default function NewRecordPage() {
-  return (
-    <main className={styles.main} aria-label="기록 추가">
-      <Suspense fallback={<div className={styles.suspenseFallback} aria-label="로딩 중" />}>
-        <NewRecordContent />
-      </Suspense>
-    </main>
+        <button
+          type="submit"
+          className={`${styles.saveBtn} ${success ? styles.saveBtnSuccess : ''}`}
+          disabled={isSaveBtnDisabled}
+          aria-disabled={isSaveBtnDisabled}
+        >
+          {success ? (
+            <>
+              <Check size={18} strokeWidth={2.5} aria-hidden="true" />
+              기록했어요!
+            </>
+          ) : submitting ? (
+            <>
+              <Loader2 size={18} strokeWidth={2} className={styles.spinner} aria-hidden="true" />
+              저장 중...
+            </>
+          ) : (
+            '저장하기'
+          )}
+        </button>
+      </div>
+    </form>
   );
 }

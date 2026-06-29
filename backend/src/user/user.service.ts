@@ -38,4 +38,23 @@ export class UserService {
   async updateProfile(id: string, name: string): Promise<PrismaUser> {
     return this.prisma.user.update({ where: { id }, data: { name } });
   }
+
+  async getRecordDates(userId: string, limit: number): Promise<string[]> {
+    const pets = await this.prisma.pet.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    if (pets.length === 0) return [];
+
+    const petIds = pets.map((p) => p.id);
+
+    const records = await this.prisma.healthRecord.findMany({
+      where: { petId: { in: petIds } },
+      select: { recordedAt: true },
+      orderBy: { recordedAt: 'desc' },
+      take: limit,
+    });
+
+    return records.map((r) => r.recordedAt.toISOString());
+  }
 }

@@ -14,4 +14,5 @@ export type UpcomingSchedule = UpcomingScheduleBase & {
 export type HomeData = {
   pets: Pet[];
   upcomingSchedules: UpcomingSchedule[];
+  streak: number;
 };
