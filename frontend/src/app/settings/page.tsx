@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useApolloClient } from '@apollo/client/react';
 import { PawPrint, Check, Bell, Pill, KeyRound, LogOut, ChevronRight } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
+import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
+import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import styles from './page.module.css';
 
 const THEMES = [
@@ -13,9 +17,14 @@ const THEMES = [
 
 export default function SettingsPage() {
   const router = useRouter();
+  const client = useApolloClient();
   const { theme, setTheme } = useTheme();
+  const { name, email, loading } = useCurrentUser();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  function handleLogout() {
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    await client.clearStore();
     router.push('/login');
   }
 
@@ -33,10 +42,17 @@ export default function SettingsPage() {
               <PawPrint size={24} strokeWidth={1.5} />
             </div>
             <div className={styles.profileInfo}>
-              <p className={styles.profileName}>보호자</p>
-              <p className={styles.profileEmail}>djwotmd@gmail.com</p>
+              <p className={styles.profileName}>
+                {loading ? '불러오는 중...' : (name ?? '보호자')}
+              </p>
+              <p className={styles.profileEmail}>{loading ? '' : email}</p>
             </div>
-            <button className={styles.editBtn} aria-label="프로필 편집">
+            <button
+              className={styles.editBtn}
+              aria-label="프로필 편집"
+              onClick={() => setIsEditOpen(true)}
+              disabled={loading}
+            >
               편집
             </button>
           </div>
@@ -119,6 +135,12 @@ export default function SettingsPage() {
       </div>
 
       <BottomNav />
+
+      <EditProfileModal
+        isOpen={isEditOpen}
+        currentName={name}
+        onClose={() => setIsEditOpen(false)}
+      />
     </main>
   );
 }
