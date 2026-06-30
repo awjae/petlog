@@ -100,6 +100,11 @@ enum Gender {
   unknown
 }
 
+type GenerateReportResult {
+  reportId: ID!
+  status: ReportStatus!
+}
+
 type HealthRecord {
   createdAt: DateTime!
   id: ID!
@@ -165,6 +170,7 @@ type Mutation {
   deleteMedication(id: ID!): Boolean!
   deletePet(id: ID!): Boolean!
   deleteVaccination(id: ID!): Boolean!
+  generateReport(petId: ID!, type: ReportType!): GenerateReportResult!
   updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
@@ -191,6 +197,11 @@ type Pet {
   weight: Float
 }
 
+type ProcessingReportInfo {
+  id: ID!
+  status: ReportStatus!
+}
+
 type Query {
   activeMedications(petId: ID!): [Medication!]!
   appointments(petId: ID!): [Appointment!]!
@@ -200,6 +211,10 @@ type Query {
   medications(petId: ID!): [Medication!]!
   pet(id: ID!): Pet!
   pets: [Pet!]!
+  report(id: ID!): Report
+  reportPollStatus(id: ID!): ReportPollResult!
+  reportStatus(petId: ID!): ReportStatusResult!
+  reports(petId: ID!): [Report!]!
   upcomingAppointments: [Appointment!]!
   upcomingVaccinations: [Vaccination!]!
   vaccinations(petId: ID!): [Vaccination!]!
@@ -208,6 +223,53 @@ type Query {
 type RecentWeight {
   recordedAt: DateTime!
   value: Float!
+}
+
+type Report {
+  concerns: [String!]!
+  createdAt: DateTime!
+  generatedBy: ReportGeneratedBy
+  highlights: [String!]!
+  id: ID!
+  overview: String
+  periodEnd: DateTime!
+  periodStart: DateTime!
+  petId: ID!
+  recommendations: [String!]!
+  status: ReportStatus!
+  type: ReportType!
+}
+
+enum ReportGeneratedBy {
+  ai
+  mock
+}
+
+type ReportPollResult {
+  failedReason: String
+  id: ID!
+  status: ReportStatus!
+}
+
+enum ReportStatus {
+  completed
+  failed
+  pending
+  processing
+}
+
+type ReportStatusResult {
+  canGenerateThisMonth: Boolean!
+  hasEnoughRecords: Boolean!
+  nextAvailableAt: DateTime
+  processingReport: ProcessingReportInfo
+  recordCount: Int!
+  recordDays: Int!
+}
+
+enum ReportType {
+  monthly
+  weekly
 }
 
 enum ScheduleType {

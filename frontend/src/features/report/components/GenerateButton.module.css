@@ -1,0 +1,53 @@
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-full);
+  font: var(--font-title-m);
+  font-weight: 700;
+  border: none;
+  transition:
+    opacity 120ms,
+    background 120ms;
+}
+
+.btnActive {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+.btnActive:active {
+  opacity: 0.88;
+}
+
+.btnDisabled {
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  font-size: 14px;
+}
+
+.btnLoading {
+  background: color-mix(in srgb, var(--color-primary) 70%, transparent);
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}

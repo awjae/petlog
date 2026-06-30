@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Camera, Dog, Cat, type LucideIcon } from 'lucide-react';
 import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
+import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import styles from './page.module.css';
 
 type Species = 'dog' | 'cat';
@@ -123,7 +124,10 @@ export default function NewPetPage() {
                 key={opt.value}
                 type="button"
                 className={`${styles.speciesBtn} ${species === opt.value ? styles.speciesBtnActive : ''}`}
-                onClick={() => setSpecies(opt.value)}
+                onClick={() => {
+                  setSpecies(opt.value);
+                  setBreed('');
+                }}
                 aria-pressed={species === opt.value}
               >
                 <opt.Icon
@@ -143,15 +147,20 @@ export default function NewPetPage() {
           <label className={styles.label} htmlFor="pet-breed">
             품종 <span className={styles.optional}>(선택)</span>
           </label>
-          <input
+          <select
             id="pet-breed"
-            type="text"
-            className={styles.input}
+            className={styles.select}
             value={breed}
             onChange={(e) => setBreed(e.target.value)}
-            placeholder={species === 'dog' ? '예) 말티즈, 포메라니안' : '예) 코리안 숏헤어'}
-            maxLength={30}
-          />
+          >
+            <option value="">선택 안 함</option>
+            {BREEDS_BY_SPECIES[species].map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+          <p className={styles.breedHint}>{BREED_SELECT_HINT}</p>
         </div>
 
         {/* ── 생년월일 ── */}

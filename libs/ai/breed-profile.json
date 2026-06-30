@@ -1,0 +1,4403 @@
+{
+  "dog": {
+    "말티즈": {
+      "size": "소형",
+      "weight_range_kg": [
+        3.0,
+        4.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "앉았다 일어설 때 힘들어함",
+            "한쪽 다리를 들고 걷기",
+            "계단 오르기 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "기관허탈",
+          "risk_level": "high",
+          "watch_for": [
+            "거위 울음 같은 기침",
+            "운동 후 호흡 곤란",
+            "흥분 시 기침 악화",
+            "청색증"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부",
+            "침 과다 분비"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "백내장",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈이 뿌옇게 변함",
+            "어두운 곳에서 불안해함",
+            "물건에 자주 부딪힘"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "간 문맥 단락",
+          "risk_level": "medium",
+          "watch_for": [
+            "식후 무기력",
+            "성장 부진",
+            "반복적인 구토",
+            "발작"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "포메라니안": {
+      "size": "소형",
+      "weight_range_kg": [
+        1.8,
+        3.5
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "탈모증(BSD)",
+          "risk_level": "high",
+          "watch_for": [
+            "몸통 털 대칭 탈모",
+            "피부 색소 침착",
+            "털 재생 불량"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "기관허탈",
+          "risk_level": "high",
+          "watch_for": [
+            "거위 울음 같은 기침",
+            "운동 후 호흡 곤란",
+            "흥분 시 기침 악화"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기",
+            "계단 오르기 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "동맥관 개존증(PDA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "운동 불내성",
+            "기침",
+            "호흡 곤란",
+            "성장 부진"
+          ],
+          "age_onset_months": 3
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "치와와": {
+      "size": "소형",
+      "weight_range_kg": [
+        1.5,
+        3.0
+      ],
+      "life_expectancy_years": [
+        14,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "저혈당",
+          "risk_level": "high",
+          "watch_for": [
+            "갑작스런 떨림",
+            "무기력",
+            "비틀거림",
+            "경련",
+            "의식 혼미"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "수두증",
+          "risk_level": "high",
+          "watch_for": [
+            "돔 형태의 두개골",
+            "발작",
+            "시각 이상",
+            "행동 변화"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "기관허탈",
+          "risk_level": "medium",
+          "watch_for": [
+            "거위 울음 같은 기침",
+            "흥분 시 호흡 곤란"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "승모판 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "기침",
+            "운동 불내성",
+            "호흡 곤란",
+            "복부 팽만"
+          ],
+          "age_onset_months": 72
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "요크셔테리어": {
+      "size": "소형",
+      "weight_range_kg": [
+        2.0,
+        3.5
+      ],
+      "life_expectancy_years": [
+        13,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기",
+            "계단 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "간 문맥 단락",
+          "risk_level": "high",
+          "watch_for": [
+            "식후 무기력",
+            "성장 부진",
+            "반복적인 구토",
+            "발작"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "레그-칼베-페르테스병",
+          "risk_level": "medium",
+          "watch_for": [
+            "한쪽 뒷다리 통증",
+            "근육 위축",
+            "절뚝거림"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "기관허탈",
+          "risk_level": "medium",
+          "watch_for": [
+            "거위 울음 같은 기침",
+            "흥분 시 호흡 곤란"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "시츄": {
+      "size": "소형",
+      "weight_range_kg": [
+        4.0,
+        7.5
+      ],
+      "life_expectancy_years": [
+        10,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "각막 궤양",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 충혈",
+            "눈물 과다",
+            "눈 비비기",
+            "눈 감음"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "건성각결막염(KCS)",
+          "risk_level": "high",
+          "watch_for": [
+            "눈곱 과다",
+            "눈 뿌옇게 됨",
+            "눈 비비기"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "단두종 폐색성 기도 증후군",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 시 호흡 곤란",
+            "입으로 숨쉬기",
+            "청색증"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "비숑프리제": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        10.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "방광 결석",
+          "risk_level": "high",
+          "watch_for": [
+            "배뇨 시 통증",
+            "혈뇨",
+            "잦은 배뇨 시도",
+            "배뇨 자세 오래 유지"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "high",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "털 빠짐",
+            "귀 냄새"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "백내장",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈이 뿌옇게 변함",
+            "어두운 곳 불안",
+            "물건에 자주 부딪힘"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "간질",
+          "risk_level": "medium",
+          "watch_for": [
+            "발작",
+            "일시적 의식 혼미",
+            "발작 후 무기력"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "닥스훈트": {
+      "size": "소형",
+      "weight_range_kg": [
+        3.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "추간판 탈출증(IVDD)",
+          "risk_level": "high",
+          "watch_for": [
+            "등 통증",
+            "뒷다리 마비 또는 약화",
+            "소변 실금",
+            "걷기 거부",
+            "안아 올릴 때 비명"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "운동 기피",
+            "허리 부담 자세"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "쿠싱 증후군",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "복부 팽만",
+            "털 빠짐"
+          ],
+          "age_onset_months": 60
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "미니어처슈나우저": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "방광 결석",
+          "risk_level": "high",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 통증",
+            "잦은 배뇨 시도"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "고지혈증",
+          "risk_level": "high",
+          "watch_for": [
+            "복부 통증",
+            "구토",
+            "무기력",
+            "식욕 저하"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "당뇨병",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "식욕 증가"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "췌장염",
+          "risk_level": "high",
+          "watch_for": [
+            "복통",
+            "구토",
+            "식욕 저하",
+            "구부린 자세"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "백내장",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 뿌옇게 변함",
+            "물건에 자주 부딪힘"
+          ],
+          "age_onset_months": 60
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "푸들": {
+      "size": "소형~중형",
+      "weight_range_kg": [
+        2.0,
+        7.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘",
+            "어두운 곳 불안"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "발 핥기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "프렌치불독": {
+      "size": "소형~중형",
+      "weight_range_kg": [
+        8.0,
+        14.0
+      ],
+      "life_expectancy_years": [
+        10,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "단두종 폐색성 기도 증후군(BOAS)",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 시 호흡 곤란",
+            "입으로 숨쉬기",
+            "더위에 취약",
+            "청색증"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "추간판 탈출증(IVDD)",
+          "risk_level": "high",
+          "watch_for": [
+            "등 통증",
+            "뒷다리 약화",
+            "소변 실금",
+            "걷기 거부"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "high",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "얼굴 주름 부위 냄새"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "안구 돌출",
+          "risk_level": "high",
+          "watch_for": [
+            "눈이 돌출되어 보임",
+            "눈 충혈",
+            "눈물 과다"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "귀 감염(외이염)",
+          "risk_level": "medium",
+          "watch_for": [
+            "귀 냄새",
+            "귀 긁기",
+            "머리 흔들기",
+            "귀 분비물"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "퍼그": {
+      "size": "소형",
+      "weight_range_kg": [
+        6.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "단두종 폐색성 기도 증후군(BOAS)",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 시 호흡 곤란",
+            "입으로 숨쉬기",
+            "더위에 취약"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "각막 궤양",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 충혈",
+            "눈물 과다",
+            "눈 비비기",
+            "눈 감음"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "퍼그 뇌염(PDE)",
+          "risk_level": "high",
+          "watch_for": [
+            "발작",
+            "행동 변화",
+            "시각 이상",
+            "머리 기울임"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "피부 주름 감염",
+          "risk_level": "high",
+          "watch_for": [
+            "주름 부위 냄새",
+            "피부 붉어짐",
+            "분비물"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "운동 기피",
+            "호흡 곤란 악화"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "스피츠": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        10.0
+      ],
+      "life_expectancy_years": [
+        13,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "기관허탈",
+          "risk_level": "medium",
+          "watch_for": [
+            "거위 울음 같은 기침",
+            "운동 후 호흡 곤란"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "파피용": {
+      "size": "소형",
+      "weight_range_kg": [
+        3.0,
+        5.0
+      ],
+      "life_expectancy_years": [
+        13,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "간질",
+          "risk_level": "medium",
+          "watch_for": [
+            "발작",
+            "일시적 의식 혼미",
+            "발작 후 무기력"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "비글": {
+      "size": "중형",
+      "weight_range_kg": [
+        9.0,
+        11.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "귀 감염(외이염)",
+          "risk_level": "high",
+          "watch_for": [
+            "귀 냄새",
+            "귀 긁기",
+            "머리 흔들기",
+            "귀 분비물"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "운동 기피",
+            "허리 윤곽 불분명"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "간질",
+          "risk_level": "medium",
+          "watch_for": [
+            "발작",
+            "일시적 의식 혼미",
+            "발작 후 무기력"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "체리아이(제3안검 탈출)",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 안쪽 붉은 덩어리",
+            "눈 충혈",
+            "눈물 과다"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "웰시코기": {
+      "size": "중형",
+      "weight_range_kg": [
+        10.0,
+        14.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "추간판 탈출증(IVDD)",
+          "risk_level": "high",
+          "watch_for": [
+            "등 통증",
+            "뒷다리 약화",
+            "소변 실금",
+            "걷기 거부"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "허리 부담 자세"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "승모판 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "기침",
+            "운동 불내성",
+            "호흡 곤란"
+          ],
+          "age_onset_months": 72
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "코커스파니엘": {
+      "size": "중형",
+      "weight_range_kg": [
+        7.0,
+        14.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "귀 감염(외이염)",
+          "risk_level": "high",
+          "watch_for": [
+            "귀 냄새",
+            "귀 긁기",
+            "머리 흔들기",
+            "귀 분비물"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "녹내장",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 충혈",
+            "동공 확대",
+            "눈 불편해함",
+            "시력 저하"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "보더콜리": {
+      "size": "중형",
+      "weight_range_kg": [
+        14.0,
+        20.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "콜리 안구 이상(CEA)",
+          "risk_level": "high",
+          "watch_for": [
+            "시력 저하",
+            "물건에 부딪힘",
+            "어두운 곳 불안"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "간질",
+          "risk_level": "high",
+          "watch_for": [
+            "발작",
+            "일시적 의식 혼미",
+            "발작 후 무기력"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "시바견": {
+      "size": "중형",
+      "weight_range_kg": [
+        7.0,
+        11.0
+      ],
+      "life_expectancy_years": [
+        13,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "알레르기성 피부염",
+          "risk_level": "high",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "털 빠짐",
+            "발 핥기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "녹내장",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 충혈",
+            "동공 확대",
+            "눈 통증"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "진돗개": {
+      "size": "중형",
+      "weight_range_kg": [
+        15.0,
+        23.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "피부 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "털 빠짐"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "골든리트리버": {
+      "size": "대형",
+      "weight_range_kg": [
+        25.0,
+        34.0
+      ],
+      "life_expectancy_years": [
+        10,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함",
+            "뒤뚱거리는 걸음"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "종양(암)",
+          "risk_level": "high",
+          "watch_for": [
+            "체표 혹",
+            "급격한 체중 감소",
+            "식욕 저하",
+            "무기력",
+            "복부 팽만"
+          ],
+          "age_onset_months": 84
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "high",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "발 핥기",
+            "귀 냄새"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "대동맥판막하협착증(SAS)",
+          "risk_level": "medium",
+          "watch_for": [
+            "운동 불내성",
+            "실신",
+            "호흡 곤란"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "라브라도리트리버": {
+      "size": "대형",
+      "weight_range_kg": [
+        25.0,
+        36.0
+      ],
+      "life_expectancy_years": [
+        10,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "운동 기피",
+            "허리 윤곽 불분명"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "운동 유발성 허탈(EIC)",
+          "risk_level": "high",
+          "watch_for": [
+            "격렬한 운동 후 뒷다리 허탈",
+            "비틀거림",
+            "체온 상승"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "저먼셰퍼드": {
+      "size": "대형",
+      "weight_range_kg": [
+        22.0,
+        40.0
+      ],
+      "life_expectancy_years": [
+        9,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "위 확장 염전(GDV)",
+          "risk_level": "high",
+          "watch_for": [
+            "식후 복부 팽만",
+            "구토 시도 실패",
+            "침 과다",
+            "안절부절"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "퇴행성 척수증(DM)",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 약화 및 마비",
+            "발 끌기",
+            "균형 감각 저하"
+          ],
+          "age_onset_months": 84
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐",
+            "발 핥기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "팔꿈치 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "앞다리 파행",
+            "앞다리 뻣뻣함",
+            "운동 후 다리 들기"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "도베르만": {
+      "size": "대형",
+      "weight_range_kg": [
+        27.0,
+        45.0
+      ],
+      "life_expectancy_years": [
+        10,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "확장성 심근증(DCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "운동 불내성",
+            "기침",
+            "복부 팽만",
+            "실신",
+            "호흡 곤란"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "경추 척추증(Wobbler Syndrome)",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 비틀거림",
+            "목 통증",
+            "걸음 불안정"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "본빌레브란트병",
+          "risk_level": "high",
+          "watch_for": [
+            "상처 지혈 지연",
+            "코피",
+            "잇몸 출혈",
+            "혈뇨"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "허스키": {
+      "size": "대형",
+      "weight_range_kg": [
+        16.0,
+        27.0
+      ],
+      "life_expectancy_years": [
+        12,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "백내장",
+          "risk_level": "high",
+          "watch_for": [
+            "눈이 뿌옇게 변함",
+            "물건에 자주 부딪힘",
+            "어두운 곳 불안"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "아연 반응성 피부증",
+          "risk_level": "medium",
+          "watch_for": [
+            "코·발·눈 주변 딱지",
+            "탈모",
+            "피부 두꺼워짐"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "사모예드": {
+      "size": "대형",
+      "weight_range_kg": [
+        16.0,
+        30.0
+      ],
+      "life_expectancy_years": [
+        12,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "유전성 신장병",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "당뇨병",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "식욕 증가"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "털 빠짐"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "복서": {
+      "size": "대형",
+      "weight_range_kg": [
+        22.0,
+        32.0
+      ],
+      "life_expectancy_years": [
+        9,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "부정맥(Boxer Cardiomyopathy)",
+          "risk_level": "high",
+          "watch_for": [
+            "실신",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "종양(비만세포종)",
+          "risk_level": "high",
+          "watch_for": [
+            "피부 혹",
+            "혹의 크기 변화",
+            "주변 피부 붉어짐"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "단두종 폐색성 기도 증후군",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 시 호흡 곤란",
+            "더위에 취약"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "로트와일러": {
+      "size": "대형",
+      "weight_range_kg": [
+        35.0,
+        60.0
+      ],
+      "life_expectancy_years": [
+        8,
+        11
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "골육종",
+          "risk_level": "high",
+          "watch_for": [
+            "다리 부종",
+            "다리 통증",
+            "절뚝거림"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "심장 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "운동 불내성",
+            "기침",
+            "호흡 곤란"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "비만",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 과다 증가",
+            "운동 기피"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 60,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "달마시안": {
+      "size": "대형",
+      "weight_range_kg": [
+        20.0,
+        32.0
+      ],
+      "life_expectancy_years": [
+        11,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "요산 결석",
+          "risk_level": "high",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 통증",
+            "잦은 배뇨 시도"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "선천성 청각 장애",
+          "risk_level": "high",
+          "watch_for": [
+            "이름 불러도 반응 없음",
+            "소리 자극 무반응"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "피부 알레르기",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 긁기",
+            "피부 붉어짐"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "그레이트데인": {
+      "size": "초대형",
+      "weight_range_kg": [
+        50.0,
+        90.0
+      ],
+      "life_expectancy_years": [
+        7,
+        10
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "위 확장 염전(GDV)",
+          "risk_level": "high",
+          "watch_for": [
+            "식후 복부 팽만",
+            "구토 시도 실패",
+            "침 과다",
+            "안절부절"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "확장성 심근증",
+          "risk_level": "high",
+          "watch_for": [
+            "운동 불내성",
+            "기침",
+            "복부 팽만",
+            "실신"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "골육종",
+          "risk_level": "high",
+          "watch_for": [
+            "다리 부종",
+            "다리 통증",
+            "절뚝거림"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "경추 척추증(Wobbler Syndrome)",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 비틀거림",
+            "목 통증",
+            "걸음 불안정"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 60,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "골든두들": {
+      "size": "중형",
+      "weight_range_kg": [
+        14.0,
+        30.0
+      ],
+      "life_expectancy_years": [
+        10,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "어두운 곳에서 방향 감각 상실",
+            "야맹증",
+            "동공 확대"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "귀 감염",
+          "risk_level": "high",
+          "watch_for": [
+            "귀 긁기",
+            "냄새 나는 귀 분비물",
+            "머리 흔들기",
+            "귀 빨개짐"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "알레르기 피부염",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부 가려움",
+            "발 핥기 반복",
+            "피부 붉어짐",
+            "탈모"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "오스트레일리안셰퍼드": {
+      "size": "중형",
+      "weight_range_kg": [
+        16.0,
+        32.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "약물 민감성(MDR1/ABCB1 돌연변이)",
+          "risk_level": "high",
+          "watch_for": [
+            "구충제·진통제 투여 후 신경 증상",
+            "구토",
+            "무기력",
+            "경련"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 파행",
+            "앉기 거부",
+            "활동량 감소"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "콜리 눈 기형(CEA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "시력 저하",
+            "동공 이상",
+            "사시"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "간질",
+          "risk_level": "medium",
+          "watch_for": [
+            "반복적인 발작",
+            "의식 상실",
+            "발작 후 멍한 상태"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "셔틀랜드쉽독": {
+      "size": "소형",
+      "weight_range_kg": [
+        6.0,
+        12.0
+      ],
+      "life_expectancy_years": [
+        12,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "콜리 눈 기형(CEA)",
+          "risk_level": "high",
+          "watch_for": [
+            "시력 저하",
+            "사시",
+            "야간 시력 저하",
+            "안구 함몰"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "약물 민감성(MDR1)",
+          "risk_level": "high",
+          "watch_for": [
+            "이버멕틴 계열 약물 투여 후 경련",
+            "무기력",
+            "구토"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "탈모",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "폰 빌레브란트병",
+          "risk_level": "medium",
+          "watch_for": [
+            "상처 후 과다 출혈",
+            "코피",
+            "잇몸 출혈"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "잭러셀테리어": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        8.0
+      ],
+      "life_expectancy_years": [
+        13,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "수정체 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "눈의 흐림",
+            "눈 충혈",
+            "눈 통증",
+            "시력 갑자기 저하"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기",
+            "점프 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "레그-칼베-페르테스병",
+          "risk_level": "medium",
+          "watch_for": [
+            "다리 파행",
+            "근육 위축",
+            "통증 반응"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "선천성 청각 장애",
+          "risk_level": "medium",
+          "watch_for": [
+            "이름 불러도 반응 없음",
+            "소리에 무반응"
+          ],
+          "age_onset_months": 3
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 108,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "아키다": {
+      "size": "대형",
+      "weight_range_kg": [
+        32.0,
+        59.0
+      ],
+      "life_expectancy_years": [
+        10,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "어두운 곳 이동 어려움"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "활동량 감소"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "피부 두꺼워짐",
+            "탈모"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "자가면역 피부 질환(Vogt-Koyanagi-Harada)",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부·코·발바닥 색소 소실",
+            "눈 충혈",
+            "시력 저하"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "차우차우": {
+      "size": "대형",
+      "weight_range_kg": [
+        20.0,
+        32.0
+      ],
+      "life_expectancy_years": [
+        9,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "움직이기 싫어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "피부 두꺼워짐",
+            "탈모"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "안검 내반증",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 충혈",
+            "눈물 과다",
+            "눈 비비기",
+            "각막 혼탁"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "피부 주름 감염(피부 접힘 피부염)",
+          "risk_level": "medium",
+          "watch_for": [
+            "주름 사이 냄새",
+            "붉어짐",
+            "습진"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "불독": {
+      "size": "중형",
+      "weight_range_kg": [
+        18.0,
+        25.0
+      ],
+      "life_expectancy_years": [
+        8,
+        10
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "단두증후군(BOAS)",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 후 심한 호흡 곤란",
+            "청색증",
+            "운동 불내성"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "계단 오르기 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "피부 주름 감염",
+          "risk_level": "high",
+          "watch_for": [
+            "주름 사이 냄새",
+            "분비물",
+            "붉어짐"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "심장 질환(대동맥 협착)",
+          "risk_level": "medium",
+          "watch_for": [
+            "운동 불내성",
+            "실신",
+            "기침"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "보스턴테리어": {
+      "size": "소형",
+      "weight_range_kg": [
+        4.5,
+        11.0
+      ],
+      "life_expectancy_years": [
+        11,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "단두증후군(BOAS)",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "운동 후 호흡 곤란",
+            "입으로 숨쉬기"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "백내장",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 뿌옇게 변함",
+            "시력 저하",
+            "어두운 곳 방향 감각 상실"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "뇌종양(신경교종)",
+          "risk_level": "medium",
+          "watch_for": [
+            "발작",
+            "행동 변화",
+            "안구 운동 이상",
+            "균형 상실"
+          ],
+          "age_onset_months": 84
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "미니어처핀셔": {
+      "size": "소형",
+      "weight_range_kg": [
+        3.6,
+        4.5
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "갑작스러운 다리 들기",
+            "점프 거부"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "레그-칼베-페르테스병",
+          "risk_level": "high",
+          "watch_for": [
+            "앞다리 파행",
+            "근육 위축",
+            "통증 반응"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "탈모"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "샤페이": {
+      "size": "중형",
+      "weight_range_kg": [
+        18.0,
+        25.0
+      ],
+      "life_expectancy_years": [
+        8,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "샤페이 발열 증후군(FSF)",
+          "risk_level": "high",
+          "watch_for": [
+            "반복적인 원인 불명 발열",
+            "발목 부종",
+            "무기력"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "피부 주름 감염",
+          "risk_level": "high",
+          "watch_for": [
+            "주름 사이 냄새",
+            "습진",
+            "붉어짐",
+            "분비물"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "안검 내반증",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 충혈",
+            "눈물 과다",
+            "눈 비비기"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "신장 아밀로이드증",
+          "risk_level": "medium",
+          "watch_for": [
+            "다음다뇨",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "버니즈마운틴독": {
+      "size": "대형",
+      "weight_range_kg": [
+        32.0,
+        52.0
+      ],
+      "life_expectancy_years": [
+        7,
+        10
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "활동 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "진행성 다발신경병증",
+          "risk_level": "high",
+          "watch_for": [
+            "후지 허약",
+            "운동 실조",
+            "근육 위축"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만세포종",
+          "risk_level": "high",
+          "watch_for": [
+            "피부 혹",
+            "혹 크기 변화",
+            "소화기 증상"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "팽창·위염전(GDV)",
+          "risk_level": "medium",
+          "watch_for": [
+            "복부 팽만",
+            "구토 시도",
+            "침 과다",
+            "안절부절"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "라사압소": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        8.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "신장 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "다음다뇨",
+            "식욕 감소",
+            "구토",
+            "체중 감소"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "각막 궤양",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 충혈",
+            "눈 긁기",
+            "눈물 과다",
+            "눈 감음"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "알레르기 피부염",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부 가려움",
+            "발 핥기",
+            "피부 붉어짐"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "말라뮤트": {
+      "size": "대형",
+      "weight_range_kg": [
+        34.0,
+        43.0
+      ],
+      "life_expectancy_years": [
+        10,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "운동 불내성"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "다항신경병증",
+          "risk_level": "high",
+          "watch_for": [
+            "후지 허약",
+            "운동 실조",
+            "연하 장애"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "탈모",
+            "추위 민감"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "안구 질환(백내장·녹내장)",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 뿌옇게 변함",
+            "눈 충혈",
+            "시력 저하"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "케인코르소": {
+      "size": "대형",
+      "weight_range_kg": [
+        40.0,
+        50.0
+      ],
+      "life_expectancy_years": [
+        9,
+        12
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움",
+            "앉기 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "팽창·위염전(GDV)",
+          "risk_level": "high",
+          "watch_for": [
+            "복부 팽만",
+            "구토 시도",
+            "침 과다",
+            "안절부절"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "안검 내반증·외반증",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 충혈",
+            "눈물 과다",
+            "눈 긁기"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "심근 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "기침",
+            "운동 불내성",
+            "복수"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "와이마라너": {
+      "size": "대형",
+      "weight_range_kg": [
+        25.0,
+        40.0
+      ],
+      "life_expectancy_years": [
+        11,
+        13
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "기립 어려움"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "팽창·위염전(GDV)",
+          "risk_level": "high",
+          "watch_for": [
+            "복부 팽만",
+            "구토 시도",
+            "침 과다"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "폰 빌레브란트병",
+          "risk_level": "medium",
+          "watch_for": [
+            "상처 후 과다 출혈",
+            "코피",
+            "잇몸 출혈"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "갑상선 기능 저하증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 증가",
+            "무기력",
+            "탈모"
+          ],
+          "age_onset_months": 48
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "허배너스": {
+      "size": "소형",
+      "weight_range_kg": [
+        3.0,
+        6.0
+      ],
+      "life_expectancy_years": [
+        14,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "다리 들고 걷기",
+            "점프 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "백내장",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 뿌옇게 변함",
+            "시력 저하",
+            "어두운 곳 방향 감각 상실"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "선천성 청각 장애",
+          "risk_level": "medium",
+          "watch_for": [
+            "이름 불러도 반응 없음",
+            "소리에 무반응"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "케언테리어": {
+      "size": "소형",
+      "weight_range_kg": [
+        5.0,
+        7.5
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "글로보이드 세포 백질 영양장애(Krabbe병)",
+          "risk_level": "high",
+          "watch_for": [
+            "운동 실조",
+            "사지 허약",
+            "발작",
+            "시력 저하"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "다리 들고 걷기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "알레르기 피부염",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부 가려움",
+            "발 핥기",
+            "피부 붉어짐"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "간 문맥 단락",
+          "risk_level": "medium",
+          "watch_for": [
+            "식후 무기력",
+            "성장 부진",
+            "반복 구토",
+            "발작"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "연 1회"
+      }
+    }
+  },
+  "cat": {
+    "코리안숏헤어": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        5.5
+      ],
+      "life_expectancy_years": [
+        14,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "하부 요로계 질환(FLUTD)",
+          "risk_level": "high",
+          "watch_for": [
+            "배뇨 시 통증",
+            "혈뇨",
+            "잦은 배뇨 시도",
+            "화장실 밖 배뇨"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "활동량 감소",
+            "허리 윤곽 불분명"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부",
+            "침 과다"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "당뇨병",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "식욕 증가"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "갑상선 기능 항진증",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 감소",
+            "식욕 증가",
+            "음수량 증가",
+            "과잉행동"
+          ],
+          "age_onset_months": 96
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "페르시안": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        5.5
+      ],
+      "life_expectancy_years": [
+        12,
+        17
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "다낭성 신장병(PKD)",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토",
+            "무기력"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "단두종 호흡기 문제",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "입으로 숨쉬기",
+            "운동 시 호흡 곤란",
+            "청색증"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "눈물 과다(눈 착색)",
+          "risk_level": "high",
+          "watch_for": [
+            "눈물 자국",
+            "눈 주변 갈색 착색",
+            "눈 분비물"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "피부 지루증",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부 기름기",
+            "비듬",
+            "피부 냄새"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "메인쿤": {
+      "size": "대형",
+      "weight_range_kg": [
+        4.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "고관절 이형성증",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 파행",
+            "점프 거부",
+            "계단 오르기 힘들어함"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "척수 근위축증(SMA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 약화",
+            "비틀거리는 걸음",
+            "점프 능력 감소"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "다낭성 신장병(PKD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "러시안블루": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        6.0
+      ],
+      "life_expectancy_years": [
+        15,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "방광 결석",
+          "risk_level": "medium",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 통증",
+            "잦은 배뇨 시도"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "하부 요로계 질환(FLUTD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "배뇨 시 통증",
+            "혈뇨",
+            "화장실 밖 배뇨"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 과다 증가",
+            "활동량 감소"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "샴": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        5.0
+      ],
+      "life_expectancy_years": [
+        12,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "아밀로이드증",
+          "risk_level": "high",
+          "watch_for": [
+            "구토",
+            "체중 감소",
+            "무기력",
+            "복부 팽만"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "호흡기 감염",
+          "risk_level": "medium",
+          "watch_for": [
+            "재채기",
+            "콧물",
+            "눈물 과다",
+            "식욕 저하"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "medium",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "아비시니안": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        5.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘",
+            "어두운 곳 불안"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "신장 아밀로이드증",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치은염",
+          "risk_level": "high",
+          "watch_for": [
+            "잇몸 붉어짐",
+            "구취",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "스코티시폴드": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        6.0
+      ],
+      "life_expectancy_years": [
+        11,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "골연골 이형성증(OCD)",
+          "risk_level": "high",
+          "watch_for": [
+            "관절 부종",
+            "걸음 이상",
+            "점프 거부",
+            "통증 반응",
+            "앉는 자세 이상"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "관절염",
+          "risk_level": "high",
+          "watch_for": [
+            "관절 부종",
+            "걸음 뻣뻣함",
+            "점프 거부",
+            "무기력"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "다낭성 신장병(PKD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "브리티시숏헤어": {
+      "size": "대형",
+      "weight_range_kg": [
+        4.0,
+        8.0
+      ],
+      "life_expectancy_years": [
+        12,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "다낭성 신장병(PKD)",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비만",
+          "risk_level": "high",
+          "watch_for": [
+            "체중 과다 증가",
+            "활동량 감소",
+            "허리 윤곽 불분명"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "먼치킨": {
+      "size": "소형~중형",
+      "weight_range_kg": [
+        2.5,
+        4.5
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "척추 전만증(Lordosis)",
+          "risk_level": "high",
+          "watch_for": [
+            "등 아치형 자세",
+            "운동 시 호흡 곤란",
+            "뒷다리 약화"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "흉골 기형(오목가슴)",
+          "risk_level": "medium",
+          "watch_for": [
+            "가슴 함몰",
+            "호흡 곤란",
+            "운동 불내성"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "관절 문제",
+          "risk_level": "medium",
+          "watch_for": [
+            "걸음 이상",
+            "점프 거부",
+            "관절 부종"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "벵갈": {
+      "size": "중형",
+      "weight_range_kg": [
+        4.0,
+        7.0
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "동공 확대",
+            "물건에 부딪힘"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "하부 요로계 질환(FLUTD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 통증",
+            "화장실 밖 배뇨"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "노르웨이숲고양이": {
+      "size": "대형",
+      "weight_range_kg": [
+        4.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        14,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "글리코겐 저장 질환(GSD IV)",
+          "risk_level": "high",
+          "watch_for": [
+            "근육 약화",
+            "운동 불내성",
+            "발육 부진",
+            "발작"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "당뇨병",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "신장 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "구토"
+          ],
+          "age_onset_months": 84
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "터키시앙고라": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        5.0
+      ],
+      "life_expectancy_years": [
+        12,
+        18
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "선천성 청각 장애",
+          "risk_level": "high",
+          "watch_for": [
+            "이름 불러도 반응 없음",
+            "소리 자극 무반응"
+          ],
+          "age_onset_months": 0
+        },
+        {
+          "name": "운동 실조증",
+          "risk_level": "medium",
+          "watch_for": [
+            "비틀거리는 걸음",
+            "균형 감각 저하",
+            "머리 흔들기"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "랙돌": {
+      "size": "대형",
+      "weight_range_kg": [
+        4.5,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        17
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "하부 요로계 질환(FLUTD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 통증",
+            "화장실 밖 배뇨"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만",
+          "risk_level": "medium",
+          "watch_for": [
+            "체중 과다 증가",
+            "활동량 감소"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "스핑크스": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        7.0
+      ],
+      "life_expectancy_years": [
+        8,
+        14
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성",
+            "갑작스런 허탈"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "피부 질환",
+          "risk_level": "high",
+          "watch_for": [
+            "피부 기름기",
+            "피부 냄새",
+            "발진",
+            "피부 자극"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "말초 신경병증",
+          "risk_level": "medium",
+          "watch_for": [
+            "근육 약화",
+            "비틀거리는 걸음",
+            "발 들기"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 72,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "봄베이": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        5.5
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "단두종 호흡기 문제",
+          "risk_level": "medium",
+          "watch_for": [
+            "코골이",
+            "운동 시 호흡 곤란",
+            "입으로 숨쉬기"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "버마": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        6.5
+      ],
+      "life_expectancy_years": [
+        16,
+        18
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "입으로 숨쉬기",
+            "운동 불내성"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "당뇨병",
+          "risk_level": "high",
+          "watch_for": [
+            "음수량 증가",
+            "배뇨 증가",
+            "체중 감소",
+            "식욕 증가"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "저칼륨혈증",
+          "risk_level": "medium",
+          "watch_for": [
+            "근육 약화",
+            "고개 숙임",
+            "운동 불내성"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 96,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "오리엔탈": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        5.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "간 아밀로이드증",
+          "risk_level": "high",
+          "watch_for": [
+            "구토",
+            "체중 감소",
+            "무기력",
+            "복부 팽만"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "확장성 심근증",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "복부 팽만"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 84,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "아메리칸쇼트헤어": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        7.0
+      ],
+      "life_expectancy_years": [
+        15,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "실신",
+            "기침"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "다낭성 신장 질환(PKD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "다음다뇨",
+            "구토",
+            "체중 감소"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 체중 증가",
+            "움직이기 싫어함",
+            "그루밍 감소"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 132,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "엑조틱쇼트헤어": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        6.0
+      ],
+      "life_expectancy_years": [
+        12,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "단두증 관련 호흡 장애(BOAS)",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "코막힘",
+            "운동 후 호흡 곤란",
+            "입 벌리고 숨쉬기"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "다낭성 신장 질환(PKD)",
+          "risk_level": "high",
+          "watch_for": [
+            "다음다뇨",
+            "구토",
+            "체중 감소",
+            "무기력"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "눈물 과다 분비·눈물 자국",
+          "risk_level": "medium",
+          "watch_for": [
+            "눈 주변 갈색 착색",
+            "눈곱 과다",
+            "눈 충혈"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "복수"
+          ],
+          "age_onset_months": 36
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "샤트룩스": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        7.5
+      ],
+      "life_expectancy_years": [
+        13,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "high",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들기",
+            "점프 거부"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "무기력"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비뇨기 결석",
+          "risk_level": "medium",
+          "watch_for": [
+            "배뇨 시 울부짖음",
+            "혈뇨",
+            "배뇨 빈도 증가"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 132,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "시베리안": {
+      "size": "중대형",
+      "weight_range_kg": [
+        4.0,
+        9.0
+      ],
+      "life_expectancy_years": [
+        11,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "실신"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비뇨기 결석",
+          "risk_level": "medium",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 힘들어함",
+            "배뇨 빈도 증가"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "털 엉킴·피부 질환",
+          "risk_level": "low",
+          "watch_for": [
+            "털 심하게 엉킴",
+            "피부 붉어짐",
+            "탈모"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "버만": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        6.0
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "복수"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "선천성 신경 장애",
+          "risk_level": "medium",
+          "watch_for": [
+            "보행 이상",
+            "운동 실조",
+            "발달 지연"
+          ],
+          "age_onset_months": 3
+        },
+        {
+          "name": "고양이 전염성 복막염(FIP) 감수성",
+          "risk_level": "medium",
+          "watch_for": [
+            "복부 팽만",
+            "지속적인 발열",
+            "체중 감소"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 132,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "히말라얀": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.0,
+        5.5
+      ],
+      "life_expectancy_years": [
+        9,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "다낭성 신장 질환(PKD)",
+          "risk_level": "high",
+          "watch_for": [
+            "다음다뇨",
+            "구토",
+            "체중 감소",
+            "무기력"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "단두증 관련 호흡 장애",
+          "risk_level": "high",
+          "watch_for": [
+            "코골이",
+            "코막힘",
+            "구강 호흡",
+            "운동 불내성"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "눈물 과다 분비·눈물 자국",
+          "risk_level": "high",
+          "watch_for": [
+            "눈 주변 갈색 착색",
+            "눈곱 과다",
+            "눈 충혈"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "피부 주름 감염",
+          "risk_level": "medium",
+          "watch_for": [
+            "주름 사이 냄새",
+            "분비물",
+            "붉어짐"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "반기 1회"
+      }
+    },
+    "소말리": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        5.5
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "피루빈산 키나제 결핍(PKdef)",
+          "risk_level": "high",
+          "watch_for": [
+            "만성 빈혈",
+            "무기력",
+            "창백한 잇몸",
+            "운동 불내성"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "진행성 망막 위축증(PRA)",
+          "risk_level": "high",
+          "watch_for": [
+            "야맹증",
+            "어두운 곳에서 방향 감각 상실",
+            "동공 확대"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "무기력",
+            "운동 불내성"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 132,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "데본렉스": {
+      "size": "소형",
+      "weight_range_kg": [
+        2.5,
+        4.5
+      ],
+      "life_expectancy_years": [
+        9,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "근육 위약증(Spasticity)",
+          "risk_level": "high",
+          "watch_for": [
+            "머리 흔들기",
+            "삼킴 장애",
+            "근육 경련",
+            "허약"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "실신"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "슬개골 탈구",
+          "risk_level": "medium",
+          "watch_for": [
+            "뒷다리 절뚝거림",
+            "한쪽 다리 들기"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "피부·털 문제",
+          "risk_level": "medium",
+          "watch_for": [
+            "털 빠짐",
+            "피부 유분 과다",
+            "피부 감염"
+          ],
+          "age_onset_months": 6
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "싱가퓨라": {
+      "size": "소형",
+      "weight_range_kg": [
+        2.0,
+        4.0
+      ],
+      "life_expectancy_years": [
+        11,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "무기력"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "자궁 무력증(난산)",
+          "risk_level": "medium",
+          "watch_for": [
+            "출산 시 힘주기 없음",
+            "12시간 이상 지속 진통",
+            "무기력"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "신장 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "다음다뇨",
+            "구토",
+            "체중 감소"
+          ],
+          "age_onset_months": 60
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기",
+            "음식 씹기 거부"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "유러피안쇼트헤어": {
+      "size": "중형",
+      "weight_range_kg": [
+        3.5,
+        6.5
+      ],
+      "life_expectancy_years": [
+        14,
+        20
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "무기력"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "비뇨기 결석(고양이 하부 요로 질환)",
+          "risk_level": "medium",
+          "watch_for": [
+            "혈뇨",
+            "배뇨 시 힘들어함",
+            "배뇨 빈도 증가"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "medium",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "비만",
+          "risk_level": "low",
+          "watch_for": [
+            "과도한 체중 증가",
+            "움직이기 싫어함"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 144,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "코니시렉스": {
+      "size": "소형",
+      "weight_range_kg": [
+        2.5,
+        4.5
+      ],
+      "life_expectancy_years": [
+        11,
+        15
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "medium",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "복수"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "혈액형 부적합(수혈 반응)",
+          "risk_level": "medium",
+          "watch_for": [
+            "수혈 후 발열",
+            "구토",
+            "호흡 곤란"
+          ],
+          "age_onset_months": 6
+        },
+        {
+          "name": "피부 질환(과도한 피지 분비)",
+          "risk_level": "medium",
+          "watch_for": [
+            "피부 기름짐",
+            "냄새",
+            "피부 감염"
+          ],
+          "age_onset_months": 12
+        },
+        {
+          "name": "치주 질환",
+          "risk_level": "low",
+          "watch_for": [
+            "구취",
+            "잇몸 붓기"
+          ],
+          "age_onset_months": 24
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 120,
+        "recommended_checkup": "연 1회"
+      }
+    },
+    "라가머핀": {
+      "size": "대형",
+      "weight_range_kg": [
+        4.5,
+        9.0
+      ],
+      "life_expectancy_years": [
+        12,
+        16
+      ],
+      "predisposed_conditions": [
+        {
+          "name": "비대성 심근병증(HCM)",
+          "risk_level": "high",
+          "watch_for": [
+            "호흡 곤란",
+            "운동 불내성",
+            "복수"
+          ],
+          "age_onset_months": 36
+        },
+        {
+          "name": "다낭성 신장 질환(PKD)",
+          "risk_level": "medium",
+          "watch_for": [
+            "다음다뇨",
+            "구토",
+            "체중 감소"
+          ],
+          "age_onset_months": 48
+        },
+        {
+          "name": "비만 경향",
+          "risk_level": "medium",
+          "watch_for": [
+            "과도한 체중 증가",
+            "움직이기 싫어함",
+            "숨 참기"
+          ],
+          "age_onset_months": 24
+        },
+        {
+          "name": "털 엉킴·피부 자극",
+          "risk_level": "low",
+          "watch_for": [
+            "털 심하게 엉킴",
+            "피부 붉어짐",
+            "그루밍 시 통증 반응"
+          ],
+          "age_onset_months": 12
+        }
+      ],
+      "life_stage_checks": {
+        "senior_age_months": 132,
+        "recommended_checkup": "연 1회"
+      }
+    }
+  }
+}

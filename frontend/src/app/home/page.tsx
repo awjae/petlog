@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
+import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { PetSelector } from '@/features/home/components/PetSelector';
 import { TodayRecordBanner } from '@/features/home/components/TodayRecordBanner';
 import { QuickRecordButtons } from '@/features/home/components/QuickRecordButtons';
@@ -31,6 +32,9 @@ function resolveDataPhase(totalRecords: number): DataPhase {
 export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+
+  const activePetIdForStatus = selectedPetId ?? data?.pets[0]?.id ?? '';
+  const { status: reportStatus } = useReportStatus(activePetIdForStatus);
 
   /* ── 로딩 ── */
   if (loading && !data) {
@@ -88,7 +92,14 @@ export default function HomePage() {
         <HomePhase1Content pet={selectedPet} upcomingSchedules={data.upcomingSchedules} />
       ) : (
         <div className={styles.content}>
-          {phase === 3 && <HomeAIUnlockBanner petName={selectedPet.name} />}
+          {reportStatus?.canGenerateThisMonth && (
+            <HomeAIUnlockBanner
+              petId={activePetId}
+              petName={selectedPet.name}
+              canGenerateThisMonth={reportStatus.canGenerateThisMonth}
+              hasEnoughRecords={reportStatus.hasEnoughRecords}
+            />
+          )}
 
           <TodayRecordBanner
             count={selectedPet.todayRecordCount}

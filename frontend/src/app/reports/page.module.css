@@ -25,74 +25,126 @@
   margin: 0;
 }
 
-/* ===== 잠금 상태 ===== */
+/* ── Pet Tabs ─────────────────────────────────────── */
+
+.petTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 12px 16px 0;
+}
+
+.petTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.petTab {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 4px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font: var(--font-label);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    border-color 120ms,
+    color 120ms,
+    background 120ms;
+  min-width: 44px;
+}
+
+.petTabActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* ── Locked / Can-generate / Processing state ─────── */
+
 .lockedState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 20px;
-  gap: 20px;
-  text-align: center;
+  padding: 48px 24px 0;
 }
 
 .iconWrap {
   position: relative;
-  width: 88px;
-  height: 88px;
+  display: inline-flex;
+  margin-bottom: 20px;
 }
 
 .bigIcon {
-  display: block;
   color: var(--color-primary);
-  opacity: 0.4;
+  opacity: 0.9;
+}
+
+.successIcon {
+  color: var(--color-success);
+  opacity: 1;
 }
 
 .lockBadge {
   position: absolute;
   bottom: -4px;
   right: -4px;
-  width: 32px;
-  height: 32px;
+  background: var(--color-text-secondary);
+  color: #fff;
   border-radius: var(--radius-full);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary);
+}
+
+.sparkBadge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .heading {
   font: var(--font-title-l);
-  font-weight: 800;
+  font-weight: 700;
   color: var(--color-text-primary);
-  margin: 0;
+  margin: 0 0 10px;
+  text-align: center;
 }
 
 .desc {
   font: var(--font-body);
   color: var(--color-text-secondary);
-  margin: 0;
-  max-width: 280px;
-  line-height: 1.65;
+  margin: 0 0 28px;
+  text-align: center;
+  line-height: 1.6;
 }
 
-/* 진행 바 */
+/* ── Progress bars ────────────────────────────────── */
+
 .progressWrap {
   width: 100%;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-sm);
-  text-align: left;
+  margin-bottom: 16px;
 }
 
 .progressHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .progressLabel {
@@ -107,58 +159,76 @@
 }
 
 .progressCount strong {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   font-weight: 700;
 }
 
 .progressBar {
-  height: 10px;
+  width: 100%;
+  height: 8px;
   background: var(--color-border);
   border-radius: var(--radius-full);
   overflow: hidden;
-  margin-bottom: 8px;
 }
 
 .progressFill {
   height: 100%;
   background: var(--color-primary);
   border-radius: var(--radius-full);
-  transition: width 0.6s ease;
-  min-width: 6px;
+  transition: width 0.4s ease;
 }
 
 .progressHint {
   font: var(--font-caption);
   color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.5;
+  text-align: center;
+  margin: 4px 0 24px;
 }
+
+/* ── CTA Button ───────────────────────────────────── */
 
 .ctaButton {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  width: 100%;
   height: 52px;
-  padding: 0 36px;
+  border-radius: var(--radius-full);
   background: var(--color-primary);
   color: #fff;
-  border-radius: var(--radius-full);
   font: var(--font-title-m);
+  font-weight: 700;
   text-decoration: none;
-  box-shadow: var(--shadow-md);
-  width: 100%;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: opacity 120ms;
 }
 
-/* 미리보기 카드 (블러 처리) */
+.ctaButton:active {
+  opacity: 0.85;
+}
+
+.ctaButtonPrimary {
+  background: var(--color-primary);
+}
+
+.ctaButtonLoading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ── Blur preview card ────────────────────────────── */
+
 .previewCard {
+  position: relative;
   width: 100%;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
+  padding: 16px;
   overflow: hidden;
-  text-align: left;
+  border: 1px solid var(--color-border);
 }
 
 .previewLabel {
@@ -172,11 +242,10 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
 .previewBar {
-  height: 12px;
+  height: 10px;
   background: var(--color-border);
   border-radius: var(--radius-full);
 }
@@ -184,33 +253,48 @@
 .previewBlur {
   font: var(--font-caption);
   color: var(--color-text-secondary);
-  margin: 0;
-  position: relative;
-  z-index: 1;
+  text-align: center;
+  margin: 16px 0 0;
 }
 
 .previewOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--color-surface) 0%, transparent) 0%,
-    color-mix(in srgb, var(--color-surface) 90%, transparent) 50%,
-    var(--color-surface) 100%
-  );
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
+  background: linear-gradient(180deg, transparent 0%, var(--color-bg) 80%);
 }
 
-/* ===== 잠금 해제 상태 (placeholder) ===== */
-.unlockedState {
-  flex: 1;
+/* ── Report list ──────────────────────────────────── */
+
+.listSection {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 16px 0;
 }
 
-.comingSoon {
-  font: var(--font-body);
+.listTitle {
+  font: var(--font-label);
+  font-weight: 700;
   color: var(--color-text-secondary);
   margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Spinner ──────────────────────────────────────── */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1.2s linear infinite;
 }

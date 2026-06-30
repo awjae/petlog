@@ -162,24 +162,37 @@ model Appointment {
 }
 
 // ─── Report ───────────────────────────────────────────────────────────────────
+// 비동기 생성 흐름: pending → processing → completed | failed
+//
+// 쿼터 정책: 반려동물 1마리당 월 1회 무료 (monthly 타입 기준)
+//   - pending/processing 상태도 쿼터 소진으로 처리 (failed만 재시도 가능)
+//   - 쿼터 조회: pet_id + type='monthly' + created_at 당월 범위 + status != 'failed'
+//
+// Partial Unique Index 주의:
+//   completed 상태에서만 동일 (petId, type, periodStart, periodEnd) 중복 방지.
+//   @@unique 대신 migration.sql의 "reports_completed_period_unique_idx" 적용.
 
 model Report {
   id              String            @id @default(uuid())
   petId           String            @map("pet_id")
   type            ReportType
-  overview        String
-  highlights      String[]
-  concerns        String[]
-  recommendations String[]
-  generatedBy     ReportGeneratedBy @map("generated_by")
+  status          ReportStatus      @default(pending)
+  overview        String?
+  highlights      String[]          @default([])
+  concerns        String[]          @default([])
+  recommendations String[]          @default([])
+  generatedBy     ReportGeneratedBy? @map("generated_by")
+  failedReason    String?           @map("failed_reason")
   periodStart     DateTime          @map("period_start")
   periodEnd       DateTime          @map("period_end")
   createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
 
   pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
 
-  @@unique([petId, type, periodStart, periodEnd])
+  // @@unique 제거 — Partial Unique Index로 교체 (migration.sql 참조)
   @@index([petId, createdAt(sort: Desc)])
+  @@index([petId, type, createdAt(sort: Desc)])
   @@map("reports")
 }
 
@@ -264,6 +277,13 @@ enum HealthRecordType {
 enum ReportType {
   weekly
   monthly
+}
+
+enum ReportStatus {
+  pending
+  processing
+  completed
+  failed
 }
 
 enum ReportGeneratedBy {

@@ -1,0 +1,125 @@
+.section {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* overview */
+.section_overview {
+  background: var(--color-primary-light);
+}
+
+/* highlights */
+.section_highlights {
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+}
+
+/* concerns — default (has items) */
+.section_concerns {
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+  border: 1.5px solid var(--color-warning);
+}
+
+/* concerns — empty (no issues) */
+.sectionConcernsEmpty {
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+  border: 1.5px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+/* recommendations */
+.section_recommendations {
+  background: var(--color-primary-light);
+}
+
+/* icon wraps */
+.iconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconWrap_overview {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary);
+}
+
+.iconWrap_highlights {
+  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  color: var(--color-success);
+}
+
+.iconWrap_concerns {
+  background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+  color: var(--color-warning);
+}
+
+.iconWrap_recommendations {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.text {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.65;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listItem {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  padding-left: 12px;
+  position: relative;
+  line-height: 1.55;
+}
+
+.listItem::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--color-text-secondary);
+}
+
+.noConcerns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--font-body);
+  color: var(--color-success);
+}
+
+.noConcernsIcon {
+  flex-shrink: 0;
+}

@@ -16,6 +16,7 @@ export function makeClient() {
         Medication: { keyFields: ['id'] },
         Vaccination: { keyFields: ['id'] },
         Appointment: { keyFields: ['id'] },
+        Report: { keyFields: ['id'] },
       },
     }),
     link: from([errorLink, httpLink]),

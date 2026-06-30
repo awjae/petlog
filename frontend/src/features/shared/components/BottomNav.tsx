@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, CalendarDays, BarChart2, Settings, type LucideIcon } from 'lucide-react';
+import { Home, CalendarDays, Settings, type LucideIcon, HeartPulse } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 type NavItem = {
@@ -14,7 +14,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { href: '/home', Icon: Home, label: '홈' },
   { href: '/records', Icon: CalendarDays, label: '기록' },
-  { href: '/reports', Icon: BarChart2, label: '리포트' },
+  { href: '/reports', Icon: HeartPulse, label: '리포트' },
   { href: '/settings', Icon: Settings, label: '설정' },
 ];
 

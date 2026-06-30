@@ -26,7 +26,6 @@
   gap: 12px;
 }
 
-/* 오른쪽 상단 닫기 버튼 */
 .dismissBtn {
   position: absolute;
   top: 10px;
@@ -48,7 +47,6 @@
   background: var(--color-border);
 }
 
-/* 메인 콘텐츠 행 */
 .inner {
   display: flex;
   align-items: flex-start;
@@ -56,7 +54,6 @@
   padding-right: 28px;
 }
 
-/* 스파클 아이콘 */
 .iconWrap {
   width: 48px;
   height: 48px;
@@ -91,7 +88,7 @@
   line-height: 1.5;
 }
 
-/* CTA 버튼 */
+/* variant A — solid CTA */
 .ctaBtn {
   display: inline-flex;
   align-items: center;
@@ -110,4 +107,16 @@
 
 .ctaBtn:active {
   opacity: 0.85;
+}
+
+/* variant B — outline CTA */
+.ctaBtnOutline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  box-shadow: none;
+}
+
+.ctaBtnOutline:active {
+  background: var(--color-primary-light);
 }

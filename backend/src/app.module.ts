@@ -14,6 +14,8 @@ import { VaccinationModule } from './vaccination/vaccination.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { UserModule } from './user/user.module';
 import { UploadModule } from './upload/upload.module';
+import { AiModule } from './ai/ai.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { UploadModule } from './upload/upload.module';
     AppointmentModule,
     UserModule,
     UploadModule,
+    AiModule,
+    ReportModule,
   ],
   providers: [DateTimeScalar],
 })
