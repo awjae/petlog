@@ -149,11 +149,11 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
           </section>
         )}
 
-        {/* 식욕 */}
+        {/* 식사 */}
         {recordType === 'appetite' && (
           <section className={styles.section}>
-            <h2 className={styles.sectionLabel}>식욕</h2>
-            <div className={styles.segmented} role="group" aria-label="식욕 상태">
+            <h2 className={styles.sectionLabel}>식사</h2>
+            <div className={styles.segmented} role="group" aria-label="식사 상태">
               {APPETITE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

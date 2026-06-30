@@ -2,6 +2,37 @@ import { ObjectType, Field, ID, InputType, registerEnumType } from '@nestjs/grap
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { Pet } from '../pet/pet.types';
 
+export enum CalendarEventType {
+  health_record = 'health_record',
+  vaccination = 'vaccination',
+  medication = 'medication',
+  appointment = 'appointment',
+  medical_event = 'medical_event',
+}
+
+registerEnumType(CalendarEventType, { name: 'CalendarEventType' });
+
+@ObjectType()
+export class CalendarEvent {
+  @Field(() => ID)
+  id!: string;
+
+  @Field()
+  date!: string;
+
+  @Field(() => CalendarEventType)
+  type!: CalendarEventType;
+
+  @Field()
+  title!: string;
+
+  @Field({ nullable: true })
+  subtitle?: string;
+
+  @Field(() => ID)
+  petId!: string;
+}
+
 export enum ScheduleType {
   vaccination = 'vaccination',
   medication = 'medication',
@@ -53,6 +84,9 @@ export class User {
 
   @Field(() => [UpcomingSchedule])
   upcomingSchedules!: UpcomingSchedule[];
+
+  @Field(() => [CalendarEvent])
+  calendarEvents!: CalendarEvent[];
 
   @Field(() => Date)
   createdAt!: Date;

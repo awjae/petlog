@@ -9,7 +9,7 @@ export default function LandingPage() {
       </span>
       <h1 className={styles.landingTitle}>반려동물 건강 기록</h1>
       <p className={styles.landingDesc}>
-        체중, 식욕, 활동량을 간편하게 기록하고
+        체중, 식사, 활동량을 간편하게 기록하고
         <br />
         AI 리포트로 건강 변화를 파악해보세요.
       </p>

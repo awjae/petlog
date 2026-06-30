@@ -5,7 +5,7 @@ import { PawPrint, ArrowRight, NotebookPen, BarChart2, Bell } from 'lucide-react
 import styles from './HomeNoPetContent.module.css';
 
 const FEATURE_ITEMS = [
-  { Icon: NotebookPen, text: '체중·식욕·산책 기록 관리' },
+  { Icon: NotebookPen, text: '체중·식사·산책 기록 관리' },
   { Icon: BarChart2, text: 'AI 건강 리포트 분석' },
   { Icon: Bell, text: '접종·투약 일정 알림' },
 ];

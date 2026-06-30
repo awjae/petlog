@@ -20,6 +20,23 @@ enum AppointmentStatus {
   scheduled
 }
 
+type CalendarEvent {
+  date: String!
+  id: ID!
+  petId: ID!
+  subtitle: String
+  title: String!
+  type: CalendarEventType!
+}
+
+enum CalendarEventType {
+  appointment
+  health_record
+  medical_event
+  medication
+  vaccination
+}
+
 input CreateAppointmentInput {
   hospitalName: String!
   memo: String
@@ -268,6 +285,7 @@ input UpdateVaccinationInput {
 }
 
 type User {
+  calendarEvents(endDate: String!, startDate: String!): [CalendarEvent!]!
   createdAt: DateTime!
   email: String!
   id: ID!

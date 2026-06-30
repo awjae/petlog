@@ -91,7 +91,7 @@ export function useCreateHealthRecord() {
   const [error, setError] = useState('');
 
   const [mutate, { loading }] = useMutation(CREATE_HEALTH_RECORD_MUTATION, {
-    refetchQueries: ['HomeQuery', 'HealthRecords'],
+    refetchQueries: ['HomeQuery', 'HealthRecords', 'CalendarQuery'],
     onError: () => setError('저장에 실패했어요. 다시 시도해주세요'),
   });
 

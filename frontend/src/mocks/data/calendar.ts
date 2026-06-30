@@ -28,7 +28,7 @@ export const mockCalendarData: MockCalendarData = {
         id: 'e-2',
         date: daysFromToday(0),
         type: 'health_record',
-        title: '식욕 기록',
+        title: '식사 기록',
         subtitle: '잘 먹음',
         petId: 'pet-1',
       },

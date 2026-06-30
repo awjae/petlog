@@ -15,7 +15,7 @@ type HomePhase1ContentProps = {
 
 const GUIDE_ITEMS = [
   { icon: '⚖️', label: '체중', desc: '몸무게 변화 추적' },
-  { icon: '🍽', label: '식욕', desc: '식사량 기록' },
+  { icon: '🍽', label: '식사', desc: '식사량 기록' },
   { icon: '🦮', label: '산책', desc: '활동량 기록' },
   { icon: '📝', label: '메모', desc: '특이사항 기록' },
 ];
@@ -40,7 +40,7 @@ export function HomePhase1Content({ pet, upcomingSchedules }: HomePhase1ContentP
         <div className={styles.welcomeText}>
           <h2 className={styles.welcomeTitle}>{pet.name}의 기록을 시작해요!</h2>
           <p className={styles.welcomeDesc}>
-            체중, 식욕, 산책 기록 한 번이면 돼요.
+            체중, 식사, 산책 기록 한 번이면 돼요.
             <br />
             꾸준한 기록이 건강한 습관을 만들어요.
           </p>

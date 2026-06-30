@@ -12,7 +12,7 @@ Petlog는 복잡한 도메인 관계를 가진다.
 
 ```
 Pet
-├── HealthRecord (체중, 식욕, 활동량, 증상...)
+├── HealthRecord (체중, 식사, 활동량, 증상...)
 ├── MedicalEvent (병원 방문)
 ├── Medication (투약)
 ├── Vaccination (예방접종)

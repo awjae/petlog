@@ -13,6 +13,8 @@ import {
   getWeekRange,
   isSameDay,
   toDateString,
+  toLocalDayEnd,
+  toLocalDayStart,
   type CalendarEvent,
   type CalendarView,
   type PetColorMap,
@@ -49,7 +51,7 @@ export function useCalendarData() {
       : `${anchorDate.getFullYear()}년 ${anchorDate.getMonth() + 1}월`;
 
   const { data, loading, error, refetch } = useQuery(CALENDAR_QUERY, {
-    variables: { startDate, endDate },
+    variables: { startDate: toLocalDayStart(startDate), endDate: toLocalDayEnd(endDate) },
     fetchPolicy: 'cache-and-network',
     errorPolicy: 'all',
   });

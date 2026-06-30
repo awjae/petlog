@@ -89,7 +89,7 @@ Fine-tuning을 위해 다음 형식의 학습 데이터를 구축한다.
     },
     {
       "role": "user",
-      "content": "기간: 2024-01-01 ~ 2024-01-07\n체중: [4.5, 4.4, 4.5]\n식욕: [normal, poor, normal]\n증상: [구토 1회]"
+      "content": "기간: 2024-01-01 ~ 2024-01-07\n체중: [4.5, 4.4, 4.5]\n식사: [normal, poor, normal]\n증상: [구토 1회]"
     },
     {
       "role": "assistant",
@@ -103,7 +103,7 @@ Fine-tuning을 위해 다음 형식의 학습 데이터를 구축한다.
 
 HealthRecord에서:
 - 기간 내 체중 변화 (weight)
-- 식욕 변화 패턴 (appetite)
+- 식사량 변화 패턴 (appetite)
 - 활동량 변화 (activity)
 - 기록된 증상 (symptom)
 

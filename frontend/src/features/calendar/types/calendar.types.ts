@@ -48,7 +48,28 @@ export function buildPetColorMap(pets: CalendarPet[]): PetColorMap {
 }
 
 export function toDateString(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function tzOffset(d: Date): string {
+  const off = -d.getTimezoneOffset();
+  const sign = off >= 0 ? '+' : '-';
+  const hh = String(Math.floor(Math.abs(off) / 60)).padStart(2, '0');
+  const mm = String(Math.abs(off) % 60).padStart(2, '0');
+  return `${sign}${hh}:${mm}`;
+}
+
+export function toLocalDayStart(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${dateStr}T00:00:00${tzOffset(d)}`;
+}
+
+export function toLocalDayEnd(dateStr: string): string {
+  const d = new Date(dateStr + 'T23:59:59');
+  return `${dateStr}T23:59:59${tzOffset(d)}`;
 }
 
 export function isSameDay(a: string, b: string): boolean {

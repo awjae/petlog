@@ -171,7 +171,7 @@ createdAt
 - type: weight
 - value: 4.5kg
 
-식욕:
+식사:
 - type: appetite
 - value: normal
 
