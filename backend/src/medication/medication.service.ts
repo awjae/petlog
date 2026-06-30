@@ -36,11 +36,11 @@ export class MedicationService {
     return this.prisma.medication.create({
       data: {
         petId: input.petId,
-        name: input.name,
-        dosage: input.dosage,
-        frequency: input.frequency,
+        name: input.name ?? null,
+        dosage: input.dosage ?? null,
+        frequency: input.frequency ?? null,
         startDate: input.startDate,
-        endDate: input.endDate ?? undefined,
+        endDate: input.endDate ?? null,
       },
     });
   }

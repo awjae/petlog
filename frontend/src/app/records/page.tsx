@@ -8,12 +8,14 @@ import { EventList } from '@/features/calendar/components/EventList';
 import { CalendarSkeleton } from '@/features/calendar/components/CalendarSkeleton';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { FAB } from '@/features/shared/components/FAB';
+import { RecordTypeSelectSheet } from '@/features/shared/components/RecordTypeSelectSheet';
 import { toDateString } from '@/features/calendar/types/calendar.types';
 import styles from './page.module.css';
 
 export default function RecordsPage() {
   const cal = useCalendarData();
   const [selectedDate, setSelectedDate] = useState<string>(() => toDateString(new Date()));
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   if (cal.loading && !cal.pets.length) {
     return (
@@ -65,8 +67,14 @@ export default function RecordsPage() {
         petColorMap={cal.petColorMap}
       />
 
-      <FAB href="/records/new" label="기록 추가" />
+      <FAB onClick={() => setSheetOpen(true)} label="기록 추가" />
       <BottomNav />
+
+      <RecordTypeSelectSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        pets={cal.pets}
+      />
     </main>
   );
 }

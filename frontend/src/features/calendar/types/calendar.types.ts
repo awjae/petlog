@@ -32,15 +32,12 @@ export const PET_COLORS = [
   'var(--color-pet-5)',
 ] as const;
 
-export const EVENT_TYPE_CONFIG: Record<
-  CalendarEventType,
-  { label: string; icon: string; color: string }
-> = {
-  health_record: { label: '건강 기록', icon: '📋', color: 'var(--color-text-secondary)' },
-  vaccination: { label: '예방접종', icon: '💉', color: 'var(--color-primary)' },
-  medication: { label: '투약', icon: '💊', color: 'var(--color-warning)' },
-  appointment: { label: '병원 예약', icon: '📅', color: 'var(--color-success)' },
-  medical_event: { label: '병원 방문', icon: '🏥', color: 'var(--color-danger)' },
+export const EVENT_TYPE_CONFIG: Record<CalendarEventType, { label: string; bgColor: string }> = {
+  health_record: { label: '건강 기록', bgColor: '#e8f4e4' },
+  vaccination: { label: '예방접종', bgColor: '#dceef8' },
+  medication: { label: '투약', bgColor: '#fef3e2' },
+  appointment: { label: '병원 예약', bgColor: '#e4f8ee' },
+  medical_event: { label: '병원 방문', bgColor: '#fde8e8' },
 };
 
 export function buildPetColorMap(pets: CalendarPet[]): PetColorMap {

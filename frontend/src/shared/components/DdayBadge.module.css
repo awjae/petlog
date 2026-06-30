@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  font: var(--font-label);
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.far {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.near {
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  color: #b36800;
+}
+
+.urgent {
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: #b36800;
+}
+
+.overdue {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  color: var(--color-danger);
+}

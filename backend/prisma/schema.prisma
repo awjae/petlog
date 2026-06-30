@@ -101,9 +101,9 @@ model MedicalEvent {
 model Medication {
   id        String    @id @default(uuid())
   petId     String    @map("pet_id")
-  name      String
-  dosage    String
-  frequency String
+  name      String?
+  dosage    String?
+  frequency String?
   startDate DateTime  @map("start_date")
   endDate   DateTime? @map("end_date")
   createdAt DateTime  @default(now()) @map("created_at")

@@ -63,10 +63,10 @@ input CreateMedicalEventInput {
 }
 
 input CreateMedicationInput {
-  dosage: String!
+  dosage: String
   endDate: DateTime
-  frequency: String!
-  name: String!
+  frequency: String
+  name: String
   petId: ID!
   startDate: DateTime!
 }
@@ -142,11 +142,11 @@ type MedicalEvent {
 
 type Medication {
   createdAt: DateTime!
-  dosage: String!
+  dosage: String
   endDate: DateTime
-  frequency: String!
+  frequency: String
   id: ID!
-  name: String!
+  name: String
   petId: ID!
   startDate: DateTime!
   updatedAt: DateTime!

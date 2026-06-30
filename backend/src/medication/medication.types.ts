@@ -9,14 +9,14 @@ export class Medication {
   @Field(() => ID)
   petId!: string;
 
-  @Field()
-  name!: string;
+  @Field({ nullable: true })
+  name?: string;
 
-  @Field()
-  dosage!: string;
+  @Field({ nullable: true })
+  dosage?: string;
 
-  @Field()
-  frequency!: string;
+  @Field({ nullable: true })
+  frequency?: string;
 
   @Field(() => Date)
   startDate!: Date;
@@ -37,20 +37,23 @@ export class CreateMedicationInput {
   @IsUUID()
   petId!: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  name?: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  dosage!: string;
+  dosage?: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  frequency!: string;
+  frequency?: string;
 
   @Field(() => Date)
   @IsDate()

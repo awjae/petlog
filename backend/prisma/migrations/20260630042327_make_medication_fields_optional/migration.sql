@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "medications" ALTER COLUMN "name" DROP NOT NULL,
+ALTER COLUMN "dosage" DROP NOT NULL,
+ALTER COLUMN "frequency" DROP NOT NULL;

@@ -110,16 +110,16 @@ export class UserResolver {
         id: v.id,
         date: toDateStr(v.vaccinatedAt),
         type: CalendarEventType.vaccination,
-        title: v.name,
-        subtitle: v.code ?? undefined,
+        title: v.name ?? '',
+        subtitle: v.code ?? undefined, // Ensure subtitle is undefined instead of null
         petId: v.petId,
       })),
       ...medications.map((m) => ({
         id: m.id,
         date: toDateStr(m.startDate),
         type: CalendarEventType.medication,
-        title: m.name,
-        subtitle: m.dosage,
+        title: m.name ?? '',
+        subtitle: m.dosage ?? undefined, // Ensure subtitle is undefined instead of null
         petId: m.petId,
       })),
       ...appointments.map((a) => ({
@@ -127,7 +127,7 @@ export class UserResolver {
         date: toDateStr(a.scheduledAt),
         type: CalendarEventType.appointment,
         title: a.hospitalName,
-        subtitle: a.reason ?? undefined,
+        subtitle: a.reason ?? undefined, // Ensure subtitle is undefined instead of null
         petId: a.petId,
       })),
       ...medicalEvents.map((e) => ({
@@ -135,7 +135,7 @@ export class UserResolver {
         date: toDateStr(e.visitDate),
         type: CalendarEventType.medical_event,
         title: e.hospitalName,
-        subtitle: e.description,
+        subtitle: e.description ?? undefined, // Ensure subtitle is undefined instead of null
         petId: e.petId,
       })),
     ];
@@ -181,7 +181,7 @@ export class UserResolver {
           petName: petMap.get(v.petId) ?? '',
           petProfileImageUrl: undefined,
           type: ScheduleType.vaccination,
-          title: v.name,
+          title: v.name ?? '',
           dueDate: v.nextDueAt!,
         })),
       ...medications
@@ -192,7 +192,7 @@ export class UserResolver {
           petName: petMap.get(m.petId) ?? '',
           petProfileImageUrl: undefined,
           type: ScheduleType.medication,
-          title: m.name,
+          title: m.name ?? '',
           dueDate: m.endDate!,
         })),
       ...appointments.map((a) => ({
@@ -201,7 +201,7 @@ export class UserResolver {
         petName: petMap.get(a.petId) ?? '',
         petProfileImageUrl: undefined,
         type: ScheduleType.appointment,
-        title: a.reason ?? a.hospitalName,
+        title: a.reason ?? a.hospitalName ?? '',
         dueDate: a.scheduledAt,
       })),
     ];
