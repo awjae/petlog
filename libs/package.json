@@ -6,6 +6,7 @@
     "./types": "./types/index.ts",
     "./types/*": "./types/*.ts",
     "./utils": "./utils/index.ts",
-    "./utils/*": "./utils/*.ts"
+    "./utils/*": "./utils/*.ts",
+    "./ai/chatgpt": "./ai/chatgpt/index.ts"
   }
 }

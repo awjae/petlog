@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
 import { MockReportGenerator } from './mock-report.generator';
+import { LlmReportGenerator } from '../ai/llm-report.generator';
 import { ReportType, ReportStatus, ReportGeneratedBy, Species } from '@prisma/client';
 import type { Report as PrismaReport } from '@prisma/client';
 
@@ -16,6 +18,8 @@ export class ReportService {
     private readonly prisma: PrismaService,
     private readonly petService: PetService,
     private readonly mockReportGenerator: MockReportGenerator,
+    private readonly llmReportGenerator: LlmReportGenerator,
+    private readonly config: ConfigService,
   ) {}
 
   async getReportStatus(userId: string, petId: string) {
@@ -141,27 +145,80 @@ export class ReportService {
       );
     }
 
+    const useAi = !!this.config.get<string>('OPENAI_API_KEY');
+
     const report = await this.prisma.report.create({
       data: {
         petId,
         type,
         status: ReportStatus.pending,
-        generatedBy: ReportGeneratedBy.mock,
+        generatedBy: useAi ? ReportGeneratedBy.ai : ReportGeneratedBy.mock,
         periodStart,
         periodEnd,
       },
     });
 
-    void this.runMockGeneration(report.id, {
-      petName: pet.name,
-      species: pet.species as Species,
-      breed: pet.breed ?? null,
-      birthDate: pet.birthDate ?? null,
-      recordCount,
-      recordDays,
-    });
+    if (useAi) {
+      void this.runLlmGeneration(report.id, {
+        petId,
+        petName: pet.name,
+        species: pet.species as Species,
+        breed: pet.breed ?? null,
+        birthDate: pet.birthDate ?? null,
+        periodStart,
+        periodEnd,
+      });
+    } else {
+      void this.runMockGeneration(report.id, {
+        petName: pet.name,
+        species: pet.species as Species,
+        breed: pet.breed ?? null,
+        birthDate: pet.birthDate ?? null,
+        recordCount,
+        recordDays,
+      });
+    }
 
     return { reportId: report.id, status: report.status };
+  }
+
+  private async runLlmGeneration(
+    reportId: string,
+    params: {
+      petId: string;
+      petName: string;
+      species: Species;
+      breed: string | null;
+      birthDate: Date | null;
+      periodStart: Date;
+      periodEnd: Date;
+    },
+  ): Promise<void> {
+    try {
+      await this.prisma.report.update({
+        where: { id: reportId },
+        data: { status: ReportStatus.processing },
+      });
+
+      const content = await this.llmReportGenerator.generate(params);
+
+      await this.prisma.report.update({
+        where: { id: reportId },
+        data: {
+          status: ReportStatus.completed,
+          overview: content.overview,
+          highlights: content.highlights,
+          concerns: content.concerns,
+          recommendations: content.recommendations,
+        },
+      });
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : 'Unknown error during LLM generation';
+      await this.prisma.report.update({
+        where: { id: reportId },
+        data: { status: ReportStatus.failed, failedReason: reason },
+      });
+    }
   }
 
   private async runMockGeneration(

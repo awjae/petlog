@@ -17,7 +17,8 @@
       "@petlog/types": ["../libs/types"],
       "@petlog/types/*": ["../libs/types/*"],
       "@petlog/utils": ["../libs/utils"],
-      "@petlog/utils/*": ["../libs/utils/*"]
+      "@petlog/utils/*": ["../libs/utils/*"],
+      "@petlog/ai/chatgpt": ["../libs/ai/chatgpt"]
     }
   },
   "include": ["src/**/*"],

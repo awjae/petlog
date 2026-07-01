@@ -8,6 +8,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["types/**/*", "utils/**/*"],
+  "include": ["types/**/*", "utils/**/*", "ai/**/*"],
   "exclude": ["node_modules", "dist"]
 }
