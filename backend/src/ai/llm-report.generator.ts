@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthRecordType, Species } from '@prisma/client';
-import { ChatGptHealthReportClient } from '@petlog/ai/chatgpt';
-import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai/chatgpt';
+import { ChatGptHealthReportClient } from '@petlog/ai';
+import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai';
 import { PrismaService } from '../common/prisma/prisma.service';
 import type { MockReportContent } from '../report/mock-report.generator';
 

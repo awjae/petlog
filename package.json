@@ -3,11 +3,14 @@
   "version": "0.0.1",
   "private": true,
   "workspaces": [
-    "libs",
+    "libs/types",
+    "libs/utils",
+    "libs/ai",
     "backend",
     "frontend"
   ],
   "scripts": {
+    "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai",
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "build": "npm run build --workspaces --if-present",

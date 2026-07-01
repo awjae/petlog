@@ -12,16 +12,9 @@
     "experimentalDecorators": true,
     "composite": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "baseUrl": ".",
-    "paths": {
-      "@petlog/types": ["../libs/types"],
-      "@petlog/types/*": ["../libs/types/*"],
-      "@petlog/utils": ["../libs/utils"],
-      "@petlog/utils/*": ["../libs/utils/*"],
-      "@petlog/ai/chatgpt": ["../libs/ai/chatgpt"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../libs" }]
+  "references": [{ "path": "../libs/types" }, { "path": "../libs/utils" }, { "path": "../libs/ai" }]
 }

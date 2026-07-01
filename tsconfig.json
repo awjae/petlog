@@ -1,7 +1,9 @@
 {
   "files": [],
   "references": [
-    { "path": "./libs" },
+    { "path": "./libs/types" },
+    { "path": "./libs/utils" },
+    { "path": "./libs/ai" },
     { "path": "./backend" },
     { "path": "./frontend" }
   ]

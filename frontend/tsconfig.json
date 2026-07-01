@@ -13,14 +13,10 @@
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@petlog/types": ["../libs/types"],
-      "@petlog/types/*": ["../libs/types/*"],
-      "@petlog/utils": ["../libs/utils"],
-      "@petlog/utils/*": ["../libs/utils/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"],
-  "references": [{ "path": "../libs" }]
+  "references": [{ "path": "../libs/types" }, { "path": "../libs/utils" }, { "path": "../libs/ai" }]
 }
