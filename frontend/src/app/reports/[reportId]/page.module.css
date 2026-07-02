@@ -68,42 +68,41 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   padding: 16px;
 }
 
-.mockBadgeWrap {
-  display: flex;
-}
-
-.mockBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
-  font: var(--font-label);
-  font-weight: 600;
-  color: var(--color-warning);
+.headlineWrap {
+  margin-top: 16px;
 }
 
 .sections {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 20px;
 }
 
 .disclaimer {
-  font: var(--font-caption);
-  color: var(--color-text-secondary);
-  margin: 8px 0 0;
-  line-height: 1.6;
+  margin-top: 16px;
   padding: 12px 14px;
   background: var(--color-surface);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
+}
+
+.disclaimerEyebrow {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.03em;
+  margin: 0 0 6px;
+}
+
+.disclaimerText {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* error state */

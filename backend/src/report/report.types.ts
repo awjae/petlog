@@ -1,7 +1,6 @@
 import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
-import { ReportType, ReportStatus, ReportGeneratedBy } from '@prisma/client';
+import { ReportStatus, ReportGeneratedBy } from '@prisma/client';
 
-registerEnumType(ReportType, { name: 'ReportType' });
 registerEnumType(ReportStatus, { name: 'ReportStatus' });
 registerEnumType(ReportGeneratedBy, { name: 'ReportGeneratedBy' });
 
@@ -42,9 +41,6 @@ export class Report {
 
   @Field(() => ID)
   petId!: string;
-
-  @Field(() => ReportType)
-  type!: ReportType;
 
   @Field(() => ReportStatus)
   status!: ReportStatus;
@@ -93,4 +89,16 @@ export class ReportPollResult {
 
   @Field({ nullable: true })
   failedReason?: string;
+}
+
+@ObjectType()
+export class ReportPeriodPreviewResult {
+  @Field(() => Int)
+  recordCount!: number;
+
+  @Field(() => Int)
+  recordDays!: number;
+
+  @Field()
+  hasEnoughRecords!: boolean;
 }

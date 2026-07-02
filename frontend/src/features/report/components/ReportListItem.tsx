@@ -3,31 +3,20 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { Report } from '../types/report.types';
+import { formatPeriodRange, formatCreatedAt } from '../utils/reportFormat';
 import styles from './ReportListItem.module.css';
 
 interface ReportListItemProps {
   report: Report;
 }
 
-function formatPeriodLabel(periodStart: string): string {
-  const d = new Date(periodStart);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 리포트`;
-}
-
-function formatCreatedAt(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-}
-
 export function ReportListItem({ report }: ReportListItemProps) {
+  const periodLabel = formatPeriodRange(report.periodStart, report.periodEnd);
+
   return (
-    <Link
-      href={`/reports/${report.id}`}
-      className={styles.card}
-      aria-label={formatPeriodLabel(report.periodStart)}
-    >
+    <Link href={`/reports/${report.id}`} className={styles.card} aria-label={periodLabel}>
       <div className={styles.header}>
-        <span className={styles.periodLabel}>{formatPeriodLabel(report.periodStart)}</span>
+        <span className={styles.periodLabel}>{periodLabel}</span>
         <span className={styles.date}>{formatCreatedAt(report.createdAt)}</span>
       </div>
 

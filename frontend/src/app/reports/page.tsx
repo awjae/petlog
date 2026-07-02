@@ -4,13 +4,13 @@ import { Suspense, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
-import { HeartPulse, Lock, Sparkles, CheckCircle, LoaderCircle } from 'lucide-react';
+import { HeartPulse, Lock, CalendarRange, Sparkles, CheckCircle, LoaderCircle } from 'lucide-react';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { ToastContainer, useToast } from '@/features/shared/components/Toast';
 import { ReportListItem } from '@/features/report/components/ReportListItem';
+import { ReportPeriodSheet } from '@/features/report/components/ReportPeriodSheet';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { useReports } from '@/features/report/hooks/useReports';
-import { useGenerateReport } from '@/features/report/hooks/useGenerateReport';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
 import type { PetBasic } from '@/features/report/types/report.types';
@@ -68,6 +68,7 @@ function ReportsContent() {
   const router = useRouter();
   const { toasts, addToast, dismiss } = useToast();
   const [pollingReportId, setPollingReportId] = useState<string | null>(null);
+  const [isPeriodSheetOpen, setPeriodSheetOpen] = useState(false);
 
   const { data: petsData, loading: petsLoading } = useQuery(PETS_FOR_REPORT_QUERY, {
     fetchPolicy: 'cache-and-network',
@@ -79,6 +80,7 @@ function ReportsContent() {
   const lastSelectedPetId = getLastSelectedPetId();
   const homeDefaultPetId = pets.some((p) => p.id === lastSelectedPetId) ? lastSelectedPetId! : '';
   const activePetId = petIdFromUrl || homeDefaultPetId || firstPetId;
+  const activePet = pets.find((p) => p.id === activePetId);
 
   function handleSelectPet(id: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -88,7 +90,6 @@ function ReportsContent() {
 
   const { status, loading: statusLoading, refetch: refetchStatus } = useReportStatus(activePetId);
   const { reports, loading: reportsLoading, refetch: refetchReports } = useReports(activePetId);
-  const { generateReport, loading: generating } = useGenerateReport();
 
   const handlePollingComplete = useCallback(
     (result: 'completed' | 'failed') => {
@@ -107,13 +108,9 @@ function ReportsContent() {
 
   useReportPolling(pollingReportId, handlePollingComplete);
 
-  async function handleGenerate() {
-    if (!activePetId) return;
-    const reportId = await generateReport(activePetId, 'monthly');
-    if (reportId) {
-      setPollingReportId(reportId);
-      refetchStatus();
-    }
+  function handleReportGenerated(reportId: string) {
+    setPollingReportId(reportId);
+    refetchStatus();
   }
 
   const isInitialLoading = (petsLoading || statusLoading) && !status;
@@ -292,20 +289,10 @@ function ReportsContent() {
           </p>
           <button
             type="button"
-            className={`${styles.ctaButton} ${styles.ctaButtonPrimary} ${generating ? styles.ctaButtonLoading : ''}`}
-            onClick={handleGenerate}
-            disabled={generating}
-            aria-busy={generating}
+            className={`${styles.ctaButton} ${styles.ctaButtonPrimary}`}
+            onClick={() => setPeriodSheetOpen(true)}
           >
-            {generating ? (
-              <>
-                <LoaderCircle size={20} className={styles.spinner} aria-hidden="true" /> 분석 중...
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} aria-hidden="true" /> AI 리포트 생성하기
-              </>
-            )}
+            <CalendarRange size={18} aria-hidden="true" /> AI 리포트 만들기
           </button>
           <BlurPreviewCard />
         </div>
@@ -330,6 +317,14 @@ function ReportsContent() {
       </header>
       <PetTabs pets={pets} selectedPetId={activePetId} onSelect={handleSelectPet} />
       {content()}
+      <ReportPeriodSheet
+        isOpen={isPeriodSheetOpen}
+        onClose={() => setPeriodSheetOpen(false)}
+        petId={activePetId}
+        petCreatedAt={activePet?.createdAt ?? ''}
+        onGenerated={handleReportGenerated}
+        onGenerateError={(message) => addToast(message, 'error')}
+      />
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
       <BottomNav />
     </main>

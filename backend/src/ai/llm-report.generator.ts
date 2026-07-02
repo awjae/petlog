@@ -4,6 +4,7 @@ import { HealthRecordType, Species } from '@prisma/client';
 import { ChatGptHealthReportClient } from '@petlog/ai';
 import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { BreedProfileService } from './breed-profile.service';
 import type { MockReportContent } from '../report/mock-report.generator';
 
 export interface LlmReportParams {
@@ -21,6 +22,7 @@ export class LlmReportGenerator {
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly breedProfileService: BreedProfileService,
   ) {}
 
   async generate(params: LlmReportParams): Promise<MockReportContent> {
@@ -30,12 +32,50 @@ export class LlmReportGenerator {
     const input = await this.buildInput(params);
     const output = await client.generateReport(input);
 
-    return {
+    const content: MockReportContent = {
       overview: output.summary,
       highlights: output.trends.map((t) => `${t.category}: ${t.description}`),
       concerns: output.concerns,
       recommendations: output.actions,
     };
+
+    return this.mergeBreedProfile(content, params);
+  }
+
+  // Mock 생성기와 동일한 규칙으로 breed-profile(품종별 위험질환/생애주기) 결과를 후처리 병합한다.
+  // LLM 프롬프트/파인튜닝 모델은 건드리지 않고 응답에 규칙 기반 문구만 덧붙인다.
+  private mergeBreedProfile(
+    content: MockReportContent,
+    params: LlmReportParams,
+  ): MockReportContent {
+    const { petName, species, breed, birthDate } = params;
+    const speciesKey = species.toLowerCase() as 'dog' | 'cat';
+
+    const alerts = this.breedProfileService.getBreedAlerts(speciesKey, breed, birthDate);
+    const lifeStage = this.breedProfileService.getLifeStageInfo(speciesKey, breed, birthDate);
+
+    const highlights = [...content.highlights];
+    if (lifeStage?.is_senior) {
+      highlights.push(
+        `${petName}는 노령기에 접어들었어요. ${lifeStage.recommended_checkup}을 권장해요`,
+      );
+    }
+
+    const concerns = [
+      ...content.concerns,
+      ...alerts
+        .filter((a) => a.risk_level === 'high')
+        .map((a) => `${a.condition} 위험이 있어요. ${a.watch_for.join(', ')} 증상을 주의하세요`),
+    ];
+
+    const recommendations = [...content.recommendations];
+    if (alerts.length > 0) {
+      recommendations.push(
+        `품종 특성상 ${alerts.map((a) => a.condition).join(', ')} 관련 이상 증상이 나타나면 수의사와 상담하세요`,
+      );
+    }
+
+    return { ...content, highlights, concerns, recommendations };
   }
 
   private async buildInput(params: LlmReportParams): Promise<HealthReportInput> {

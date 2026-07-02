@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { GENERATE_REPORT_MUTATION } from '../api/report.mutations';
-import type { ReportType } from '../types/report.types';
 
 interface UseGenerateReportReturn {
-  generateReport: (petId: string, type?: ReportType) => Promise<string | null>;
+  generateReport: (petId: string, periodStart: string, periodEnd: string) => Promise<string | null>;
   loading: boolean;
   error: string;
 }
@@ -20,10 +19,11 @@ export function useGenerateReport(): UseGenerateReportReturn {
 
   async function generateReport(
     petId: string,
-    type: ReportType = 'monthly',
+    periodStart: string,
+    periodEnd: string,
   ): Promise<string | null> {
     setError('');
-    const result = await mutate({ variables: { petId, type } }).catch(() => null);
+    const result = await mutate({ variables: { petId, periodStart, periodEnd } }).catch(() => null);
     return result?.data?.generateReport.reportId ?? null;
   }
 

@@ -1,0 +1,44 @@
+.notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 0;
+}
+
+.icon {
+  color: var(--color-primary);
+  opacity: 0.9;
+  margin-bottom: 20px;
+}
+
+.iconDanger {
+  color: var(--color-danger);
+}
+
+.heading {
+  font: var(--font-title-l);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.desc {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0 0 28px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.retryBtn {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font: var(--font-body);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}

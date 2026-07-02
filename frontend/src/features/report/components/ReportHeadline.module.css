@@ -1,0 +1,38 @@
+.headline {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background: var(--color-primary-light);
+  position: relative;
+}
+
+.headline::before {
+  content: '\201C';
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-size: 40px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.eyebrow {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 8px;
+}
+
+.text {
+  font: var(--font-title-l);
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--color-text-primary);
+  padding-left: 4px;
+  min-height: 48px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}

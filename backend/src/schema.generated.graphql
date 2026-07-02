@@ -170,7 +170,7 @@ type Mutation {
   deleteMedication(id: ID!): Boolean!
   deletePet(id: ID!): Boolean!
   deleteVaccination(id: ID!): Boolean!
-  generateReport(petId: ID!, type: ReportType!): GenerateReportResult!
+  generateReport(periodEnd: DateTime!, periodStart: DateTime!, petId: ID!): GenerateReportResult!
   updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
@@ -212,6 +212,7 @@ type Query {
   pet(id: ID!): Pet!
   pets: [Pet!]!
   report(id: ID!): Report
+  reportPeriodPreview(periodEnd: DateTime!, periodStart: DateTime!, petId: ID!): ReportPeriodPreviewResult!
   reportPollStatus(id: ID!): ReportPollResult!
   reportStatus(petId: ID!): ReportStatusResult!
   reports(petId: ID!): [Report!]!
@@ -237,12 +238,17 @@ type Report {
   petId: ID!
   recommendations: [String!]!
   status: ReportStatus!
-  type: ReportType!
 }
 
 enum ReportGeneratedBy {
   ai
   mock
+}
+
+type ReportPeriodPreviewResult {
+  hasEnoughRecords: Boolean!
+  recordCount: Int!
+  recordDays: Int!
 }
 
 type ReportPollResult {
@@ -265,11 +271,6 @@ type ReportStatusResult {
   processingReport: ProcessingReportInfo
   recordCount: Int!
   recordDays: Int!
-}
-
-enum ReportType {
-  monthly
-  weekly
 }
 
 enum ScheduleType {

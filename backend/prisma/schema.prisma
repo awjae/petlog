@@ -164,18 +164,25 @@ model Appointment {
 // ─── Report ───────────────────────────────────────────────────────────────────
 // 비동기 생성 흐름: pending → processing → completed | failed
 //
-// 쿼터 정책: 반려동물 1마리당 월 1회 무료 (monthly 타입 기준)
+// 쿼터 정책: 반려동물 1마리당 월 1회 무료
 //   - pending/processing 상태도 쿼터 소진으로 처리 (failed만 재시도 가능)
-//   - 쿼터 조회: pet_id + type='monthly' + created_at 당월 범위 + status != 'failed'
+//   - 쿼터 조회 기준은 report.createdAt (사용자가 고른 periodStart/periodEnd가 아님)
+//   - 쿼터 조회: pet_id + created_at 당월 범위 + status != 'failed'
+//
+// periodStart/periodEnd: 사용자가 캘린더에서 직접 지정한 분석 기간(7~90일)을 그대로 저장한다.
 //
 // Partial Unique Index 주의:
-//   completed 상태에서만 동일 (petId, type, periodStart, periodEnd) 중복 방지.
+//   completed 상태에서만 동일 (petId, periodStart, periodEnd) 중복 방지.
 //   @@unique 대신 migration.sql의 "reports_completed_period_unique_idx" 적용.
+//
+// period_end >= period_start CHECK 제약:
+//   Prisma 6.19.3은 @@check를 지원하지 않아(schema validate 시 "Attribute not known: @check" 에러)
+//   스키마에는 표현하지 않고 migration.sql의 ALTER TABLE ... ADD CONSTRAINT로만 적용한다.
+//   (Postgres 레벨에서는 여전히 강제된다.)
 
 model Report {
   id              String            @id @default(uuid())
   petId           String            @map("pet_id")
-  type            ReportType
   status          ReportStatus      @default(pending)
   overview        String?
   highlights      String[]          @default([])
@@ -192,7 +199,6 @@ model Report {
 
   // @@unique 제거 — Partial Unique Index로 교체 (migration.sql 참조)
   @@index([petId, createdAt(sort: Desc)])
-  @@index([petId, type, createdAt(sort: Desc)])
   @@map("reports")
 }
 
@@ -272,11 +278,6 @@ enum HealthRecordType {
   stool
   vomit
   mood
-}
-
-enum ReportType {
-  weekly
-  monthly
 }
 
 enum ReportStatus {

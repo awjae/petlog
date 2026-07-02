@@ -5,12 +5,15 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
 import { MockReportGenerator } from './mock-report.generator';
 import { LlmReportGenerator } from '../ai/llm-report.generator';
-import { ReportType, ReportStatus, ReportGeneratedBy, Species } from '@prisma/client';
+import { ReportStatus, ReportGeneratedBy, Species } from '@prisma/client';
 import type { Report as PrismaReport } from '@prisma/client';
 
 const PROCESSING_TIMEOUT_MS = 5 * 60 * 1000;
 const MIN_RECORD_COUNT = 10;
 const MIN_RECORD_DAYS = 7;
+const MIN_PERIOD_DAYS = 7;
+const MAX_PERIOD_DAYS = 90;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class ReportService {
@@ -25,7 +28,7 @@ export class ReportService {
   async getReportStatus(userId: string, petId: string) {
     await this.petService.assertOwnership(userId, petId);
 
-    const { periodStart, nextMonthStart } = this.currentMonthBounds();
+    const { periodStart: monthStart, nextMonthStart } = this.currentMonthBounds();
 
     const [records, activeReport] = await Promise.all([
       this.prisma.healthRecord.findMany({
@@ -35,9 +38,8 @@ export class ReportService {
       this.prisma.report.findFirst({
         where: {
           petId,
-          type: ReportType.monthly,
           status: { not: ReportStatus.failed },
-          periodStart: { gte: periodStart, lt: nextMonthStart },
+          createdAt: { gte: monthStart, lt: nextMonthStart },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -103,23 +105,18 @@ export class ReportService {
     return report;
   }
 
-  async generateReport(userId: string, petId: string, type: ReportType) {
-    if (type !== ReportType.monthly) {
-      throw new GraphQLError('현재는 월간 리포트만 지원합니다.', {
-        extensions: { code: 'BAD_REQUEST' },
-      });
-    }
-
+  async generateReport(userId: string, petId: string, periodStart: Date, periodEnd: Date) {
     const pet = await this.petService.assertOwnership(userId, petId);
 
-    const { periodStart, periodEnd, nextMonthStart } = this.currentMonthBounds();
+    this.assertValidPeriod(periodStart, periodEnd, pet.createdAt);
+
+    const { periodStart: monthStart, nextMonthStart } = this.currentMonthBounds();
 
     const existing = await this.prisma.report.findFirst({
       where: {
         petId,
-        type,
         status: { not: ReportStatus.failed },
-        periodStart: { gte: periodStart, lt: nextMonthStart },
+        createdAt: { gte: monthStart, lt: nextMonthStart },
       },
     });
 
@@ -130,7 +127,7 @@ export class ReportService {
     }
 
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId, deletedAt: null },
+      where: { petId, deletedAt: null, recordedAt: { gte: periodStart, lte: periodEnd } },
       select: { recordedAt: true },
     });
 
@@ -150,7 +147,6 @@ export class ReportService {
     const report = await this.prisma.report.create({
       data: {
         petId,
-        type,
         status: ReportStatus.pending,
         generatedBy: useAi ? ReportGeneratedBy.ai : ReportGeneratedBy.mock,
         periodStart,
@@ -259,6 +255,33 @@ export class ReportService {
     }
   }
 
+  async getReportPeriodPreview(
+    userId: string,
+    petId: string,
+    periodStart: Date,
+    periodEnd: Date,
+  ): Promise<{ recordCount: number; recordDays: number; hasEnoughRecords: boolean }> {
+    await this.petService.assertOwnership(userId, petId);
+
+    if (periodEnd < periodStart) {
+      throw new GraphQLError('종료일은 시작일보다 이후여야 합니다.', {
+        extensions: { code: 'BAD_REQUEST' },
+      });
+    }
+
+    const records = await this.prisma.healthRecord.findMany({
+      where: { petId, deletedAt: null, recordedAt: { gte: periodStart, lte: periodEnd } },
+      select: { recordedAt: true },
+    });
+
+    const recordCount = records.length;
+    const distinctDates = new Set(records.map((r) => r.recordedAt.toISOString().slice(0, 10)));
+    const recordDays = distinctDates.size;
+    const hasEnoughRecords = recordCount >= MIN_RECORD_COUNT && recordDays >= MIN_RECORD_DAYS;
+
+    return { recordCount, recordDays, hasEnoughRecords };
+  }
+
   private async assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
     const report = await this.prisma.report.findFirst({
       where: { id: reportId, pet: { userId } },
@@ -267,6 +290,51 @@ export class ReportService {
     return report;
   }
 
+  // 시간 성분을 버리고 "달력상 그 날"만 남긴다. periodStart/periodEnd/petCreatedAt/오늘을
+  // 전부 이 기준으로 비교해야 "선택한 날짜"와 "그 날짜의 특정 시각"을 혼동하지 않는다.
+  private toCalendarDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
+
+  // generateReport 전용 — 사용자가 지정한 분석 기간(7~90일)의 유효성을 검증한다.
+  private assertValidPeriod(periodStart: Date, periodEnd: Date, petCreatedAt: Date): void {
+    if (periodEnd < periodStart) {
+      throw new GraphQLError('종료일은 시작일보다 이후여야 합니다.', {
+        extensions: { code: 'BAD_REQUEST' },
+      });
+    }
+
+    // 시간 성분과 무관하게 "달력상 며칠"인지(양 끝 포함)로 계산한다.
+    // 그렇지 않으면 프론트가 보내는 "day0 00:00 ~ day6 23:59:59"(7일 선택) 같은 값이
+    // ms 기준으로는 7일에 살짝 못 미쳐 정확히 최소/최대 일수를 고른 선택이 거부된다.
+    const startDay = this.toCalendarDay(periodStart);
+    const endDay = this.toCalendarDay(periodEnd);
+    const periodDays = Math.round((endDay.getTime() - startDay.getTime()) / MS_PER_DAY) + 1;
+    if (periodDays < MIN_PERIOD_DAYS || periodDays > MAX_PERIOD_DAYS) {
+      throw new GraphQLError(
+        `분석 기간은 ${MIN_PERIOD_DAYS}일 이상 ${MAX_PERIOD_DAYS}일 이하로 지정해야 합니다.`,
+        { extensions: { code: 'BAD_REQUEST' } },
+      );
+    }
+
+    // petCreatedAt은 등록 "시각"(예: 오후 3시)을 담고 있어, 등록 당일 00:00을 시작일로
+    // 고른 정상적인 선택까지 시각 비교로 거부되지 않도록 날짜 단위로만 비교한다.
+    if (startDay < this.toCalendarDay(petCreatedAt)) {
+      throw new GraphQLError('시작일은 반려동물 등록일 이후여야 합니다.', {
+        extensions: { code: 'BAD_REQUEST' },
+      });
+    }
+
+    // periodEnd는 "선택한 종료일의 23:59:59"를 담고 있어, 오늘을 종료일로 고른 정상적인
+    // 선택도 현재 시각(예: 오전 10시)보다 항상 미래로 계산되던 버그 — 날짜 단위로만 비교한다.
+    if (endDay > this.toCalendarDay(new Date())) {
+      throw new GraphQLError('종료일은 오늘보다 미래일 수 없습니다.', {
+        extensions: { code: 'BAD_REQUEST' },
+      });
+    }
+  }
+
+  // 리포트 "내용"의 기간이 아니라 "월 1회 생성 제한" 게이팅에만 쓰이는 캘린더 월 경계.
   private currentMonthBounds(): {
     periodStart: Date;
     periodEnd: Date;

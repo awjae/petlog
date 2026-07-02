@@ -1,20 +1,17 @@
 'use client';
 
-import { FileText, TrendingUp, AlertTriangle, Lightbulb, CheckCircle } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Lightbulb, CheckCircle } from 'lucide-react';
 import styles from './ReportDetailSection.module.css';
 
-type SectionType = 'overview' | 'highlights' | 'concerns' | 'recommendations';
+export type ReportSectionType = 'highlights' | 'concerns' | 'recommendations';
 
 interface ReportDetailSectionProps {
-  type: SectionType;
+  type: ReportSectionType;
   content: string | string[] | null;
+  order: number;
 }
 
-const SECTION_META: Record<SectionType, { label: string; icon: React.ReactNode }> = {
-  overview: {
-    label: '전체 요약',
-    icon: <FileText size={18} strokeWidth={1.75} aria-hidden="true" />,
-  },
+const SECTION_META: Record<ReportSectionType, { label: string; icon: React.ReactNode }> = {
   highlights: {
     label: '주요 변화',
     icon: <TrendingUp size={18} strokeWidth={1.75} aria-hidden="true" />,
@@ -29,7 +26,16 @@ const SECTION_META: Record<SectionType, { label: string; icon: React.ReactNode }
   },
 };
 
-function renderContent(type: SectionType, content: string | string[] | null) {
+/** concerns는 콘텐츠가 없어도 "특별한 우려 사항이 없어요" 카드로 항상 노출된다. */
+export function isSectionVisible(
+  type: ReportSectionType,
+  content: string | string[] | null,
+): boolean {
+  if (type === 'concerns') return true;
+  return Array.isArray(content) ? content.length > 0 : !!content;
+}
+
+function renderContent(type: ReportSectionType, content: string | string[] | null) {
   if (type === 'concerns') {
     const isEmpty = !content || (Array.isArray(content) && content.length === 0);
     if (isEmpty) {
@@ -64,11 +70,8 @@ function renderContent(type: SectionType, content: string | string[] | null) {
   );
 }
 
-export function ReportDetailSection({ type, content }: ReportDetailSectionProps) {
-  const isEmpty =
-    type !== 'concerns' && (!content || (Array.isArray(content) && content.length === 0));
-
-  if (isEmpty) return null;
+export function ReportDetailSection({ type, content, order }: ReportDetailSectionProps) {
+  if (!isSectionVisible(type, content)) return null;
 
   const meta = SECTION_META[type];
   const isConcernsEmpty =
@@ -81,7 +84,12 @@ export function ReportDetailSection({ type, content }: ReportDetailSectionProps)
     >
       <div className={`${styles.iconWrap} ${styles[`iconWrap_${type}`]}`}>{meta.icon}</div>
       <div className={styles.body}>
-        <h2 className={styles.sectionTitle}>{meta.label}</h2>
+        <h2 className={styles.sectionTitle}>
+          <span className={styles.orderChip} aria-hidden="true">
+            {order}
+          </span>
+          {meta.label}
+        </h2>
         {renderContent(type, content)}
       </div>
     </section>

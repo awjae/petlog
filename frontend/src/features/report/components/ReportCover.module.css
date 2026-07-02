@@ -1,0 +1,42 @@
+.cover {
+  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mockBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  font: var(--font-label);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.period {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  margin: 4px 0 0;
+}
+
+.meta {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

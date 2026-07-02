@@ -15,7 +15,8 @@
     "prisma:studio": "prisma studio",
     "docker:up": "docker compose -f ../docker-compose.yml up -d",
     "docker:down": "docker compose -f ../docker-compose.yml down",
-    "docker:logs": "docker compose -f ../docker-compose.yml logs -f db"
+    "docker:logs": "docker compose -f ../docker-compose.yml logs -f db",
+    "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",

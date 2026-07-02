@@ -1,0 +1,165 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  animation: crossfade 150ms ease;
+}
+
+@keyframes crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.text {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ── 로딩 ── */
+.card_loading {
+  background: var(--color-bg);
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.skeletonIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  flex-shrink: 0;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.skeletonBar {
+  height: 14px;
+  width: 60%;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── 정상 ── */
+.card_valid {
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+  border: 1.5px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+.card_valid .icon {
+  color: var(--color-success);
+}
+
+/* ── 조건 미달 ── */
+.card_insufficient {
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+  border: 1.5px solid var(--color-warning);
+  align-items: stretch;
+}
+
+.card_insufficient .icon {
+  color: var(--color-warning);
+}
+
+.insufficientBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.insufficientRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recordLink {
+  align-self: flex-start;
+  font: var(--font-caption);
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: underline;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+/* ── 빈 상태 ── */
+.card_empty {
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+}
+
+.card_empty .icon {
+  color: var(--color-text-secondary);
+}
+
+.card_empty .text {
+  color: var(--color-text-secondary);
+}
+
+/* ── 에러 ── */
+.card_error {
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+  align-items: stretch;
+}
+
+.card_error .icon {
+  color: var(--color-danger);
+}
+
+.errorBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.errorRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.retryBtn {
+  align-self: flex-start;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-danger);
+  background: none;
+  color: var(--color-danger);
+  font: var(--font-caption);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retryBtn:active {
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}

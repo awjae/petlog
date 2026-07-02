@@ -1,6 +1,12 @@
 import { gql } from '@apollo/client';
 import type { TypedDocumentNode } from '@apollo/client';
-import type { ReportStatusResult, Report, ReportPollStatus, PetBasic } from '../types/report.types';
+import type {
+  ReportStatusResult,
+  Report,
+  ReportPollStatus,
+  ReportPeriodPreviewResult,
+  PetBasic,
+} from '../types/report.types';
 
 interface ReportStatusQueryData {
   reportStatus: ReportStatusResult;
@@ -39,7 +45,6 @@ export const REPORTS_QUERY: TypedDocumentNode<ReportsQueryData, ReportsQueryVari
   query Reports($petId: ID!) {
     reports(petId: $petId) {
       id
-      type
       status
       overview
       highlights
@@ -65,7 +70,6 @@ export const REPORT_QUERY: TypedDocumentNode<ReportQueryData, ReportQueryVariabl
     report(id: $id) {
       id
       petId
-      type
       status
       overview
       highlights
@@ -112,7 +116,30 @@ export const PETS_FOR_REPORT_QUERY: TypedDocumentNode<
       pets {
         id
         name
+        createdAt
       }
+    }
+  }
+`;
+
+interface ReportPeriodPreviewQueryData {
+  reportPeriodPreview: ReportPeriodPreviewResult;
+}
+interface ReportPeriodPreviewQueryVariables {
+  petId: string;
+  periodStart: string;
+  periodEnd: string;
+}
+
+export const REPORT_PERIOD_PREVIEW_QUERY: TypedDocumentNode<
+  ReportPeriodPreviewQueryData,
+  ReportPeriodPreviewQueryVariables
+> = gql`
+  query ReportPeriodPreview($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {
+    reportPeriodPreview(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {
+      recordCount
+      recordDays
+      hasEnoughRecords
     }
   }
 `;

@@ -1,11 +1,16 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ReportService } from './report.service';
-import { Report, ReportStatusResult, GenerateReportResult, ReportPollResult } from './report.types';
+import {
+  Report,
+  ReportStatusResult,
+  GenerateReportResult,
+  ReportPollResult,
+  ReportPeriodPreviewResult,
+} from './report.types';
 import { GqlAuthGuard } from '../common/guards/gql-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuthUser } from '../auth/auth.service';
-import { ReportType } from '@prisma/client';
 
 @Resolver(() => Report)
 @UseGuards(GqlAuthGuard)
@@ -36,8 +41,19 @@ export class ReportResolver {
   generateReport(
     @CurrentUser() user: AuthUser,
     @Args('petId', { type: () => ID }) petId: string,
-    @Args('type', { type: () => ReportType }) type: ReportType,
+    @Args('periodStart', { type: () => Date }) periodStart: Date,
+    @Args('periodEnd', { type: () => Date }) periodEnd: Date,
   ) {
-    return this.reportService.generateReport(user.id, petId, type);
+    return this.reportService.generateReport(user.id, petId, periodStart, periodEnd);
+  }
+
+  @Query(() => ReportPeriodPreviewResult)
+  reportPeriodPreview(
+    @CurrentUser() user: AuthUser,
+    @Args('petId', { type: () => ID }) petId: string,
+    @Args('periodStart', { type: () => Date }) periodStart: Date,
+    @Args('periodEnd', { type: () => Date }) periodEnd: Date,
+  ) {
+    return this.reportService.getReportPeriodPreview(user.id, petId, periodStart, periodEnd);
   }
 }

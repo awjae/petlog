@@ -41,7 +41,7 @@ export class MockReportGenerator {
     );
 
     const highlights: string[] = [
-      `이번 달 총 ${recordCount}건의 기록이 ${recordDays}일에 걸쳐 등록되었어요`,
+      `이번 기간 총 ${recordCount}건의 기록이 ${recordDays}일에 걸쳐 등록되었어요`,
     ];
 
     if (lifeStage?.is_senior) {
@@ -63,7 +63,7 @@ export class MockReportGenerator {
     }
 
     return {
-      overview: `${petName}의 이번 달 건강 기록을 분석했어요. 전반적으로 안정적인 상태를 유지하고 있습니다.`,
+      overview: `${petName}의 이번 기간 건강 기록을 분석했어요. 전반적으로 안정적인 상태를 유지하고 있습니다.`,
       highlights,
       concerns,
       recommendations,

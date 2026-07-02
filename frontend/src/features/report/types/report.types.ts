@@ -1,5 +1,4 @@
-export type ReportType = 'monthly' | 'weekly';
-export type ReportStatus = 'processing' | 'completed' | 'failed';
+export type ReportStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export type GeneratedBy = 'mock' | 'ai';
 
 export interface ProcessingReport {
@@ -19,7 +18,6 @@ export interface ReportStatusResult {
 export interface Report {
   id: string;
   petId?: string | null;
-  type: ReportType;
   status: ReportStatus;
   overview: string | null;
   highlights: string[] | null;
@@ -42,7 +40,14 @@ export interface ReportPollStatus {
   failedReason: string | null;
 }
 
+export interface ReportPeriodPreviewResult {
+  recordCount: number;
+  recordDays: number;
+  hasEnoughRecords: boolean;
+}
+
 export interface PetBasic {
   id: string;
   name: string;
+  createdAt: string;
 }
