@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
-import { PawPrint, ChevronDown, Plus, Check } from 'lucide-react';
+import { PawPrint, ChevronDown, ChevronRight, Plus, Check } from 'lucide-react';
 import type { Pet } from '../types/home.types';
 import styles from './PetSelector.module.css';
 
@@ -59,6 +60,17 @@ export function PetSelector({ pets, selectedPetId, onSelect }: PetSelectorProps)
           aria-hidden="true"
         />
       </button>
+
+      {selectedPet && (
+        <Link
+          href={`/pets/${selectedPet.id}`}
+          className={styles.detailLink}
+          aria-label={`${selectedPet.name} 상세보기`}
+        >
+          상세보기
+          <ChevronRight size={16} strokeWidth={2} aria-hidden="true" />
+        </Link>
+      )}
 
       {isOpen && (
         <>

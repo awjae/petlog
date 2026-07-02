@@ -1,0 +1,48 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 8px 16px 0;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.label {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.value {
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.sub {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.empty {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

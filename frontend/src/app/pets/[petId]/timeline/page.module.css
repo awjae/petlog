@@ -1,6 +1,6 @@
 .main {
   min-height: 100dvh;
-  background: var(--color-background);
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -12,7 +12,7 @@
   align-items: center;
   height: 56px;
   padding: 0 4px;
-  background: var(--color-background);
+  background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
@@ -106,28 +106,4 @@
   border: none;
   cursor: pointer;
   min-height: 44px;
-}
-
-/* ── FAB ── */
-.fab {
-  position: fixed;
-  bottom: 24px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  z-index: 30;
-  transition: transform 100ms;
-}
-
-.fab:active {
-  transform: scale(0.94);
 }

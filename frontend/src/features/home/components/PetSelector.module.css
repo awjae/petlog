@@ -6,7 +6,8 @@
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  justify-content: space-between;
+  padding: 0 12px 0 20px;
   z-index: 80;
 }
 
@@ -58,6 +59,22 @@
 
 .chevronOpen {
   transform: rotate(180deg);
+}
+
+.detailLink {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 4px 8px;
+  font: var(--font-caption);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.detailLink:active {
+  color: var(--color-primary);
 }
 
 /* backdrop — 뷰포트 전체 */

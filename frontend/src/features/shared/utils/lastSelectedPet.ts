@@ -17,3 +17,12 @@ export function setLastSelectedPetId(petId: string): void {
     // localStorage 접근 불가(시크릿 모드 등) 시 무시
   }
 }
+
+export function removeLastSelectedPetId(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage 접근 불가(시크릿 모드 등) 시 무시
+  }
+}

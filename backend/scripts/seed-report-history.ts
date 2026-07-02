@@ -1,14 +1,15 @@
 import 'dotenv/config';
 import { PrismaClient, HealthRecordType } from '@prisma/client';
 
-// 리포트 생성 요건(MIN_RECORD_COUNT=10, MIN_RECORD_DAYS=7, report.service.ts)을
-// 충족시키기 위해 특정 petId에 최근 7일간 건강 기록을 채워 넣는 스크립트.
-// 실행: npm run seed:report-requirements --workspace=backend -- <petId>
+// seed-report-requirements.ts를 참고해, 리포트를 여러 번 생성/조회 테스트할 수 있도록
+// 특정 petId에 최근 3개월(90일)치 건강 기록을 채워 넣는 스크립트.
+// 실행: npm run seed:report-history --workspace=backend -- <petId>
 
 const prisma = new PrismaClient();
 
 const DEFAULT_PET_ID = 'a658a39a-0a92-465e-a91c-c3a92f9fcdde';
 const DAY_MS = 24 * 60 * 60 * 1000;
+const PERIOD_DAYS = 90;
 
 const RECORD_PRESETS: Array<{
   type: HealthRecordType;
@@ -34,13 +35,12 @@ async function main() {
 
   const todayUtc = new Date();
   todayUtc.setUTCHours(9, 0, 0, 0);
-  const earliestDay = new Date(todayUtc.getTime() - 6 * DAY_MS);
+  const earliestDay = new Date(todayUtc.getTime() - (PERIOD_DAYS - 1) * DAY_MS);
 
   if (pet.createdAt > earliestDay) {
     console.warn(
-      `경고: 반려동물 등록일(${pet.createdAt.toISOString()})이 최근 7일 이내입니다. ` +
-        `분석 기간(periodStart)은 등록일 이후여야 하므로, 오늘부터 등록일까지의 기간만으로는 ` +
-        `7일 요건을 만족하지 못할 수 있습니다.`,
+      `경고: 반려동물 등록일(${pet.createdAt.toISOString()})이 ${PERIOD_DAYS}일 전보다 늦습니다. ` +
+        `periodStart는 등록일 이후여야 하므로, 등록일 이전 날짜의 기록은 리포트 생성 기간 선택에 활용되지 않습니다.`,
     );
   }
 
@@ -52,7 +52,7 @@ async function main() {
     recordedAt: Date;
   }[] = [];
 
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
+  for (let dayOffset = PERIOD_DAYS - 1; dayOffset >= 0; dayOffset--) {
     const morningAt = new Date(todayUtc.getTime() - dayOffset * DAY_MS);
     const eveningAt = new Date(morningAt.getTime());
     eveningAt.setUTCHours(18, 0, 0, 0);
@@ -68,7 +68,7 @@ async function main() {
 
   const distinctDays = new Set(records.map((r) => r.recordedAt.toISOString().slice(0, 10)));
   console.log(
-    `pet(${petId})에 건강 기록 ${records.length}건 생성 완료 (${distinctDays.size}일 분산).`,
+    `pet(${petId})에 건강 기록 ${records.length}건 생성 완료 (${distinctDays.size}일 분산, 최근 ${PERIOD_DAYS}일).`,
   );
 }
 

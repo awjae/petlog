@@ -10,14 +10,14 @@ export class PetService {
 
   async findAll(userId: string) {
     const pets = await this.prisma.pet.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
     });
     return pets.map(this.serialize);
   }
 
   async findOne(userId: string, id: string) {
-    const pet = await this.prisma.pet.findFirst({ where: { id, userId } });
+    const pet = await this.prisma.pet.findFirst({ where: { id, userId, deletedAt: null } });
     if (!pet) throw new NotFoundException('반려동물을 찾을 수 없습니다.');
     return this.serialize(pet);
   }

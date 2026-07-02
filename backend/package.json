@@ -16,7 +16,9 @@
     "docker:up": "docker compose -f ../docker-compose.yml up -d",
     "docker:down": "docker compose -f ../docker-compose.yml down",
     "docker:logs": "docker compose -f ../docker-compose.yml logs -f db",
-    "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts"
+    "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts",
+    "seed:report-history": "ts-node -T scripts/seed-report-history.ts",
+    "seed:illness-symptoms": "ts-node -T scripts/seed-illness-symptoms.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",

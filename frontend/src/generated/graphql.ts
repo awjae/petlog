@@ -80,6 +80,17 @@ export type ScheduleType = 'appointment' | 'medication' | 'vaccination';
 
 export type Species = 'cat' | 'dog';
 
+export type UpdatePetInput = {
+  birthDate?: string | null | undefined;
+  breed?: string | null | undefined;
+  gender?: Gender | null | undefined;
+  isNeutered?: boolean | null | undefined;
+  name?: string | null | undefined;
+  profileImageUrl?: string | null | undefined;
+  species?: Species | null | undefined;
+  weight?: number | null | undefined;
+};
+
 export type UpdateProfileInput = {
   name?: string | null | undefined;
 };
@@ -272,6 +283,80 @@ export type CreatePetMutationVariables = Exact<{
 }>;
 
 export type CreatePetMutation = { createPet: { id: string; name: string; species: Species } };
+
+export type UpdatePetMutationVariables = Exact<{
+  id: string | number;
+  input: UpdatePetInput;
+}>;
+
+export type UpdatePetMutation = {
+  updatePet: {
+    id: string;
+    name: string;
+    species: Species;
+    breed: string | null;
+    birthDate: string | null;
+    gender: Gender;
+    isNeutered: boolean;
+    profileImageUrl: string | null;
+  };
+};
+
+export type DeletePetMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+export type DeletePetMutation = { deletePet: boolean };
+
+export type PetDetailQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+export type PetDetailQuery = {
+  pet: {
+    id: string;
+    name: string;
+    species: Species;
+    breed: string | null;
+    birthDate: string | null;
+    gender: Gender;
+    weight: number | null;
+    isNeutered: boolean;
+    profileImageUrl: string | null;
+    todayRecordCount: number;
+    createdAt: string;
+    updatedAt: string;
+    recentWeight: { value: number; recordedAt: string } | null;
+    recentHealthRecords: Array<{
+      id: string;
+      type: HealthRecordType;
+      recordedAt: string;
+      summary: string;
+    }>;
+  };
+};
+
+export type PetEditQueryVariables = Exact<{
+  id: string | number;
+}>;
+
+export type PetEditQuery = {
+  pet: {
+    id: string;
+    name: string;
+    species: Species;
+    breed: string | null;
+    birthDate: string | null;
+    gender: Gender;
+    weight: number | null;
+    isNeutered: boolean;
+    profileImageUrl: string | null;
+  };
+};
+
+export type PetIdsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type PetIdsQuery = { pets: Array<{ id: string }> };
 
 export type GenerateReportMutationVariables = Exact<{
   petId: string | number;
@@ -1130,6 +1215,261 @@ export const CreatePetDocument = {
     },
   ],
 } as unknown as DocumentNode<CreatePetMutation, CreatePetMutationVariables>;
+export const UpdatePetDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdatePet' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UpdatePetInput' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'updatePet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'species' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'breed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gender' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isNeutered' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'profileImageUrl' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<UpdatePetMutation, UpdatePetMutationVariables>;
+export const DeletePetDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'DeletePet' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'deletePet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DeletePetMutation, DeletePetMutationVariables>;
+export const PetDetailDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'PetDetail' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'species' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'breed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gender' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isNeutered' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'profileImageUrl' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'recentWeight' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordedAt' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'todayRecordCount' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'recentHealthRecords' },
+                  arguments: [
+                    {
+                      kind: 'Argument',
+                      name: { kind: 'Name', value: 'limit' },
+                      value: { kind: 'IntValue', value: '5' },
+                    },
+                  ],
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'recordedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<PetDetailQuery, PetDetailQueryVariables>;
+export const PetEditDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'PetEdit' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pet' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'species' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'breed' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'gender' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isNeutered' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'profileImageUrl' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<PetEditQuery, PetEditQueryVariables>;
+export const PetIdsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'PetIds' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pets' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'id' } }],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<PetIdsQuery, PetIdsQueryVariables>;
 export const GenerateReportDocument = {
   kind: 'Document',
   definitions: [

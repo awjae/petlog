@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import {
   getLastSelectedPetId,
   setLastSelectedPetId,
 } from '@/features/shared/utils/lastSelectedPet';
+import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { PetSelector } from '@/features/home/components/PetSelector';
 import { TodayRecordBanner } from '@/features/home/components/TodayRecordBanner';
@@ -18,6 +19,7 @@ import { HomePhase1Content } from '@/features/home/components/HomePhase1Content'
 import { HomeAIUnlockBanner } from '@/features/home/components/HomeAIUnlockBanner';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { FAB } from '@/features/shared/components/FAB';
+import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import styles from './page.module.css';
 
 // 데모용 페이즈 강제 설정: null = 자동 감지, 1 = 온보딩, 2 = 습관 형성, 3 = AI 해금
@@ -36,6 +38,12 @@ function resolveDataPhase(totalRecords: number): DataPhase {
 export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
   const [selectedPetId, setSelectedPetId] = useState<string | null>(() => getLastSelectedPetId());
+  const { toasts, addToast, dismiss } = useToast();
+
+  useEffect(() => {
+    const message = consumePendingToast();
+    if (message) addToast(message, 'success');
+  }, []);
 
   function handleSelectPet(petId: string) {
     setSelectedPetId(petId);
@@ -53,6 +61,7 @@ export default function HomePage() {
         <div className={styles.skeletonHeader} aria-hidden="true" />
         <HomeSkeleton />
         <BottomNav />
+        <ToastContainer toasts={toasts} onDismiss={dismiss} />
       </main>
     );
   }
@@ -69,6 +78,7 @@ export default function HomePage() {
           </button>
         </div>
         <BottomNav />
+        <ToastContainer toasts={toasts} onDismiss={dismiss} />
       </main>
     );
   }
@@ -79,6 +89,7 @@ export default function HomePage() {
       <main className={styles.main} aria-label="홈">
         <HomeNoPetContent />
         <BottomNav />
+        <ToastContainer toasts={toasts} onDismiss={dismiss} />
       </main>
     );
   }
@@ -127,6 +138,7 @@ export default function HomePage() {
 
       <FAB href="/records/new" label="기록 추가" />
       <BottomNav />
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </main>
   );
 }

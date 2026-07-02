@@ -30,6 +30,11 @@ type Documents = {
   '\n    mutation DeleteMedication($id: ID!) {\n      deleteMedication(id: $id)\n    }\n  ': typeof types.DeleteMedicationDocument;
   '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.MedicationsDocument;
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n': typeof types.CreatePetDocument;
+  '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ': typeof types.UpdatePetDocument;
+  '\n    mutation DeletePet($id: ID!) {\n      deletePet(id: $id)\n    }\n  ': typeof types.DeletePetDocument;
+  '\n  query PetDetail($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n      recentWeight {\n        value\n        recordedAt\n      }\n      todayRecordCount\n      recentHealthRecords(limit: 5) {\n        id\n        type\n        recordedAt\n        summary\n      }\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.PetDetailDocument;
+  '\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n': typeof types.PetEditDocument;
+  '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n': typeof types.PetIdsDocument;
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n': typeof types.GenerateReportDocument;
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n': typeof types.ReportStatusDocument;
   '\n  query Reports($petId: ID!) {\n    reports(petId: $petId) {\n      id\n      status\n      overview\n      highlights\n      concerns\n      recommendations\n      generatedBy\n      periodStart\n      periodEnd\n      createdAt\n    }\n  }\n': typeof types.ReportsDocument;
@@ -73,6 +78,15 @@ const documents: Documents = {
     types.MedicationsDocument,
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n':
     types.CreatePetDocument,
+  '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ':
+    types.UpdatePetDocument,
+  '\n    mutation DeletePet($id: ID!) {\n      deletePet(id: $id)\n    }\n  ':
+    types.DeletePetDocument,
+  '\n  query PetDetail($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n      recentWeight {\n        value\n        recordedAt\n      }\n      todayRecordCount\n      recentHealthRecords(limit: 5) {\n        id\n        type\n        recordedAt\n        summary\n      }\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.PetDetailDocument,
+  '\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n':
+    types.PetEditDocument,
+  '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n': types.PetIdsDocument,
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n':
     types.GenerateReportDocument,
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n':
@@ -203,6 +217,36 @@ export function gql(
 export function gql(
   source: '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n',
 ): (typeof documents)['\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ',
+): (typeof documents)['\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  '];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n    mutation DeletePet($id: ID!) {\n      deletePet(id: $id)\n    }\n  ',
+): (typeof documents)['\n    mutation DeletePet($id: ID!) {\n      deletePet(id: $id)\n    }\n  '];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query PetDetail($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n      recentWeight {\n        value\n        recordedAt\n      }\n      todayRecordCount\n      recentHealthRecords(limit: 5) {\n        id\n        type\n        recordedAt\n        summary\n      }\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  query PetDetail($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n      recentWeight {\n        value\n        recordedAt\n      }\n      todayRecordCount\n      recentHealthRecords(limit: 5) {\n        id\n        type\n        recordedAt\n        summary\n      }\n      createdAt\n      updatedAt\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n',
+): (typeof documents)['\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n',
+): (typeof documents)['\n  query PetIds {\n    pets {\n      id\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

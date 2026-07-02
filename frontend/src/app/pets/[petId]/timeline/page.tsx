@@ -2,10 +2,11 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Plus } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { HealthRecordTimeline } from '@/features/health-record/components/HealthRecordTimeline';
 import { RecordBottomSheet } from '@/features/health-record/components/RecordBottomSheet';
+import { FAB } from '@/features/shared/components/FAB';
 import { useState } from 'react';
 import styles from './page.module.css';
 
@@ -58,14 +59,7 @@ export default function TimelinePage({ params }: Props) {
       {!loading && !error && <HealthRecordTimeline records={records} />}
 
       {/* ── 기록 추가 버튼 ── */}
-      <button
-        type="button"
-        className={styles.fab}
-        onClick={() => setIsSheetOpen(true)}
-        aria-label="기록 추가"
-      >
-        <Plus size={24} strokeWidth={2.5} aria-hidden="true" />
-      </button>
+      <FAB onClick={() => setIsSheetOpen(true)} label="기록 추가" />
 
       <RecordBottomSheet
         isOpen={isSheetOpen}

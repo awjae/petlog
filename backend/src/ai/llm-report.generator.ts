@@ -69,9 +69,15 @@ export class LlmReportGenerator {
     ];
 
     const recommendations = [...content.recommendations];
-    if (alerts.length > 0) {
+    // high는 concerns에서 이미 다루므로, medium은 recommendations에서 조건별로 개별 안내한다.
+    if (breed) {
       recommendations.push(
-        `품종 특성상 ${alerts.map((a) => a.condition).join(', ')} 관련 이상 증상이 나타나면 수의사와 상담하세요`,
+        ...alerts
+          .filter((a) => a.risk_level === 'medium')
+          .map(
+            (a) =>
+              `${breed} 품종은 ${a.condition} 발병률이 상대적으로 높아요. ${a.watch_for.join(', ')} 증상이 보이면 미리 관리해주세요`,
+          ),
       );
     }
 
