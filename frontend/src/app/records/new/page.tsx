@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
+import { getLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
 import styles from './page.module.css';
 
 type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'stool' | 'vomit';
@@ -99,7 +100,12 @@ function NewRecordContent() {
   const { data } = useHomeData();
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
 
-  const defaultPetId = params.get('petId') ?? data?.pets[0]?.id ?? '';
+  const petIdFromUrl = params.get('petId');
+  const lastSelectedPetId = getLastSelectedPetId();
+  const homeDefaultPetId = data?.pets.some((p) => p.id === lastSelectedPetId)
+    ? lastSelectedPetId
+    : null;
+  const defaultPetId = petIdFromUrl ?? homeDefaultPetId ?? data?.pets[0]?.id ?? '';
   const rawType = params.get('type') as RecordType | null;
   const defaultType: RecordType = rawType && VALID_TYPES.includes(rawType) ? rawType : 'weight';
 

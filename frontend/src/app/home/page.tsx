@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
+import {
+  getLastSelectedPetId,
+  setLastSelectedPetId,
+} from '@/features/shared/utils/lastSelectedPet';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { PetSelector } from '@/features/home/components/PetSelector';
 import { TodayRecordBanner } from '@/features/home/components/TodayRecordBanner';
@@ -31,9 +35,15 @@ function resolveDataPhase(totalRecords: number): DataPhase {
 
 export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
-  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(() => getLastSelectedPetId());
 
-  const activePetIdForStatus = selectedPetId ?? data?.pets[0]?.id ?? '';
+  function handleSelectPet(petId: string) {
+    setSelectedPetId(petId);
+    setLastSelectedPetId(petId);
+  }
+
+  const activePetIdForStatus =
+    data?.pets.find((p) => p.id === selectedPetId)?.id ?? data?.pets[0]?.id ?? '';
   const { status: reportStatus } = useReportStatus(activePetIdForStatus);
 
   /* ── 로딩 ── */
@@ -73,7 +83,7 @@ export default function HomePage() {
     );
   }
 
-  const activePetId = selectedPetId ?? data.pets[0].id;
+  const activePetId = data.pets.find((p) => p.id === selectedPetId)?.id ?? data.pets[0].id;
   const selectedPet = data.pets.find((p) => p.id === activePetId) ?? data.pets[0];
 
   // recentHealthRecords.length 합산을 totalRecordCount 대리값으로 사용
@@ -86,7 +96,7 @@ export default function HomePage() {
 
   return (
     <main className={styles.main} aria-label="홈">
-      <PetSelector pets={data.pets} selectedPetId={activePetId} onSelect={setSelectedPetId} />
+      <PetSelector pets={data.pets} selectedPetId={activePetId} onSelect={handleSelectPet} />
 
       {phase === 1 ? (
         <HomePhase1Content pet={selectedPet} upcomingSchedules={data.upcomingSchedules} />

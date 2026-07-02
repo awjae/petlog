@@ -14,6 +14,7 @@ import { useGenerateReport } from '@/features/report/hooks/useGenerateReport';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
 import type { PetBasic } from '@/features/report/types/report.types';
+import { getLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
 import styles from './page.module.css';
 
 const MIN_RECORDS = 10;
@@ -75,7 +76,9 @@ function ReportsContent() {
   const pets: PetBasic[] = petsData?.me?.pets ?? [];
   const firstPetId = pets[0]?.id ?? '';
   const petIdFromUrl = searchParams.get('petId') ?? '';
-  const activePetId = petIdFromUrl || firstPetId;
+  const lastSelectedPetId = getLastSelectedPetId();
+  const homeDefaultPetId = pets.some((p) => p.id === lastSelectedPetId) ? lastSelectedPetId! : '';
+  const activePetId = petIdFromUrl || homeDefaultPetId || firstPetId;
 
   function handleSelectPet(id: string) {
     const params = new URLSearchParams(searchParams.toString());
