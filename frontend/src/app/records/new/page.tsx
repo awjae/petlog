@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   X,
@@ -101,15 +101,10 @@ function NewRecordContent() {
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
 
   const petIdFromUrl = params.get('petId');
-  const lastSelectedPetId = getLastSelectedPetId();
-  const homeDefaultPetId = data?.pets.some((p) => p.id === lastSelectedPetId)
-    ? lastSelectedPetId
-    : null;
-  const defaultPetId = petIdFromUrl ?? homeDefaultPetId ?? data?.pets[0]?.id ?? '';
   const rawType = params.get('type') as RecordType | null;
   const defaultType: RecordType = rawType && VALID_TYPES.includes(rawType) ? rawType : 'weight';
 
-  const [petId, setPetId] = useState(defaultPetId);
+  const [petId, setPetId] = useState(petIdFromUrl ?? '');
   const [recordType, setRecordType] = useState<RecordType>(defaultType);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
 
@@ -136,6 +131,16 @@ function NewRecordContent() {
   const [success, setSuccess] = useState(false);
 
   const pets = data?.pets ?? [];
+
+  // pets 목록이 비동기 로딩된 이후 petId가 비어있으면 마지막 선택 반려동물로 동기화
+  useEffect(() => {
+    if (petId || pets.length === 0) return;
+    const lastSelectedPetId = getLastSelectedPetId();
+    const defaultPetId = pets.some((p) => p.id === lastSelectedPetId)
+      ? lastSelectedPetId
+      : pets[0].id;
+    setPetId(defaultPetId ?? '');
+  }, [pets, petId]);
 
   function handleTypeChange(type: RecordType) {
     setRecordType(type);
