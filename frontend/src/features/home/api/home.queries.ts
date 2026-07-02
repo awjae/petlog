@@ -18,6 +18,7 @@ export const HOME_QUERY: TypedDocumentNode<HomeQueryQuery, HomeQueryQueryVariabl
           recordedAt
         }
         todayRecordCount
+        totalHealthRecordCount
         recentHealthRecords(limit: 5) {
           id
           type

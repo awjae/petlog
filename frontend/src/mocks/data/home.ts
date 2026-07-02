@@ -15,6 +15,7 @@ export const mockHomeDataPhase1: HomeQueryQuery = {
         profileImageUrl: null,
         recentWeight: null,
         todayRecordCount: 0,
+        totalHealthRecordCount: 0,
         recentHealthRecords: [],
       },
     ],
@@ -57,6 +58,7 @@ export const mockHomeData: HomeQueryQuery = {
           recordedAt: '2026-06-20T09:00:00.000Z',
         },
         todayRecordCount: 2,
+        totalHealthRecordCount: 12,
         recentHealthRecords: [
           {
             id: 'hr-1',
@@ -102,6 +104,7 @@ export const mockHomeData: HomeQueryQuery = {
           recordedAt: '2026-06-18T10:00:00.000Z',
         },
         todayRecordCount: 0,
+        totalHealthRecordCount: 3,
         recentHealthRecords: [
           {
             id: 'hr-4',

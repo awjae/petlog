@@ -131,6 +131,7 @@ export type HomeQueryQuery = {
       birthDate: string | null;
       profileImageUrl: string | null;
       todayRecordCount: number;
+      totalHealthRecordCount: number;
       recentWeight: { value: number; recordedAt: string } | null;
       recentHealthRecords: Array<{
         id: string;
@@ -598,6 +599,7 @@ export const HomeQueryDocument = {
                         },
                       },
                       { kind: 'Field', name: { kind: 'Name', value: 'todayRecordCount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'totalHealthRecordCount' } },
                       {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'recentHealthRecords' },

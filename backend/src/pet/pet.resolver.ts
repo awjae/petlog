@@ -56,6 +56,11 @@ export class PetResolver {
     return this.petService.countTodayRecords(pet.id);
   }
 
+  @ResolveField(() => Int)
+  totalHealthRecordCount(@Parent() pet: Pet): Promise<number> {
+    return this.petService.countTotalHealthRecords(pet.id);
+  }
+
   @ResolveField(() => [HealthRecordSummary])
   recentHealthRecords(
     @Parent() pet: Pet,

@@ -73,6 +73,9 @@ export class Pet {
   @Field(() => Int)
   todayRecordCount?: number;
 
+  @Field(() => Int)
+  totalHealthRecordCount?: number;
+
   @Field(() => [HealthRecordSummary])
   recentHealthRecords?: HealthRecordSummary[];
 

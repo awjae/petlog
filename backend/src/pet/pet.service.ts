@@ -88,6 +88,10 @@ export class PetService {
     });
   }
 
+  async countTotalHealthRecords(petId: string): Promise<number> {
+    return this.prisma.healthRecord.count({ where: { petId, deletedAt: null } });
+  }
+
   async findRecentHealthRecords(petId: string, limit: number): Promise<HealthRecordSummary[]> {
     const records = await this.prisma.healthRecord.findMany({
       where: { petId, deletedAt: null },

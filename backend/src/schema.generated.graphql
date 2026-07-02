@@ -193,6 +193,7 @@ type Pet {
   recentWeight: RecentWeight
   species: Species!
   todayRecordCount: Int!
+  totalHealthRecordCount: Int!
   updatedAt: DateTime!
   weight: Float
 }

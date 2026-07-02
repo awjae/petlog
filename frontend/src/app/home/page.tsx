@@ -23,7 +23,6 @@ import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import styles from './page.module.css';
 
 // 데모용 페이즈 강제 설정: null = 자동 감지, 1 = 온보딩, 2 = 습관 형성, 3 = AI 해금
-// TODO: 백엔드 totalHealthRecordCount 연동 후 null로 고정
 const DEMO_PHASE: null | 1 | 2 | 3 = null;
 
 type DataPhase = 1 | 2 | 3;
@@ -97,13 +96,8 @@ export default function HomePage() {
   const activePetId = data.pets.find((p) => p.id === selectedPetId)?.id ?? data.pets[0].id;
   const selectedPet = data.pets.find((p) => p.id === activePetId) ?? data.pets[0];
 
-  // recentHealthRecords.length 합산을 totalRecordCount 대리값으로 사용
-  // TODO: 백엔드 totalHealthRecordCount 필드 추가 후 대체
-  const totalRecentRecords = data.pets.reduce(
-    (sum, pet) => sum + pet.recentHealthRecords.length,
-    0,
-  );
-  const phase: DataPhase = resolveDataPhase(totalRecentRecords);
+  const totalRecordCount = data.pets.reduce((sum, pet) => sum + pet.totalHealthRecordCount, 0);
+  const phase: DataPhase = resolveDataPhase(totalRecordCount);
 
   return (
     <main className={styles.main} aria-label="홈">
