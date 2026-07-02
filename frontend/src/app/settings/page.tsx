@@ -8,6 +8,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
+import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
 import styles from './page.module.css';
 
 const THEMES = [
@@ -24,6 +25,7 @@ export default function SettingsPage() {
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    removeLastSelectedPetId();
     await client.clearStore();
     router.push('/login');
   }

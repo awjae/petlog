@@ -55,3 +55,4 @@ Zustand나 서버 저장은 도입하지 않는다.
 
 - 다른 기기에서는 마지막 선택이 유지되지 않는다 (의도된 제약 — Context 참고).
 - 반려동물이 삭제되면 `localStorage`에 남은 `petId`가 더 이상 유효하지 않을 수 있다. 각 사용처에서 `pets.find(p => p.id === selectedPetId) ?? pets[0]` 형태로 폴백 처리가 필요하며, 이 폴백 로직이 유틸 함수가 아닌 각 화면(`PetSelector` 등)에 개별적으로 존재한다.
+- 로그아웃 시에도 `removeLastSelectedPetId()`를 호출한다 (`settings/page.tsx`의 `handleLogout`). 위 폴백 덕분에 다른 사용자의 `petId`가 남아있어도 데이터가 섞이진 않지만(새 계정의 pet 목록과 매치되지 않아 즉시 `pets[0]`로 대체됨), 같은 기기를 여러 계정이 공유하는 상황(가족 공유 등)에서 불필요한 상태가 남지 않도록 로그아웃을 "세션 종료" 시점으로 명확히 하기 위함이다.
