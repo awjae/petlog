@@ -1,28 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { BreedProfileService } from '../ai/breed-profile.service';
-import { Species } from '@prisma/client';
-
-export interface MockReportContent {
-  overview: string;
-  highlights: string[];
-  concerns: string[];
-  recommendations: string[];
-}
-
-export interface MockReportParams {
-  petName: string;
-  species: Species;
-  breed: string | null;
-  birthDate: Date | null;
-  recordCount: number;
-  recordDays: number;
-}
+import { ReportGeneratedBy } from '@prisma/client';
+import { BreedProfileService } from './breed-profile.service';
+import type {
+  HealthReportGenerationParams,
+  HealthReportGenerator,
+  ReportContent,
+} from './health-report-generator.interface';
 
 @Injectable()
-export class MockReportGenerator {
+export class MockHealthReportGenerator implements HealthReportGenerator {
+  readonly kind = ReportGeneratedBy.mock;
+
   constructor(private readonly breedProfileService: BreedProfileService) {}
 
-  async generate(params: MockReportParams): Promise<MockReportContent> {
+  async generate(params: HealthReportGenerationParams): Promise<ReportContent> {
     await new Promise<void>((resolve) =>
       setTimeout(resolve, 2000 + Math.floor(Math.random() * 1000)),
     );

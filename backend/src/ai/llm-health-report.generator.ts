@@ -1,38 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HealthRecordType, Species } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { HealthRecordType, ReportGeneratedBy } from '@prisma/client';
 import { ChatGptHealthReportClient } from '@petlog/ai';
 import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { BreedProfileService } from './breed-profile.service';
-import type { MockReportContent } from '../report/mock-report.generator';
-
-export interface LlmReportParams {
-  petId: string;
-  petName: string;
-  species: Species;
-  breed: string | null;
-  birthDate: Date | null;
-  periodStart: Date;
-  periodEnd: Date;
-}
+import {
+  CHATGPT_CLIENT,
+  type HealthReportGenerationParams,
+  type HealthReportGenerator,
+  type ReportContent,
+} from './health-report-generator.interface';
 
 @Injectable()
-export class LlmReportGenerator {
+export class LlmHealthReportGenerator implements HealthReportGenerator {
+  readonly kind = ReportGeneratedBy.ai;
+
   constructor(
-    private readonly config: ConfigService,
+    @Inject(CHATGPT_CLIENT) private readonly client: ChatGptHealthReportClient | null,
     private readonly prisma: PrismaService,
     private readonly breedProfileService: BreedProfileService,
   ) {}
 
-  async generate(params: LlmReportParams): Promise<MockReportContent> {
-    const apiKey = this.config.getOrThrow<string>('OPENAI_API_KEY');
-    const client = new ChatGptHealthReportClient(apiKey);
+  async generate(params: HealthReportGenerationParams): Promise<ReportContent> {
+    if (!this.client) {
+      // AiModule의 HEALTH_REPORT_GENERATOR 팩토리가 OPENAI_API_KEY 존재 여부로
+      // 이 구현체를 선택하므로, 정상 흐름에서는 도달하지 않는다.
+      throw new Error('ChatGPT client가 설정되지 않았습니다 (OPENAI_API_KEY 누락).');
+    }
 
     const input = await this.buildInput(params);
-    const output = await client.generateReport(input);
+    const output = await this.client.generateReport(input);
 
-    const content: MockReportContent = {
+    const content: ReportContent = {
       overview: output.summary,
       highlights: output.trends.map((t) => `${t.category}: ${t.description}`),
       concerns: output.concerns,
@@ -45,9 +44,9 @@ export class LlmReportGenerator {
   // Mock 생성기와 동일한 규칙으로 breed-profile(품종별 위험질환/생애주기) 결과를 후처리 병합한다.
   // LLM 프롬프트/파인튜닝 모델은 건드리지 않고 응답에 규칙 기반 문구만 덧붙인다.
   private mergeBreedProfile(
-    content: MockReportContent,
-    params: LlmReportParams,
-  ): MockReportContent {
+    content: ReportContent,
+    params: HealthReportGenerationParams,
+  ): ReportContent {
     const { petName, species, breed, birthDate } = params;
     const speciesKey = species.toLowerCase() as 'dog' | 'cat';
 
@@ -84,7 +83,7 @@ export class LlmReportGenerator {
     return { ...content, highlights, concerns, recommendations };
   }
 
-  private async buildInput(params: LlmReportParams): Promise<HealthReportInput> {
+  private async buildInput(params: HealthReportGenerationParams): Promise<HealthReportInput> {
     const { petId, petName, species, breed, birthDate, periodStart, periodEnd } = params;
 
     const [records, medications, lastVisit] = await Promise.all([

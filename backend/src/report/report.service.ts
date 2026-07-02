@@ -1,11 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
-import { MockReportGenerator } from './mock-report.generator';
-import { LlmReportGenerator } from '../ai/llm-report.generator';
-import { ReportStatus, ReportGeneratedBy, Species } from '@prisma/client';
+import {
+  HEALTH_REPORT_GENERATOR,
+  type HealthReportGenerationParams,
+  type HealthReportGenerator,
+} from '../ai/health-report-generator.interface';
+import { ReportStatus, Species } from '@prisma/client';
 import type { Report as PrismaReport } from '@prisma/client';
 
 const PROCESSING_TIMEOUT_MS = 5 * 60 * 1000;
@@ -20,9 +22,7 @@ export class ReportService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly petService: PetService,
-    private readonly mockReportGenerator: MockReportGenerator,
-    private readonly llmReportGenerator: LlmReportGenerator,
-    private readonly config: ConfigService,
+    @Inject(HEALTH_REPORT_GENERATOR) private readonly reportGenerator: HealthReportGenerator,
   ) {}
 
   async getReportStatus(userId: string, petId: string) {
@@ -142,53 +142,37 @@ export class ReportService {
       );
     }
 
-    const useAi = !!this.config.get<string>('OPENAI_API_KEY');
-
     const report = await this.prisma.report.create({
       data: {
         petId,
         status: ReportStatus.pending,
-        generatedBy: useAi ? ReportGeneratedBy.ai : ReportGeneratedBy.mock,
+        generatedBy: this.reportGenerator.kind,
         periodStart,
         periodEnd,
       },
     });
 
-    if (useAi) {
-      void this.runLlmGeneration(report.id, {
-        petId,
-        petName: pet.name,
-        species: pet.species as Species,
-        breed: pet.breed ?? null,
-        birthDate: pet.birthDate ?? null,
-        periodStart,
-        periodEnd,
-      });
-    } else {
-      void this.runMockGeneration(report.id, {
-        petName: pet.name,
-        species: pet.species as Species,
-        breed: pet.breed ?? null,
-        birthDate: pet.birthDate ?? null,
-        recordCount,
-        recordDays,
-      });
-    }
+    // TODO: fire-and-forget 방식이라 서버 재시작 시 이 리포트가 pending/processing에
+    //   영구히 멈출 수 있음. BullMQ 등 큐로 옮기거나, 재시작 시 stale pending을
+    //   failed 처리하는 정리 job을 추가할 것.
+    void this.runGeneration(report.id, {
+      petId,
+      petName: pet.name,
+      species: pet.species as Species,
+      breed: pet.breed ?? null,
+      birthDate: pet.birthDate ?? null,
+      periodStart,
+      periodEnd,
+      recordCount,
+      recordDays,
+    });
 
     return { reportId: report.id, status: report.status };
   }
 
-  private async runLlmGeneration(
+  private async runGeneration(
     reportId: string,
-    params: {
-      petId: string;
-      petName: string;
-      species: Species;
-      breed: string | null;
-      birthDate: Date | null;
-      periodStart: Date;
-      periodEnd: Date;
-    },
+    params: HealthReportGenerationParams,
   ): Promise<void> {
     try {
       await this.prisma.report.update({
@@ -196,45 +180,7 @@ export class ReportService {
         data: { status: ReportStatus.processing },
       });
 
-      const content = await this.llmReportGenerator.generate(params);
-
-      await this.prisma.report.update({
-        where: { id: reportId },
-        data: {
-          status: ReportStatus.completed,
-          overview: content.overview,
-          highlights: content.highlights,
-          concerns: content.concerns,
-          recommendations: content.recommendations,
-        },
-      });
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : 'Unknown error during LLM generation';
-      await this.prisma.report.update({
-        where: { id: reportId },
-        data: { status: ReportStatus.failed, failedReason: reason },
-      });
-    }
-  }
-
-  private async runMockGeneration(
-    reportId: string,
-    params: {
-      petName: string;
-      species: Species;
-      breed: string | null;
-      birthDate: Date | null;
-      recordCount: number;
-      recordDays: number;
-    },
-  ): Promise<void> {
-    try {
-      await this.prisma.report.update({
-        where: { id: reportId },
-        data: { status: ReportStatus.processing },
-      });
-
-      const content = await this.mockReportGenerator.generate(params);
+      const content = await this.reportGenerator.generate(params);
 
       await this.prisma.report.update({
         where: { id: reportId },
