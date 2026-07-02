@@ -53,8 +53,17 @@ Object Storage 연동은 지금 하지 않고, 코드에 명시적 TODO로 남�
 
 ### 서버 재시작 시 파일 유실 위험
 
-로컬 디스크 저장은 배포 환경(컨테이너 재시작, 다중 인스턴스 스케일 아웃)에서 파일이 사라지거나 인스턴스 간 공유되지 않는다. **상용화 이전에 반드시 Object Storage로 전환해야 하는 항목**으로 코드에 `TODO(1)`로 표시했다.
+로컬 디스크 저장은 배포 환경(컨테이너 재시작, 다중 인스턴스 스케일 아웃)에서 파일이 사라지거나 인스턴스 간 공유되지 않는다. **상용화 이전에 반드시 Object Storage로 전환해야 하는 항목**으로 코드에 `TODO(1)`로 표시했고, [awjae/petlog#2](https://github.com/awjae/petlog/issues/2)로 트래킹한다.
 
 ### MIME 타입 검증의 한계
 
-현재 `fileFilter`는 클라이언트가 선언한 `file.mimetype`만 검사한다. 파일 확장자/Content-Type을 위조하면 우회 가능하다. 실제 파일 바이너리(magic bytes)를 검사하지 않으므로, 상용화 전 `file-type` 패키지 등으로 강화가 필요하다 (`TODO(2)`). 현재는 5MB 크기 제한과 `JwtAuthGuard`로 인증된 사용자만 업로드 가능하도록 최소한의 방어만 되어 있다.
+현재 `fileFilter`는 클라이언트가 선언한 `file.mimetype`만 검사한다. 파일 확장자/Content-Type을 위조하면 우회 가능하다. 실제 파일 바이너리(magic bytes)를 검사하지 않으므로, 상용화 전 `file-type` 패키지 등으로 강화가 필요하다 (`TODO(2)`, [awjae/petlog#1](https://github.com/awjae/petlog/issues/1)). 현재는 5MB 크기 제한과 `JwtAuthGuard`로 인증된 사용자만 업로드 가능하도록 최소한의 방어만 되어 있다.
+
+---
+
+## 관련 이슈
+
+코드 내 TODO는 GitHub Issue로도 등록해 백로그를 트래킹한다.
+
+- [#1 이미지 업로드 파일 타입 검증을 magic-bytes 기반으로 강화](https://github.com/awjae/petlog/issues/1)
+- [#2 이미지 업로드를 Object Storage(S3/R2)로 전환](https://github.com/awjae/petlog/issues/2)
