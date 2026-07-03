@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -14,4 +15,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// SENTRY_ORG / SENTRY_PROJECT / SENTRY_AUTH_TOKEN이 없으면
+// 소스맵 업로드만 비활성화되고 빌드는 정상 진행된다.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+});
