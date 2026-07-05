@@ -6,17 +6,23 @@
     "libs/types",
     "libs/utils",
     "libs/ai",
+    "libs/storage",
     "backend",
-    "frontend"
+    "frontend",
+    "infra"
   ],
   "scripts": {
-    "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai",
+    "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai libs/storage",
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "tsc --build",
+    "typecheck": "tsc --build && npm run typecheck --workspace=infra",
     "prepare": "husky",
+    "infra:synth": "npm run synth --workspace=infra",
+    "infra:diff": "npm run diff --workspace=infra",
+    "infra:deploy": "npm run deploy --workspace=infra",
+    "ecr:login": "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:reset": "docker compose down -v && docker compose up -d",
@@ -45,6 +51,9 @@
       "prettier --write"
     ],
     "libs/**/*.ts": [
+      "prettier --write"
+    ],
+    "infra/**/*.ts": [
       "prettier --write"
     ]
   }

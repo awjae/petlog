@@ -9,7 +9,10 @@
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "generate": "graphql-codegen --config codegen.ts",
-    "generate:watch": "graphql-codegen --config codegen.ts --watch"
+    "generate:watch": "graphql-codegen --config codegen.ts --watch",
+    "docker:build": "docker build -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=\"$NEXT_PUBLIC_API_URL\" -t petlog-frontend ..",
+    "docker:push": "docker tag petlog-frontend:latest 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-frontend-dev:latest && docker push 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-frontend-dev:latest",
+    "docker:deploy": "npm run docker:build && npm run docker:push"
   },
   "dependencies": {
     "@apollo/client": "^4.2.3",

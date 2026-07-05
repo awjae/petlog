@@ -43,3 +43,11 @@ coverage/
 .turbo
 
 legacy/
+
+# CDKTF (infra/)
+infra/cdktf.out/
+infra/.gen/
+infra/terraform.tfstate*
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/*.tfplan

@@ -16,6 +16,9 @@
     "docker:up": "docker compose -f ../docker-compose.yml up -d",
     "docker:down": "docker compose -f ../docker-compose.yml down",
     "docker:logs": "docker compose -f ../docker-compose.yml logs -f db",
+    "docker:build": "docker build -f Dockerfile -t petlog-backend ..",
+    "docker:push": "docker tag petlog-backend:latest 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-backend-dev:latest && docker push 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-backend-dev:latest",
+    "docker:deploy": "npm run docker:build && npm run docker:push",
     "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts",
     "seed:report-history": "ts-node -T scripts/seed-report-history.ts",
     "seed:illness-symptoms": "ts-node -T scripts/seed-illness-symptoms.ts"
@@ -33,6 +36,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.4.5",
     "@petlog/ai": "*",
+    "@petlog/storage": "*",
     "@prisma/client": "^6.0.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

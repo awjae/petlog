@@ -16,10 +16,12 @@ import { UserModule } from './user/user.module';
 import { UploadModule } from './upload/upload.module';
 import { AiModule } from './ai/ai.module';
 import { ReportModule } from './report/report.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    HealthModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.generated.graphql'),
