@@ -35,7 +35,7 @@ export interface StorageStackProps {
  * - S3 버킷은 Block Public Access를 전체 차단한 완전 private 버킷이다.
  *   퍼블릭 버킷 정책이나 ACL로 직접 공개하지 않는다.
  * - 공개 서빙은 CloudFront + Origin Access Control(OAC)로만 한다.
- * - 백엔드(NestJS, backend-stack의 App Runner로 호스팅)가 참조할 값은 다음 3가지로 고정한다.
+ * - 백엔드(NestJS, backend-stack의 ECS Fargate로 호스팅)가 참조할 값은 다음 3가지로 고정한다.
  *   - AWS_REGION
  *   - AWS_S3_BUCKET_NAME
  *   - AWS_CLOUDFRONT_DOMAIN
@@ -233,12 +233,12 @@ export class StorageStack extends TerraformStack {
     // --- 백엔드(NestJS)용 최소 권한 IAM (레거시: Railway 시절 워크어라운드) ---
     // 백엔드가 Railway(AWS 외부)에서 호스팅되던 시절에는 IAM Role을 assume할 수 없어
     // 정적 액세스 키를 발급하는 IAM User가 유일한 방법이었다. 이제 backend-stack이
-    // App Runner Instance Role(임시 자격증명, 키 rotate 불필요)로 완전히 대체했으므로
+    // ECS Task Role(임시 자격증명, 키 rotate 불필요)로 완전히 대체했으므로
     // 이 IAM User/Access Key는 더 이상 애플리케이션 코드에서 쓰이지 않는다.
-    // 두 번째 배포 단계(Railway → App Runner 완전 전환)가 실제 트래픽으로 검증되면
+    // Railway → ECS Fargate 완전 전환이 실제 트래픽으로 검증되면
     // 이 블록(backendUser/backendAccessKey)과 관련 output은 별도 변경으로 제거를 검토한다
     // (지금 당장 지우지 않는 이유: 롤백 여유를 남겨두기 위함 — infra/README.md 참고).
-    // 권한 "정의"는 shared/s3-access-policy.ts에서 가져온다. App Runner Instance Role
+    // 권한 "정의"는 shared/s3-access-policy.ts에서 가져온다. ECS Task Role
     // (backend-stack)도 이 동일한 정의를 재사용한다 — "어떤 권한이 필요한지"와 "누구에게
     // 붙일지"를 분리하는 원칙에 따라, 이 파일에서는 IAM User에 붙이는 것만 담당한다.
     const backendPolicyDocument = buildS3ReadWritePolicyDocument(

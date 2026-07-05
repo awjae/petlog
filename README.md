@@ -143,7 +143,7 @@ Mock → Fine-tuned 모델 전환 시 비즈니스 로직 변경 없이 Provider
 - [ ] Next.js 사용자 플로우
 - [ ] 건강 타임라인 UI
 - [ ] Mock AI 리포트 생성
-- [x] 배포 (AWS App Runner, CDKTF로 관리 — Vercel/Railway 대체)
+- [x] 배포 (AWS ECS Fargate + ALB, CDKTF로 관리 — Vercel/Railway 대체)
 - [ ] 실제 AI 연동 (Claude API)
 
 ---

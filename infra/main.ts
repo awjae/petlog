@@ -27,8 +27,8 @@ new BootstrapStack(app, 'petlog-bootstrap');
 // 생성 순서가 곧 의존 순서다:
 //   (registry-stack, storage-stack, network-stack — 서로 독립) →
 //   database-stack (network 참조) →
-//   backend-stack (storage + registry + network + database 참조) →
-//   frontend-stack (registry + backend 참조)
+//   backend-stack (storage + registry + network + database 참조, ECS 클러스터 + 공유 ALB 생성) →
+//   frontend-stack (registry + network + backend 참조, 공유 ALB의 frontend 타겟 그룹에 등록)
 const registryStack = new RegistryStack(app, `petlog-registry-${environment}`, { environment });
 
 const storageStack = new StorageStack(app, `petlog-storage-${environment}`, { environment });
@@ -50,11 +50,12 @@ const backendStack = new BackendStack(app, `petlog-backend-${environment}`, {
   databaseStack,
 });
 
-// frontend-stack은 backend-stack의 App Runner 서비스 URL을 cross-stack reference로
-// 읽어야 하므로 반드시 backend-stack 다음에 생성한다.
+// frontend-stack은 backend-stack이 만든 ECS 클러스터/공유 ALB(frontend 타겟 그룹, 리스너)를
+// cross-stack reference로 읽어야 하므로 반드시 backend-stack 다음에 생성한다.
 new FrontendStack(app, `petlog-frontend-${environment}`, {
   environment,
   registryStack,
+  networkStack,
   backendStack,
 });
 

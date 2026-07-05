@@ -10,9 +10,12 @@
     "typecheck": "tsc --noEmit",
     "generate": "graphql-codegen --config codegen.ts",
     "generate:watch": "graphql-codegen --config codegen.ts --watch",
+    "docker:login": "dotenv -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; aws ecr get-login-password --region \"$REGION\" | docker login --username AWS --password-stdin \"$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$REGION.amazonaws.com\"'",
     "docker:build": "docker build -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=\"$NEXT_PUBLIC_API_URL\" -t petlog-frontend ..",
-    "docker:push": "docker tag petlog-frontend:latest 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-frontend-dev:latest && docker push 095256592046.dkr.ecr.ap-northeast-2.amazonaws.com/petlog-frontend-dev:latest",
-    "docker:deploy": "npm run docker:build && npm run docker:push"
+    "docker:push": "dotenv -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text); docker tag petlog-frontend:latest \"$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/petlog-frontend-$ENV:latest\" && docker push \"$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/petlog-frontend-$ENV:latest\"'",
+    "docker:force-redeploy": "dotenv -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; aws ecs update-service --region \"$REGION\" --cluster \"petlog-cluster-$ENV\" --service \"petlog-frontend-$ENV\" --force-new-deployment >/dev/null'",
+    "docker:deploy": "npm run docker:login && npm run docker:build && npm run docker:push && npm run docker:force-redeploy",
+    "deploy": "npm run docker:deploy"
   },
   "dependencies": {
     "@apollo/client": "^4.2.3",
@@ -30,6 +33,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "dotenv-cli": "^11.0.0",
     "msw": "^2.14.6"
   },
   "msw": {

@@ -31,7 +31,7 @@ export const DB_NAME = 'petlog';
  * - `db.t4g.micro`(Graviton, 프리티어 대상), `gp3` 20GB, **Single-AZ**(Multi-AZ 아님).
  * - dev 환경은 `skipFinalSnapshot: true`로 destroy를 빠르게 하고, prod는 `false`로 삭제 시
  *   반드시 최종 스냅샷을 남긴다.
- * - 백업 보관 기간은 7일로 짧게 잡아(Railway 대비 과도하지 않게) 스토리지 비용을 억제한다.
+ * - 백업 보관 기간은 1일로 짧게 잡아(프리티어 계정의 상한 제약도 있음) 스토리지 비용을 억제한다.
  *
  * ## 마스터 비밀번호는 RDS 관리형 시크릿(`manageMasterUserPassword`)을 쓴다
  * 사람이 비밀번호를 정해서 `TF_VAR_*`로 넘기지 않는다. AWS가 비밀번호를 직접 생성해
@@ -76,9 +76,12 @@ export class DatabaseStack extends TerraformStack {
     });
 
     // --- DB Subnet Group (network-stack의 private 서브넷 2개) ---
+    // AWS RDS의 DBSubnetGroupDescription 필드는 non-ASCII 문자를 control character로 잘못
+    // 취급해 거부하는 경우가 있다 (SecurityGroup의 GroupDescription과 동일한 부류의 제약).
+    // 영문으로 작성한다.
     const subnetGroup = new DbSubnetGroup(this, 'db-subnet-group', {
       name: `petlog-db-subnet-group-${environment}`,
-      description: 'RDS PostgreSQL용 서브넷 그룹 (network-stack의 private 서브넷 2개)',
+      description: 'Subnet group for RDS PostgreSQL (private subnets from network-stack)',
       subnetIds: [networkStack.privateSubnets[0].id, networkStack.privateSubnets[1].id],
     });
 
@@ -98,7 +101,9 @@ export class DatabaseStack extends TerraformStack {
       manageMasterUserPassword: true,
       dbSubnetGroupName: subnetGroup.name,
       vpcSecurityGroupIds: [networkStack.rdsSecurityGroup.id],
-      backupRetentionPeriod: 7,
+      // 프리티어 계정은 백업 보관 기간에 더 낮은 상한이 걸려 있어(7일 지정 시
+      // FreeTierRestrictionError 발생) 1일로 낮췄다. 개인 프로젝트 규모라 큰 손해는 아니다.
+      backupRetentionPeriod: 1,
       // dev는 빠른 destroy를 위해 최종 스냅샷을 생략하고, prod는 삭제 시 반드시 스냅샷을 남긴다.
       skipFinalSnapshot: environment === 'dev',
       finalSnapshotIdentifier:

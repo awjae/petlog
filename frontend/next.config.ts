@@ -4,7 +4,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 const nextConfig: NextConfig = {
-  // AWS App Runner 컨테이너 배포를 위한 standalone 빌드.
+  // AWS ECS Fargate 컨테이너 배포를 위한 standalone 빌드.
   // .next/standalone 에 실행에 필요한 최소 node_modules와 server.js가 생성된다.
   output: 'standalone',
   async rewrites() {

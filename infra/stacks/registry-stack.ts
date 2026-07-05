@@ -20,7 +20,8 @@ export interface RegistryStackProps {
 /**
  * ECR(Elastic Container Registry) 저장소를 관리하는 스택.
  *
- * 컴퓨트 플랫폼(App Runner든 향후 ECS Fargate든)과 완전히 무관하게 독립적으로 존재한다.
+ * 컴퓨트 플랫폼(App Runner든 ECS Fargate든)과 완전히 무관하게 독립적으로 존재한다 — 실제로
+ * 서울 리전 미지원 문제로 App Runner에서 ECS Fargate로 전환했을 때도 이 스택은 그대로였다.
  * backend-stack/frontend-stack은 이 스택이 만든 저장소 URL만 참조하고, 컴퓨트를 바꾸더라도
  * 이 스택은 그대로 재사용된다 — "레지스트리 vs 컴퓨트"를 별도 스택으로 분리한 이유다.
  */

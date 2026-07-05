@@ -32,10 +32,16 @@ Railway managed DB에서 RDS로의 이전은 **아직 결정된 사항이 아니
 - 이전을 실행하기 전에 반드시 백업/롤백 계획을 먼저 제시한다.
 
 ### 3순위 — 백엔드 컨테이너 배포
-NestJS 백엔드를 AWS로 옮기는 경우 두 옵션을 함께 제시한다:
-- **App Runner** — 관리형, 구성 단순, 개인 프로젝트 비용 관점에서 유리. ALB/VPC를 직접 다루지 않아 인터뷰 어필 포인트는 상대적으로 적음.
-- **ECS Fargate + ALB** — VPC/서브넷/보안그룹/태스크 정의를 직접 설계해야 해서 구성은 복잡하지만, DevOps 역량 포트폴리오로는 더 깊이를 보여줄 수 있음.
-어떤 것을 선택할지는 사용자에게 트레이드오프를 제시하고 확인받는다. 임의로 확정하지 않는다.
+**완료됨 (ECS Fargate + ALB로 구현).** NestJS 백엔드/Next.js 프론트엔드 모두 ECS Fargate +
+공유 ALB로 배포되어 있다(`infra/stacks/backend-stack.ts`, `infra/stacks/frontend-stack.ts`).
+
+> **App Runner는 이 프로젝트에서 선택지가 아니다.** App Runner가 서울 리전(ap-northeast-2)을
+> 지원하지 않는다는 사실을 DNS/CLI로 직접 확인했다(`.claude/docs/decisions/019-ecs-fargate-migration.md`
+> 참고). RDS/S3/CloudFront가 이미 서울 리전에 있고 리전을 옮길 이유가 없으므로, 이 프로젝트의
+> 컴퓨트 플랫폼 논의에서 App Runner를 다시 제안하지 않는다. 다른 리전을 쓰는 별도 프로젝트를
+> 다룰 때만 App Runner(관리형, 구성 단순, ALB/VPC 고정비 없음) vs ECS Fargate + ALB(구성은
+> 복잡하지만 VPC/ALB/태스크 정의를 직접 설계하는 DevOps 포트폴리오 어필)의 트레이드오프를
+> 다시 제시한다.
 
 ## CDKTF 사용 원칙
 
@@ -49,7 +55,7 @@ NestJS 백엔드를 AWS로 옮기는 경우 두 옵션을 함께 제시한다:
   │   ├── storage-stack.ts    # S3, CloudFront
   │   ├── database-stack.ts   # RDS, 서브넷 그룹
   │   ├── network-stack.ts    # VPC, 서브넷, 보안그룹
-  │   └── backend-stack.ts    # ECS/App Runner, ALB
+  │   └── backend-stack.ts    # ECS Fargate, ALB
   └── README.md
   ```
 - Terraform state는 원격 저장한다 (S3 backend + DynamoDB lock 테이블). 로컬 state 금지.

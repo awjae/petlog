@@ -108,14 +108,16 @@ Petlog는 의료 진단 서비스가 아니다.
 원칙:
 
 - AWS 리소스는 콘솔에서 수동으로 생성하지 않는다. 반드시 CDKTF 코드(`infra/`)로 정의한다.
-- 프론트엔드(Vercel)와 백엔드(Railway)는 모두 AWS App Runner로 완전히 이전했다. Database도
+- 프론트엔드(Vercel)와 백엔드(Railway)는 모두 AWS ECS Fargate + ALB로 완전히 이전했다. Database도
   Railway managed PostgreSQL에서 AWS RDS PostgreSQL로 완전히 이전했다 (`infra/stacks/database-stack.ts`,
   `infra/stacks/network-stack.ts`). Vercel/Railway는 더 이상 배포 대상이 아니다
   (`infra/stacks/frontend-stack.ts`, `infra/stacks/backend-stack.ts`).
   **로컬 개발 환경은 그대로다** — `docker-compose.yml`의 로컬 Postgres와
   `backend/.env.example`의 로컬 `DATABASE_URL`을 계속 사용한다 (RDS는 배포 환경 전용).
-- 우선순위: 1) S3 Object Storage(이미지 업로드, 완료) 2) 백엔드/프론트엔드 컨테이너 배포(App
-  Runner, 완료 — 향후 ECS Fargate 전환 검토) 3) RDS PostgreSQL(완료) 순으로 도입했다.
+  컴퓨트는 원래 App Runner로 구현했으나, App Runner가 서울 리전(ap-northeast-2)을 지원하지
+  않는다는 사실을 DNS/CLI로 직접 확인해 ECS Fargate + ALB로 전환했다 (`infra/README.md` 참고).
+- 우선순위: 1) S3 Object Storage(이미지 업로드, 완료) 2) 백엔드/프론트엔드 컨테이너 배포(ECS
+  Fargate + ALB, 완료) 3) RDS PostgreSQL(완료) 순으로 도입했다.
 - IaC 코드도 애플리케이션 코드와 동일하게 타입 안전성, 도메인 기준 스택 분리 원칙을 따른다.
 
 ## AI
@@ -412,7 +414,7 @@ Petlog는 모바일 우선 서비스다.
 4. Frontend User Flow
 5. Health Timeline
 6. Mock AI Report (구조 검증용)
-7. Deployment (AWS App Runner, 인프라는 CDKTF로 관리 — Vercel/Railway 대체 완료)
+7. Deployment (AWS ECS Fargate + ALB, 인프라는 CDKTF로 관리 — Vercel/Railway 대체 완료)
 8. Real AI Integration (OpenAI Fine-tuned Model)
 
 기능 추가보다 핵심 사용자 흐름 완성을 우선한다.
