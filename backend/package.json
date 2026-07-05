@@ -22,6 +22,7 @@
     "docker:force-redeploy": "dotenv -e .env -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; aws ecs update-service --region \"$REGION\" --cluster \"petlog-cluster-$ENV\" --service \"petlog-backend-$ENV\" --force-new-deployment >/dev/null'",
     "docker:deploy": "npm run docker:login && npm run docker:build && npm run docker:push && npm run docker:force-redeploy",
     "deploy": "npm run docker:deploy",
+    "migrate:deploy:ecs": "dotenv -e ../infra/.env -- bash scripts/migrate-deploy-ecs.sh",
     "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts",
     "seed:report-history": "ts-node -T scripts/seed-report-history.ts",
     "seed:illness-symptoms": "ts-node -T scripts/seed-illness-symptoms.ts"
