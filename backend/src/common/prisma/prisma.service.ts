@@ -49,6 +49,9 @@ export class PrismaService implements OnModuleInit {
   get refreshToken() {
     return this.client.refreshToken;
   }
+  get passwordResetToken() {
+    return this.client.passwordResetToken;
+  }
   get notification() {
     return this.client.notification;
   }

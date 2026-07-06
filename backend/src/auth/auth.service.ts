@@ -1,8 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { GoneException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
+import {
+  buildResetPasswordEmailHtml,
+  MAIL_SENDER,
+  RESET_PASSWORD_EMAIL_SUBJECT,
+} from '@petlog/mail';
+import type { MailSender } from '@petlog/mail';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { UserService } from '../user/user.service';
 import { JwtPayload } from './strategies/jwt.strategy';
 
 export interface AuthUser {
@@ -16,6 +23,7 @@ export interface TokenPair {
 }
 
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30일
+const PASSWORD_RESET_TOKEN_TTL_MS = 30 * 60 * 1000; // 30분
 
 @Injectable()
 export class AuthService {
@@ -23,6 +31,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly userService: UserService,
+    @Inject(MAIL_SENDER) private readonly mailSender: MailSender,
   ) {}
 
   private hash(token: string): string {
@@ -104,5 +114,70 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Refresh token이 만료되었습니다. 다시 로그인해주세요.');
     }
+  }
+
+  // 비밀번호 찾기 요청. 계정 존재 여부를 노출하지 않기 위해(enumeration 방지)
+  // 이메일이 존재하지 않아도 조용히 종료하고, 컨트롤러는 항상 동일한 성공 응답을 반환한다.
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) return;
+
+    // 재요청(재전송) 시 기존에 발급했던 미사용 토큰은 모두 무효화한다.
+    await this.prisma.passwordResetToken.updateMany({
+      where: { userId: user.id, consumedAt: null, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+
+    const rawToken = randomBytes(32).toString('hex');
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: this.hash(rawToken),
+        expiresAt: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS),
+      },
+    });
+
+    const resetUrl = `${this.config.getOrThrow('FRONTEND_URL')}/reset-password?token=${rawToken}`;
+    const html = buildResetPasswordEmailHtml({ resetUrl });
+    await this.mailSender.send(user.email, RESET_PASSWORD_EMAIL_SUBJECT, html);
+  }
+
+  // 토큰 검증(GET) — consumedAt을 건드리지 않고 유효성만 확인한다.
+  async verifyPasswordResetToken(token: string): Promise<boolean> {
+    const record = await this.prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash: this.hash(token),
+        consumedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    });
+    return !!record;
+  }
+
+  // 비밀번호 재설정(POST) — 토큰을 원자적으로 소모(consume)하고, 성공 시에만
+  // 비밀번호를 변경한 뒤 전 기기 Refresh Token을 폐기한다.
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = this.hash(token);
+
+    // updateMany + count로 동시 제출(race condition)에도 단 한 번만 소모되도록 한다.
+    const consumed = await this.prisma.passwordResetToken.updateMany({
+      where: {
+        tokenHash,
+        consumedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      data: { consumedAt: new Date() },
+    });
+
+    if (consumed.count !== 1) {
+      throw new GoneException('재설정 링크가 만료되었거나 이미 사용되었습니다. 다시 요청해주세요.');
+    }
+
+    const record = await this.prisma.passwordResetToken.findUniqueOrThrow({ where: { tokenHash } });
+
+    await this.userService.updatePassword(record.userId, newPassword);
+    await this.revokeAllRefreshTokens(record.userId);
   }
 }

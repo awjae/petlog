@@ -1,9 +1,23 @@
-import { Controller, Post, Body, Res, HttpCode, UseGuards, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ApiTags, ApiOperation, ApiCookieAuth } from '@nestjs/swagger';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { UserService } from '../user/user.service';
 
@@ -107,5 +121,38 @@ export class AuthController {
     res.clearCookie(ACCESS_COOKIE, accessCookieOptions);
     res.clearCookie(REFRESH_COOKIE, refreshCookieOptions);
     return { message: '로그아웃 성공' };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: '비밀번호 찾기 — 계정 존재 여부와 무관하게 항상 동일한 응답' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.requestPasswordReset(dto.email);
+    // 계정 존재 여부를 노출하지 않기 위해(enumeration 방지) 항상 동일한 성공 메시지를 반환한다.
+    return { message: '입력하신 이메일이 가입 시 사용한 주소라면, 재설정 링크를 보내드렸어요.' };
+  }
+
+  @Get('reset-password/verify')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '비밀번호 재설정 토큰 검증 — 만료/사용됨/미존재를 구분하지 않고 통일된 응답',
+  })
+  async verifyResetPasswordToken(@Query('token') token?: string) {
+    if (!token) throw new BadRequestException('token 파라미터가 필요합니다.');
+
+    const valid = await this.authService.verifyPasswordResetToken(token);
+    return { valid };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: '비밀번호 재설정 — 토큰 소모 + 전 기기 세션 무효화' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: '비밀번호가 변경되었습니다.' };
   }
 }

@@ -38,10 +38,77 @@
   letter-spacing: -0.5px;
 }
 
-.brandDesc {
-  font: var(--font-caption);
+/* ===== 검증 중 상태 ===== */
+.checkingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: spin 0.85s linear infinite;
+}
+
+.checkingText {
+  font: var(--font-body);
   color: var(--color-text-secondary);
   margin: 0;
+}
+
+/* ===== 무효 링크 상태 ===== */
+.invalidState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.invalidBadge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(232, 154, 48, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-warning);
+}
+
+.invalidTitle {
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.invalidDesc {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.secondaryLink {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  padding: 8px;
+}
+
+.secondaryLink:hover {
+  color: var(--color-primary);
 }
 
 /* ===== 폼 ===== */
@@ -61,30 +128,6 @@
   font: var(--font-label);
   font-weight: 700;
   color: var(--color-text-secondary);
-}
-
-.forgotLink {
-  align-self: flex-end;
-  font: var(--font-caption);
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  padding: 6px 2px;
-}
-
-.forgotLink:hover,
-.forgotLink:active {
-  color: var(--color-primary);
-}
-
-/* ===== 비밀번호 재설정 성공 배너 ===== */
-.resetBanner {
-  font: var(--font-caption);
-  color: var(--color-text-primary);
-  background: rgba(52, 199, 89, 0.1);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  margin: 0;
-  text-align: center;
 }
 
 .input {
@@ -109,6 +152,16 @@
   opacity: 0.5;
 }
 
+.inputError {
+  border-color: var(--color-danger);
+}
+
+.fieldError {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0;
+}
+
 .errorMsg {
   font: var(--font-caption);
   color: var(--color-danger);
@@ -119,6 +172,7 @@
 }
 
 .submitBtn {
+  width: 100%;
   height: 54px;
   background: var(--color-primary);
   color: #fff;
@@ -135,18 +189,4 @@
   opacity: 0.4;
   cursor: not-allowed;
   box-shadow: none;
-}
-
-/* ===== 푸터 ===== */
-.footer {
-  font: var(--font-body);
-  color: var(--color-text-secondary);
-  text-align: center;
-  margin: 0;
-}
-
-.footerLink {
-  color: var(--color-primary);
-  font-weight: 700;
-  text-decoration: none;
 }

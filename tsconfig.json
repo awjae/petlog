@@ -5,6 +5,7 @@
     { "path": "./libs/utils" },
     { "path": "./libs/ai" },
     { "path": "./libs/storage" },
+    { "path": "./libs/mail" },
     { "path": "./backend" },
     { "path": "./frontend" }
   ]

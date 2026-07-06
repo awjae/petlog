@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PetlogDeployFullAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "elasticloadbalancing:*",
+        "rds:*",
+        "ecs:*",
+        "ecr:*",
+        "s3:*",
+        "cloudfront:*",
+        "iam:*",
+        "ssm:*",
+        "kms:*",
+        "secretsmanager:*",
+        "dynamodb:*",
+        "route53:*",
+        "acm:*",
+        "ses:*",
+        "logs:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

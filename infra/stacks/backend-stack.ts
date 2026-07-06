@@ -10,6 +10,7 @@ import {
 } from 'cdktf';
 
 import { AwsProvider } from '../.gen/providers/aws/provider';
+import { AcmCertificate } from '../.gen/providers/aws/acm-certificate';
 import { Alb } from '../.gen/providers/aws/alb';
 import { AlbListener } from '../.gen/providers/aws/alb-listener';
 import { AlbListenerRule } from '../.gen/providers/aws/alb-listener-rule';
@@ -22,6 +23,7 @@ import { CloudwatchLogGroup } from '../.gen/providers/aws/cloudwatch-log-group';
 import { IamRolePolicy } from '../.gen/providers/aws/iam-role-policy';
 import { DataAwsIamPolicyDocument } from '../.gen/providers/aws/data-aws-iam-policy-document';
 import { DataAwsKmsAlias } from '../.gen/providers/aws/data-aws-kms-alias';
+import { Sesv2EmailIdentity } from '../.gen/providers/aws/sesv2-email-identity';
 import { SsmParameter } from '../.gen/providers/aws/ssm-parameter';
 import { DataAwsSecretsmanagerSecretVersion } from '../.gen/providers/aws/data-aws-secretsmanager-secret-version';
 
@@ -32,6 +34,7 @@ import {
   Environment,
 } from '../config';
 import { buildS3ReadWritePolicyDocument } from '../shared/s3-access-policy';
+import { buildSesSendPolicyDocument } from '../shared/ses-access-policy';
 import { createEcsTaskExecutionRole, createEcsTaskRole } from '../shared/ecs-iam';
 import { StorageStack } from './storage-stack';
 import { RegistryStack } from './registry-stack';
@@ -163,6 +166,36 @@ export class BackendStack extends TerraformStack {
       type: 'string',
       default: '30d',
       description: 'Refresh Token 만료 기간 (backend/.env.example 기본값과 동일).',
+    });
+
+    // 메일 발송 여부는 기본값을 'mock'(미발송)으로 둔다 — 배포 자체는 항상 성공해야 하고,
+    // 실제 발송(ses)은 TF_VAR_mail_provider를 명시적으로 'ses'로 줄 때만 켜진다
+    // (backend/.env.example의 MAIL_PROVIDER 스위치와 동일한 계약).
+    const mailProvider = new TerraformVariable(this, 'mail_provider', {
+      type: 'string',
+      default: 'mock',
+      description: "메일 발송 Provider. 'ses'로 주입해야 실제 발송된다 (TF_VAR_mail_provider).",
+    });
+
+    // SES는 샌드박스 모드에서 발신 주소를 콘솔에서 사전 검증(Verified Identity)해야 하므로,
+    // 이 값은 CDKTF가 대신 검증해줄 수 없다 — 여기서는 "그 검증된 주소로만 보낼 수 있다"는
+    // IAM 권한 범위를 좁히는 데 사용한다 (아래 SES IAM policy 참고).
+    const mailFromAddress = new TerraformVariable(this, 'mail_from_address', {
+      type: 'string',
+      default: '',
+      description:
+        'SES에 Verified Identity로 등록한 발신 이메일 주소. TF_VAR_mail_from_address로 주입.',
+    });
+
+    // CloudFront에 붙일 커스텀 도메인. ACM 인증서 발급 시점의 DNS 검증(레코드 등록)은
+    // CDKTF가 대신할 수 없으므로(사람이 Route53/도메인 등록기관에서 처리) 이미 검증 완료된
+    // 도메인을 그대로 반영만 한다 — domain-name 값 자체는 비밀이 아니지만, 이 스택만
+    // 봐서는 어떤 도메인을 쓰는지 알 수 없게(코드-설정 분리) TF_VAR로 주입한다.
+    const domainName = new TerraformVariable(this, 'domain_name', {
+      type: 'string',
+      default: '',
+      description:
+        'CloudFront에 연결할 커스텀 도메인 (ACM 인증서와 동일해야 함). TF_VAR_domain_name으로 주입.',
     });
 
     // --- DATABASE_URL 조립 (RDS 완전 이전, AWS 관리형 마스터 비밀번호 사용) ---
@@ -314,6 +347,22 @@ export class BackendStack extends TerraformStack {
     const ALL_VIEWER_EXCEPT_HOST_HEADER_ORIGIN_REQUEST_POLICY_ID =
       'b689b0a8-53d0-40ab-baf2-68738e2966ac';
 
+    // CloudFront에 붙일 ACM 인증서: 요청하는 CloudFront 배포가 어느 리전에 있든, CloudFront용
+    // ACM 인증서는 반드시 us-east-1이어야 한다(AWS의 고정 제약). 이 스택의 기본 AwsProvider는
+    // ap-northeast-2로 구성되어 있으므로, 별도 provider 블록 없이 리소스 단위 `region`
+    // override(AWS Provider v5.4+ 기능)로 us-east-1을 지정한다.
+    // DNS 검증(도메인 등록기관/Route53에 CNAME 추가)은 사람이 이미 완료한 상태를
+    // 그대로 가져온 것 — CDKTF가 검증 자체를 수행하지 않으므로 별도의
+    // `AcmCertificateValidation` 리소스는 두지 않는다.
+    const certificate = new AcmCertificate(this, 'domain-certificate', {
+      domainName: domainName.stringValue,
+      validationMethod: 'DNS',
+      region: 'us-east-1',
+      lifecycle: {
+        createBeforeDestroy: true,
+      },
+    });
+
     const cloudfrontDistribution = new CloudfrontDistribution(this, 'alb-distribution', {
       enabled: true,
       comment: `Petlog ${environment} 백엔드/프론트엔드 공유 ALB HTTPS 종단`,
@@ -354,10 +403,11 @@ export class BackendStack extends TerraformStack {
           restrictionType: 'none',
         },
       },
+      aliases: [domainName.stringValue],
       viewerCertificate: {
-        // 커스텀 도메인 없이 기본 *.cloudfront.net 도메인만 사용한다 (ACM/Route53 불필요,
-        // storage-stack과 동일한 "인증서 없음" 원칙).
-        cloudfrontDefaultCertificate: true,
+        acmCertificateArn: certificate.arn,
+        sslSupportMethod: 'sni-only',
+        minimumProtocolVersion: 'TLSv1.2_2021',
       },
     });
     this.cloudfrontDistribution = cloudfrontDistribution;
@@ -443,6 +493,29 @@ export class BackendStack extends TerraformStack {
       policy: s3AccessPolicyDocument.json,
     });
 
+    // SES Identity: 콘솔에서 수동으로 Verified Identity를 등록한 것을 그대로 가져온다
+    // (`cdktf import`). 이메일 소유권 확인(인증 메일의 링크 클릭)은 CDKTF가 대신할 수
+    // 없으므로 이미 완료된 상태를 반영만 한다 — configurationSetName은 콘솔에서 이미
+    // 붙어있던 값과 다르면 다음 apply에서 되돌려버리므로 실제 값을 그대로 맞춘다.
+    const mailIdentity = new Sesv2EmailIdentity(this, 'mail-from-identity', {
+      emailIdentity: mailFromAddress.stringValue,
+      configurationSetName: 'my-first-configuration-set',
+    });
+
+    // SES 발송 권한: Identity 자체는 위에서 가져왔으니, 그 Identity로 보낼 수 있는 IAM
+    // 권한을 taskRole에 부착해야 실제 배포 환경(ECS)에서 발송이 동작한다.
+    const sesAccessPolicyDocument = buildSesSendPolicyDocument(
+      this,
+      'backend-task-ses-policy-document',
+      mailIdentity.arn,
+    );
+
+    new IamRolePolicy(this, 'backend-task-ses-policy', {
+      name: `petlog-backend-ses-access-${environment}`,
+      role: taskRole.name,
+      policy: sesAccessPolicyDocument.json,
+    });
+
     // RDS는 IAM이 아니라 네트워크 레벨(보안그룹) + DB 자체 인증(마스터 유저/비밀번호)으로
     // 접근을 제어한다. 그래서 taskRole에는 RDS 관련 권한을 추가하지 않는다.
 
@@ -480,6 +553,8 @@ export class BackendStack extends TerraformStack {
             // frontend도 결국 같은 도메인으로 접속한다. CloudFront 추가 이후로는 ALB URL이 아니라
             // CloudFront 도메인(HTTPS)을 참조한다 — 사용자에게 노출되는 최종 접속 경로이기 때문이다.
             { name: 'FRONTEND_URL', value: cloudfrontUrl },
+            { name: 'MAIL_PROVIDER', value: mailProvider.stringValue },
+            { name: 'MAIL_FROM_ADDRESS', value: mailFromAddress.stringValue },
           ],
           secrets: [
             { name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn },

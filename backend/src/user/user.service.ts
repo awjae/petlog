@@ -39,6 +39,12 @@ export class UserService {
     return this.prisma.user.update({ where: { id }, data: { name } });
   }
 
+  // 비밀번호 재설정(Forgot Password) 흐름에서 사용. create()와 동일한 bcrypt 규칙을 적용한다.
+  async updatePassword(id: string, newPassword: string): Promise<void> {
+    const hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await this.prisma.user.update({ where: { id }, data: { password: hash } });
+  }
+
   async getRecordDates(userId: string, limit: number): Promise<string[]> {
     const pets = await this.prisma.pet.findMany({
       where: { userId },
