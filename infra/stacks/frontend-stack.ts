@@ -16,6 +16,7 @@ import { createEcsTaskExecutionRole } from '../shared/ecs-iam';
 import { RegistryStack } from './registry-stack';
 import { NetworkStack } from './network-stack';
 import { BackendStack } from './backend-stack';
+import { StorageStack } from './storage-stack';
 
 export interface FrontendStackProps {
   /** 배포 대상 환경. 서비스/역할/로그 그룹 네이밍에 사용한다. */
@@ -30,6 +31,11 @@ export interface FrontendStackProps {
    * backend-stack보다 나중에 생성한다.
    */
   readonly backendStack: BackendStack;
+  /**
+   * next/image가 허용할 이미지 호스트(CloudFront 배포 도메인)를 런타임 환경변수로
+   * 주입하기 위해 storage-stack 인스턴스를 그대로 받는다(backend-stack과 동일한 패턴).
+   */
+  readonly storageStack: StorageStack;
 }
 
 /**
@@ -51,7 +57,7 @@ export class FrontendStack extends TerraformStack {
   constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id);
 
-    const { environment, registryStack, networkStack, backendStack } = props;
+    const { environment, registryStack, networkStack, backendStack, storageStack } = props;
 
     new S3Backend(this, {
       bucket: TERRAFORM_STATE_BUCKET,
@@ -125,7 +131,12 @@ export class FrontendStack extends TerraformStack {
           image: `${registryStack.frontendRepository.repositoryUrl}:latest`,
           essential: true,
           portMappings: [{ containerPort: 3000, protocol: 'tcp' }],
-          environment: [{ name: 'NODE_ENV', value: 'production' }],
+          environment: [
+            { name: 'NODE_ENV', value: 'production' },
+            // next.config.ts가 런타임에 읽어 next/image remotePatterns에 반영한다
+            // (backend-stack.ts가 백엔드 컨테이너에 주입하는 값과 동일한 CloudFront 도메인).
+            { name: 'AWS_CLOUDFRONT_DOMAIN', value: storageStack.distribution.domainName },
+          ],
           logConfiguration: {
             logDriver: 'awslogs',
             options: {

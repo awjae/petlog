@@ -66,6 +66,7 @@ new FrontendStack(app, `petlog-frontend-${environment}`, {
   registryStack,
   networkStack,
   backendStack,
+  storageStack,
 });
 
 app.synth();
