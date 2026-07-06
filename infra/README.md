@@ -29,7 +29,7 @@ Petlog 전체가 TypeScript 기반이므로 인프라도 같은 언어로 작성
 | `storage-stack` | `stacks/storage-stack.ts` | 1순위 구현 완료 (S3 + CloudFront + 백엔드 IAM) |
 | `network-stack` | `stacks/network-stack.ts` | 구현 완료 (VPC + private 서브넷 2개 + public 서브넷 2개 + IGW + ALB/ECS 태스크 보안그룹, NAT 없음) |
 | `database-stack` | `stacks/database-stack.ts` | 구현 완료 (RDS PostgreSQL, Railway managed DB 완전 대체) |
-| `backend-stack` | `stacks/backend-stack.ts` | 구현 완료 (ECS Fargate + 공유 ALB + ECS 클러스터, Railway 완전 대체) |
+| `backend-stack` | `stacks/backend-stack.ts` | 구현 완료 (ECS Fargate + 공유 ALB + ALB 앞단 CloudFront(HTTPS) + ECS 클러스터, Railway 완전 대체) |
 | `frontend-stack` | `stacks/frontend-stack.ts` | 구현 완료 (ECS Fargate, backend-stack의 공유 ALB에 등록, Vercel 완전 대체) |
 
 스택은 도메인 단위로 분리하고, 스택 간 의존은 항상 output 참조(cross-stack reference)로만
@@ -147,17 +147,18 @@ npm run deploy:all
    참조 — 한 번에 배포해도 순서는 cdktf가 의존 그래프로 정렬한다)
 2. ECR 로그인 → backend 이미지가 없으면(최초 배포) 레포 루트를 빌드 컨텍스트로 빌드해 push
    (`libs/*` 워크스페이스 의존 때문에 반드시 루트가 컨텍스트여야 한다)
-3. `backend-stack` 배포 (ECS 클러스터 + 공유 ALB + 리스너/타겟 그룹 + backend ECS 서비스를 한 번에
-   만든다 — App Runner 시절의 "1차 배포" 개념이 없다)
-4. 배포된 ALB URL(`alb_url` output) 확인 → frontend 이미지가 없으면(최초 배포) 그 URL을
-   `--build-arg NEXT_PUBLIC_API_URL`로 주입해 빌드/push (Next.js는 `next build` 시점에 API URL을
-   고정시키므로, frontend 이미지는 반드시 ALB URL을 안 이후에만 만들 수 있다 — 다만 ALB는
-   backend-stack 배포 직후 바로 생성되므로 frontend-stack 배포를 기다릴 필요는 없다)
+3. `backend-stack` 배포 (ECS 클러스터 + 공유 ALB + CloudFront + 리스너/타겟 그룹 + backend ECS
+   서비스를 한 번에 만든다 — App Runner 시절의 "1차 배포" 개념이 없다)
+4. 배포된 CloudFront URL(`cloudfront_url` output) 확인 → frontend 이미지가 없으면(최초 배포)
+   그 URL을 `--build-arg NEXT_PUBLIC_API_URL`로 주입해 빌드/push (Next.js는 `next build`
+   시점에 API URL을 고정시키므로, frontend 이미지는 반드시 CloudFront URL을 안 이후에만 만들
+   수 있다 — 다만 CloudFront는 backend-stack 배포 직후 바로 생성되므로 frontend-stack 배포를
+   기다릴 필요는 없다)
 5. `frontend-stack` 배포 (같은 ALB의 frontend 타겟 그룹에 ECS 서비스를 등록)
 
 App Runner 시절에는 여기에 "6. 배포된 frontend URL로 backend-stack 2차 배포(CORS 반영)"가
-있었지만, 이제 backend/frontend가 ALB 도메인 하나를 공유하므로 이 단계 자체가 사라졌다(아래
-"ALB 공유로 순환 의존이 사라진 이유" 절 참고).
+있었지만, 이제 backend/frontend가 CloudFront 도메인 하나를 공유하므로 이 단계 자체가 사라졌다
+(아래 "ALB 공유로 순환 의존이 사라진 이유" 절 참고).
 
 `cdktf deploy`는 스택마다 대화형으로 diff를 보여주고 승인(`yes` 입력)을 요구하므로(스크립트가
 `--auto-approve`를 주지 않는다), `deploy:all`을 실행해도 실제 변경 사항은 스택별로 직접 확인하고
@@ -172,12 +173,12 @@ App Runner 시절에는 여기에 "6. 배포된 frontend URL로 backend-stack 2�
 
 ```bash
 npm run deploy --workspace=backend
-NEXT_PUBLIC_API_URL="http://<backend-stack의 alb_url>" npm run deploy --workspace=frontend
+NEXT_PUBLIC_API_URL="<backend-stack의 cloudfront_url, https://...>" npm run deploy --workspace=frontend
 ```
 
 즉 **"인프라 구조가 바뀌면 `infra`에서 `npm run deploy:all`, 애플리케이션 코드만 바뀌면
 `backend`/`frontend`에서 `npm run deploy`"**로 책임이 나뉜다. **프론트엔드는 코드가 바뀌지 않아도
-ALB URL이 바뀌면**(예: backend-stack을 삭제 후 재생성) **이미지를 다시 빌드해야 한다** —
+CloudFront URL이 바뀌면**(예: backend-stack을 삭제 후 재생성) **이미지를 다시 빌드해야 한다** —
 `NEXT_PUBLIC_API_URL`이 빌드 시점에 고정되기 때문이다.
 
 `backend`/`frontend`의 `docker:login`/`docker:push`는 계정 ID를 코드에 두지 않고
@@ -232,13 +233,14 @@ App Runner 시절에는 backend/frontend가 서로 다른 기본 도메인(`*.aw
 `backend-stack`이 `frontend-stack`보다 먼저 배포되므로 1차 배포 시점엔 frontend URL이 존재하지
 않아, "backend 1차 배포 → frontend 배포 → backend 2차 배포"라는 2단계 배포가 필요했다.
 
-ECS Fargate + ALB로 전환하면서 이 문제 자체가 사라졌다. **backend/frontend가 이제 ALB 도메인
-하나를 공유**하기 때문이다 — `/api/*`는 backend 타겟 그룹으로, 그 외 전부는 frontend 타겟 그룹으로
-가는 경로 기반 라우팅이므로, 두 서비스 모두 "이 ALB의 URL"이라는 같은 값 하나만 알면 된다. ALB는
-`backend-stack`이 만들고, 그 스택의 배포가 끝나는 즉시 DNS 이름을 알 수 있으므로(`alb_url`
-output), `frontend-stack` 배포를 기다릴 필요 없이 `backend-stack`의 `FRONTEND_URL` 컨테이너
-환경변수와 frontend Docker 이미지의 `NEXT_PUBLIC_API_URL` 빌드 인자를 **한 번에 같은 값으로**
-채울 수 있다. `TF_VAR_frontend_url` 같은 수동 변수도, 2차 배포 단계도 더 이상 없다.
+ECS Fargate + ALB로 전환하면서 이 문제 자체가 사라졌다. **backend/frontend가 이제 도메인 하나를
+공유**하기 때문이다 — `/api/*`는 backend 타겟 그룹으로, 그 외 전부는 frontend 타겟 그룹으로
+가는 경로 기반 라우팅이므로, 두 서비스 모두 "이 도메인"이라는 같은 값 하나만 알면 된다. 이
+도메인은 `backend-stack`이 ALB 앞단에 만든 CloudFront 배포의 기본 도메인이고(HTTPS 지원 추가
+이후), 그 스택의 배포가 끝나는 즉시 알 수 있으므로(`cloudfront_url` output), `frontend-stack`
+배포를 기다릴 필요 없이 `backend-stack`의 `FRONTEND_URL` 컨테이너 환경변수와 frontend Docker
+이미지의 `NEXT_PUBLIC_API_URL` 빌드 인자를 **한 번에 같은 값으로** 채울 수 있다.
+`TF_VAR_frontend_url` 같은 수동 변수도, 2차 배포 단계도 더 이상 없다.
 
 ## 백엔드 환경변수 계약
 
@@ -254,13 +256,16 @@ output), `frontend-stack` 배포를 기다릴 필요 없이 `backend-stack`의 `
 | `AWS_CLOUDFRONT_DOMAIN` | `aws_cloudfront_domain` (이미지 최종 URL = `https://{AWS_CLOUDFRONT_DOMAIN}/{key}`) | 일반 |
 | `JWT_EXPIRES_IN` / `REFRESH_TOKEN_EXPIRES_IN` | `backend-stack`의 `TerraformVariable` (기본값 `15m`/`30d`) | 일반 |
 | `NODE_ENV` | `backend-stack`/`frontend-stack`에서 `production` 고정 | 일반 |
-| `FRONTEND_URL` | `backend-stack`의 `alb_url`(공유 ALB URL, 자기 자신의 output을 그대로 컨테이너 환경변수로 사용) | 일반 |
+| `FRONTEND_URL` | `backend-stack`의 `cloudfront_url`(공유 ALB 앞단 CloudFront HTTPS URL, 자기 자신의 output을 그대로 컨테이너 환경변수로 사용) | 일반 |
 | `DATABASE_URL` | `backend-stack`이 `database-stack`의 RDS 엔드포인트(cross-stack reference) + AWS 관리형 마스터 비밀번호(Secrets Manager)를 조합해 만든 SSM Parameter(SecureString) ARN | 시크릿 |
 | `JWT_SECRET` / `REFRESH_TOKEN_SECRET` | `backend-stack`이 만든 SSM Parameter(SecureString) ARN | 시크릿 |
-| `NEXT_PUBLIC_API_URL` (빌드 인자, 런타임 아님) | `backend-stack`의 `alb_url` (frontend-stack이 `expected_next_public_api_url`로 다시 출력) | 일반 (프론트엔드 Docker 빌드 시점) |
+| `NEXT_PUBLIC_API_URL` (빌드 인자, 런타임 아님) | `backend-stack`의 `cloudfront_url` (frontend-stack이 `expected_next_public_api_url`로 다시 출력) | 일반 (프론트엔드 Docker 빌드 시점) |
 
-`FRONTEND_URL`과 `NEXT_PUBLIC_API_URL`이 같은 값(공유 ALB URL)을 가리키는 것은 의도된 설계다 —
-"ALB 공유로 순환 의존이 사라진 이유" 절 참고.
+`FRONTEND_URL`과 `NEXT_PUBLIC_API_URL`이 같은 값(공유 ALB 앞단 CloudFront HTTPS URL)을 가리키는
+것은 의도된 설계다 — "ALB 공유로 순환 의존이 사라진 이유" 절 참고. ALB 자체의 원시 URL
+(`alb_url` output, http://)은 더 이상 애플리케이션 환경변수로 쓰이지 않고, ALB 보안그룹이
+CloudFront 오리진 IP 대역만 허용하므로 외부에서 직접 접속도 되지 않는다 — CloudFront 오리진
+참고용으로만 output에 남겨둔다.
 
 배포 후 값 확인:
 
@@ -318,6 +323,18 @@ Role/Task Role 모두 동일한 `ecs-tasks.amazonaws.com`을 신뢰 주체로 �
 - **버킷 네이밍**: `petlog-uploads-{env}` (예: `petlog-uploads-dev`, `petlog-uploads-prod`).
 - **커스텀 도메인/ACM 인증서 없음.** CloudFront와 ALB 모두 기본 도메인만 사용해 Route53/ACM
   의존성과 그에 따른 운영 부담을 없앴다. ALB 리스너는 포트 80(HTTP)만 연다. 필요해지면 별도로 추가한다.
+- **ALB 앞단에 CloudFront를 추가해 HTTPS를 지원한다 (`backend-stack.ts`).** ALB는
+  `*.elb.amazonaws.com` 도메인이라 ACM 인증서를 발급받을 수 없어(AWS가 자기 소유 도메인에는
+  인증서를 안 내준다), storage-stack의 이미지 CloudFront와 동일하게 CloudFront 기본
+  `*.cloudfront.net` 도메인에 자동으로 붙는 무료 TLS 인증서를 활용했다. 다만 이 앱은 정적
+  콘텐츠가 아니라 로그인 세션이 있는 동적 API/웹 서버이므로, storage-stack의 `CachingOptimized`
+  대신 `CachingDisabled` 정책으로 캐싱을 사실상 껐고, 오리진 요청 정책은 쿠키/헤더/쿼리스트링을
+  전부 오리진(ALB)까지 전달하는 `Managed-AllViewerExceptHostHeader`를 쓴다. 허용 메서드도
+  GET/HEAD뿐 아니라 PUT/POST/PATCH/DELETE까지 전부 연다(API 쓰기 요청 지원). ALB 보안그룹은
+  AWS 관리형 프리픽스 리스트(`com.amazonaws.global.cloudfront.origin-facing`)로 CloudFront
+  오리진 IP 대역만 허용하도록 좁혀, 사용자가 CloudFront/HTTPS를 우회해 ALB에 평문 HTTP로 직접
+  접근할 수 없게 했다. 상세 배경은
+  `.claude/docs/decisions/020-cloudfront-https.md` 참고.
 - **컴퓨트는 ECS Fargate + ALB** (App Runner가 서울 리전을 지원하지 않아 전환, 상단 안내 참고).
   backend/frontend가 ALB 1개를 공유해 ALB 시간당 고정비를 2배로 만들지 않는다 — 경로 기반
   라우팅(`/api/*` → backend, 그 외 전부 → frontend)으로 한 도메인에서 두 서비스를 나눈다.
@@ -339,7 +356,7 @@ NAT Gateway, Multi-AZ RDS는 의도적으로 만들지 않았다. 다만 **ALB�
 | 리소스 | 프리티어 | 프리티어 밖 예상 비용 (개인 프로젝트 트래픽 기준) |
 | --- | --- | --- |
 | S3 (Standard) | 5GB 저장 / 20,000 GET / 2,000 PUT (12개월) | 스토리지 $0.023/GB, 요청 비용은 미미한 수준 |
-| CloudFront | 1TB 아웃바운드 + 1,000만 요청 (12개월, 계정 단위) | `PriceClass_100` 기준 GB당 약 $0.085 (아웃바운드) |
+| CloudFront (배포 2개: storage-stack 이미지용 + backend-stack ALB HTTPS 종단용) | 1TB 아웃바운드 + 1,000만 요청 (12개월, 계정 단위, 배포 2개 합산) | `PriceClass_100` 기준 GB당 약 $0.085 (아웃바운드). ALB용 배포는 캐싱을 껐으므로(`CachingDisabled`) 모든 응답이 오리진까지 왕복하지만, 요청 수 자체의 개인 프로젝트 트래픽에서는 비용 영향이 크지 않다 |
 | DynamoDB (lock 테이블) | 25GB + 온디맨드 소량은 사실상 무료 | LockID 1건짜리 테이블이라 사실상 $0에 수렴 |
 | IAM (User/Role/Policy) | 항상 무료 | $0 |
 | ECR | 프라이빗 저장소 500MB (12개월) | $0.10/GB-월. lifecycle policy로 이미지 최근 10개만 유지해 무한 누적 방지 |

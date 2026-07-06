@@ -14,6 +14,7 @@ import { Alb } from '../.gen/providers/aws/alb';
 import { AlbListener } from '../.gen/providers/aws/alb-listener';
 import { AlbListenerRule } from '../.gen/providers/aws/alb-listener-rule';
 import { AlbTargetGroup } from '../.gen/providers/aws/alb-target-group';
+import { CloudfrontDistribution } from '../.gen/providers/aws/cloudfront-distribution';
 import { EcsCluster } from '../.gen/providers/aws/ecs-cluster';
 import { EcsTaskDefinition } from '../.gen/providers/aws/ecs-task-definition';
 import { EcsService } from '../.gen/providers/aws/ecs-service';
@@ -74,14 +75,29 @@ export interface BackendStackProps {
  * `NEXT_PUBLIC_API_URL`이 서로를 참조하는 순환 의존과 2단계 배포가 필요했다. 이제 ALB
  * 하나를 공유하므로 이 둘 다 "이 ALB의 DNS 이름" 하나로 충분하다 — ALB는 이 스택
  * 배포가 끝나는 즉시 DNS 이름을 알 수 있으므로 frontend-stack 배포를 기다릴 필요가 없다.
+ *
+ * ## CloudFront를 이 스택이 소유하는 이유 (ALB HTTPS 지원)
+ * ALB는 `*.elb.amazonaws.com` 도메인이라 ACM 인증서를 발급받을 수 없다(AWS가 자기 소유
+ * 도메인에는 인증서를 내주지 않는다). 그래서 커스텀 도메인을 새로 사는 대신, storage-stack의
+ * 이미지 CloudFront와 동일한 원칙으로 CloudFront의 기본 `*.cloudfront.net` 도메인에 자동으로
+ * 붙는 무료 TLS 인증서를 활용한다(`.claude/docs/decisions/020-cloudfront-https.md` 참고).
+ * ALB를 소유한 이 스택이 CloudFront도 함께 관리하는 것이 자연스럽다. storage-stack의
+ * CloudFront와 달리 이번 배포는 **캐싱을 하지 않는다** — 이 앱은 정적 자산이 아니라
+ * 로그인 세션이 있는 동적 API/웹 서버라, 사용자마다 다른 응답을 캐시하면 안 되기 때문이다.
  */
 export class BackendStack extends TerraformStack {
   public readonly cluster: EcsCluster;
   public readonly alb: Alb;
   public readonly albListener: AlbListener;
   public readonly frontendTargetGroup: AlbTargetGroup;
-  /** ALB DNS 이름 기반 접속 URL. FRONTEND_URL/NEXT_PUBLIC_API_URL이 동일하게 이 값을 참조한다. */
+  /** ALB DNS 이름 기반 접속 URL (http://, CloudFront 오리진 전용). 더 이상 FRONTEND_URL/
+   * NEXT_PUBLIC_API_URL이 참조하지 않는다 — 대신 `cloudfrontUrl`을 참조한다. */
   public readonly albUrl: string;
+  /** ALB 앞단 CloudFront 배포. HTTPS 종단 + 캐싱 비활성화(동적 API/세션 대응). */
+  public readonly cloudfrontDistribution: CloudfrontDistribution;
+  /** CloudFront 기본 도메인 기반 접속 URL (https://). FRONTEND_URL/NEXT_PUBLIC_API_URL이
+   * 동일하게 이 값을 참조한다. */
+  public readonly cloudfrontUrl: string;
 
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id);
@@ -283,6 +299,72 @@ export class BackendStack extends TerraformStack {
       ],
     });
 
+    // --- CloudFront (ALB 앞단 HTTPS 종단) ---
+    // AWS 관리형 캐시 정책 "CachingDisabled" ID (모든 AWS 계정/리전 공통 고정값). storage-stack의
+    // CachingOptimized와 달리, 이 배포는 min/default/max TTL이 전부 0으로 고정된 이 정책을 써서
+    // 캐싱을 사실상 끈다 — 로그인한 사용자마다 다른 응답이 나와야 하는 동적 API/세션 서버이기
+    // 때문이다 (storage-stack의 이미지 CloudFront는 정적 콘텐츠라 캐싱해도 안전하지만 이번엔 다름).
+    // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+    const CACHING_DISABLED_POLICY_ID = '4135ea2d-6df8-44a3-9df3-4b5a84be39ad';
+
+    // AWS 관리형 오리진 요청 정책 "Managed-AllViewerExceptHostHeader" ID (고정값). 쿠키/헤더/
+    // 쿼리스트링을 전부 오리진(ALB)까지 그대로 전달한다 — 로그인 쿠키와 GraphQL 쿼리 파라미터가
+    // 백엔드까지 도달해야 하므로 필수다. Host 헤더만 제외하는 이유는 오리진이 ALB DNS 이름을
+    // 기대하는데 뷰어의 Host 헤더(CloudFront 도메인)를 그대로 넘기면 ALB 라우팅이 깨질 수 있어서다.
+    const ALL_VIEWER_EXCEPT_HOST_HEADER_ORIGIN_REQUEST_POLICY_ID =
+      'b689b0a8-53d0-40ab-baf2-68738e2966ac';
+
+    const cloudfrontDistribution = new CloudfrontDistribution(this, 'alb-distribution', {
+      enabled: true,
+      comment: `Petlog ${environment} 백엔드/프론트엔드 공유 ALB HTTPS 종단`,
+      // 개인 포트폴리오 프로젝트 비용 최소화 원칙(storage-stack과 동일): PriceClass_100은
+      // 북미/유럽 엣지 로케이션만 사용해 가장 저렴하다.
+      priceClass: 'PriceClass_100',
+      isIpv6Enabled: true,
+      origin: [
+        {
+          originId: 'shared-alb-origin',
+          domainName: alb.dnsName,
+          customOriginConfig: {
+            // ALB에는 HTTPS 리스너가 없다(포트 80만 존재) — 오리진 프로토콜은 http-only로
+            // 고정한다. CloudFront→ALB 구간은 AWS 내부망이라 평문이어도 실사용자에게
+            // 노출되지 않는다.
+            httpPort: 80,
+            httpsPort: 443,
+            originProtocolPolicy: 'http-only',
+            originSslProtocols: ['TLSv1.2'],
+          },
+        },
+      ],
+      defaultCacheBehavior: {
+        targetOriginId: 'shared-alb-origin',
+        // 뷰어가 HTTP로 접속해도 강제로 HTTPS로 리다이렉트한다 — 로그인 토큰/건강 데이터가
+        // 평문으로 오가지 않도록 하는 것이 이번 변경의 목적이다.
+        viewerProtocolPolicy: 'redirect-to-https',
+        // API 서버이므로 쓰기 요청(PUT/POST/PATCH/DELETE)도 전부 통과해야 한다. storage-stack의
+        // 이미지 CloudFront는 GET/HEAD만 허용했지만 이번엔 다르다.
+        allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
+        cachedMethods: ['GET', 'HEAD'],
+        compress: true,
+        cachePolicyId: CACHING_DISABLED_POLICY_ID,
+        originRequestPolicyId: ALL_VIEWER_EXCEPT_HOST_HEADER_ORIGIN_REQUEST_POLICY_ID,
+      },
+      restrictions: {
+        geoRestriction: {
+          restrictionType: 'none',
+        },
+      },
+      viewerCertificate: {
+        // 커스텀 도메인 없이 기본 *.cloudfront.net 도메인만 사용한다 (ACM/Route53 불필요,
+        // storage-stack과 동일한 "인증서 없음" 원칙).
+        cloudfrontDefaultCertificate: true,
+      },
+    });
+    this.cloudfrontDistribution = cloudfrontDistribution;
+
+    const cloudfrontUrl = `https://${cloudfrontDistribution.domainName}`;
+    this.cloudfrontUrl = cloudfrontUrl;
+
     // --- ECS 클러스터 (backend/frontend 공유) ---
     const cluster = new EcsCluster(this, 'cluster', {
       name: `petlog-cluster-${environment}`,
@@ -395,8 +477,9 @@ export class BackendStack extends TerraformStack {
             { name: 'REFRESH_TOKEN_EXPIRES_IN', value: refreshTokenExpiresIn.stringValue },
             { name: 'NODE_ENV', value: 'production' },
             // 더 이상 별도 변수로 2단계 배포하지 않는다 — ALB를 backend/frontend가 공유하므로
-            // frontend도 결국 이 ALB 도메인으로 접속한다.
-            { name: 'FRONTEND_URL', value: albUrl },
+            // frontend도 결국 같은 도메인으로 접속한다. CloudFront 추가 이후로는 ALB URL이 아니라
+            // CloudFront 도메인(HTTPS)을 참조한다 — 사용자에게 노출되는 최종 접속 경로이기 때문이다.
+            { name: 'FRONTEND_URL', value: cloudfrontUrl },
           ],
           secrets: [
             { name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn },
@@ -446,14 +529,23 @@ export class BackendStack extends TerraformStack {
 
     new TerraformOutput(this, 'alb_dns_name', {
       value: alb.dnsName,
-      description: 'ALB의 원시 DNS 이름 (http:// 접두사 없음).',
+      description: 'ALB의 원시 DNS 이름 (http:// 접두사 없음). CloudFront의 오리진으로만 쓰인다.',
     });
 
     new TerraformOutput(this, 'alb_url', {
       value: albUrl,
       description:
-        '백엔드(`/api/*`)와 프론트엔드(그 외 전부)가 공유하는 접속 URL. ' +
-        'frontend-stack의 NEXT_PUBLIC_API_URL 빌드 인자가 이 값을 그대로 참조한다.',
+        'ALB DNS 이름 기반 접속 URL (http://, CloudFront 오리진 전용 참고용). ' +
+        '더 이상 FRONTEND_URL/NEXT_PUBLIC_API_URL이 참조하지 않는다 — `cloudfront_url`을 쓴다. ' +
+        'ALB 보안그룹이 CloudFront 오리진 IP 대역만 허용하므로 이 URL로 직접 접속은 되지 않는다.',
+    });
+
+    new TerraformOutput(this, 'cloudfront_url', {
+      value: cloudfrontUrl,
+      description:
+        '백엔드(`/api/*`)와 프론트엔드(그 외 전부)가 공유하는 HTTPS 접속 URL(https:// 포함). ' +
+        'frontend-stack의 NEXT_PUBLIC_API_URL 빌드 인자와 backend-stack의 FRONTEND_URL ' +
+        '컨테이너 환경변수가 모두 이 값을 참조한다.',
     });
 
     new TerraformOutput(this, 'backend_execution_role_arn', {

@@ -103,9 +103,9 @@ export class FrontendStack extends TerraformStack {
     // next.config.ts의 rewrites() 목적지를 `next build` 시점에 고정시키므로, 런타임
     // 환경변수로 나중에 값을 바꿔도 반영되지 않는다(frontend-architect가 실제 빌드
     // 산출물로 검증함). 그래서 NEXT_PUBLIC_API_URL은 Docker 이미지 빌드 시 --build-arg로
-    // 주입해야 하고, 그 값은 backendStack.albUrl(공유 ALB URL)을 그대로 쓴다 — backend와
-    // frontend가 이제 같은 도메인을 쓰므로 더 이상 별도 배포 단계를 기다릴 필요가 없다
-    // (infra/README.md 참고).
+    // 주입해야 하고, 그 값은 backendStack.cloudfrontUrl(공유 ALB 앞단 CloudFront HTTPS 도메인)을
+    // 그대로 쓴다 — backend와 frontend가 이제 같은 CloudFront 도메인을 쓰므로 더 이상 별도
+    // 배포 단계를 기다릴 필요가 없다(infra/README.md 참고).
     const frontendTaskDefinition = new EcsTaskDefinition(this, 'frontend-task-definition', {
       family: `petlog-frontend-${environment}`,
       requiresCompatibilities: ['FARGATE'],
@@ -176,11 +176,11 @@ export class FrontendStack extends TerraformStack {
     });
 
     new TerraformOutput(this, 'expected_next_public_api_url', {
-      value: backendStack.albUrl,
+      value: backendStack.cloudfrontUrl,
       description:
         '프론트엔드 이미지를 빌드할 때 --build-arg NEXT_PUBLIC_API_URL로 넘겨야 하는 값 ' +
         '(런타임 환경변수로는 반영되지 않음 — infra/README.md 참고). backend-stack의 ' +
-        'FRONTEND_URL과 동일한 값(공유 ALB URL)이다.',
+        'FRONTEND_URL과 동일한 값(공유 ALB 앞단 CloudFront HTTPS URL)이다.',
     });
   }
 }

@@ -13,7 +13,7 @@
     "deploy:bootstrap": "dotenv -e .env -- cdktf deploy petlog-bootstrap",
     "diff:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash -c 'for s in petlog-registry-dev petlog-storage-dev petlog-network-dev petlog-database-dev petlog-backend-dev petlog-frontend-dev; do echo \"=== $s ===\"; cdktf diff $s --ignore-missing-stack-dependencies; done'",
     "deploy:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash scripts/deploy.sh",
-    "output:alb:url": "dotenv -e .env -- terraform -chdir=cdktf.out/stacks/petlog-backend-dev output -raw alb_url"
+    "output:cdn:url": "dotenv -e .env -- terraform -chdir=cdktf.out/stacks/petlog-backend-dev output -raw cloudfront_url"
   },
   "dependencies": {
     "cdktf": "^0.21.0",

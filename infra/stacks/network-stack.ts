@@ -10,6 +10,7 @@ import { RouteTable } from '../.gen/providers/aws/route-table';
 import { Route } from '../.gen/providers/aws/route';
 import { RouteTableAssociation } from '../.gen/providers/aws/route-table-association';
 import { DataAwsAvailabilityZones } from '../.gen/providers/aws/data-aws-availability-zones';
+import { DataAwsEc2ManagedPrefixList } from '../.gen/providers/aws/data-aws-ec2-managed-prefix-list';
 
 import {
   DEFAULT_AWS_REGION,
@@ -177,9 +178,34 @@ export class NetworkStack extends TerraformStack {
       routeTableId: publicRouteTable.id,
     });
 
+    // --- CloudFront 오리진 전용 관리형 프리픽스 리스트 ---
+    // ALB 앞에 CloudFront(HTTPS 종단)를 추가하면서, ALB가 CloudFront 엣지에서 나가는 트래픽만
+    // 받도록 좁힌다. `com.amazonaws.global.cloudfront.origin-facing`은 AWS가 관리하는 프리픽스
+    // 리스트로, CloudFront가 오리진(ALB)에 접속할 때 사용하는 IP 대역 전체를 담고 있다. 이
+    // 리스트를 소스로 쓰면 사용자가 CloudFront/HTTPS를 우회해 ALB에 평문 HTTP로 직접 접근하는
+    // 경로를 막을 수 있다 (`.claude/docs/decisions/020-cloudfront-https.md` 참고).
+    const cloudfrontOriginFacingPrefixList = new DataAwsEc2ManagedPrefixList(
+      this,
+      'cloudfront-origin-facing-prefix-list',
+      {
+        name: 'com.amazonaws.global.cloudfront.origin-facing',
+      },
+    );
+
     // --- ALB 보안그룹 ---
-    // 인터넷에서 오는 HTTP(80) 트래픽만 허용한다. 커스텀 도메인/ACM 인증서가 없으므로
-    // HTTPS(443)는 이번 범위 밖이다 (storage-stack의 CloudFront와 동일하게 "인증서 없음" 원칙).
+    // 인바운드 HTTP(80)는 CloudFront 엣지에서 오는 트래픽만 허용한다 (0.0.0.0/0 아님).
+    // 커스텀 도메인/ACM 인증서가 없어 ALB 자체에는 HTTPS 리스너를 두지 않으므로, HTTPS는
+    // CloudFront가 대신 종단한다 (backend-stack.ts의 CloudFront 배포 참고). CloudFront→ALB
+    // 구간은 AWS 내부망이라 HTTP 평문이어도 실사용자에게 노출되지 않는다.
+    //
+    // 주의: 이 SecurityGroup의 최상위 `description` 필드는 절대 바꾸지 않는다. rds-sg와 동일한
+    // 이유(아래 rds-sg 주석 참고) — AWS EC2 SecurityGroup의 GroupDescription은 불변(ForceNew)
+    // 속성이라, 값을 바꾸면 Terraform이 이 보안그룹 자체를 삭제 후 재생성하려 든다. 이미 배포된
+    // ALB/ECS 태스크 보안그룹이 이 SG ID를 참조하고 있어(alb.securityGroups,
+    // ecs-task-sg의 ingress.securityGroups), 실제로 `cdktf diff`에서 재생성(destroy and
+    // create replacement) 플랜이 나오는 것을 확인했다. 그래서 텍스트가 더 이상 100% 정확하지
+    // 않더라도("from the internet") 최상위 description은 그대로 두고, 실제로 바뀌는 소스 제한은
+    // 아래 `ingress` 블록(제자리 업데이트, 무중단)에서만 반영한다.
     const albSecurityGroup = new SecurityGroup(this, 'alb-sg', {
       name: `petlog-alb-sg-${environment}`,
       // AWS EC2 SecurityGroup의 description은 ASCII만 허용한다 (한글 등 non-ASCII 사용 시
@@ -188,11 +214,11 @@ export class NetworkStack extends TerraformStack {
       vpcId: vpc.id,
       ingress: [
         {
-          description: 'Allow HTTP (80) from the internet',
+          description: 'Allow HTTP (80) from CloudFront origin-facing IP ranges only',
           fromPort: 80,
           toPort: 80,
           protocol: 'tcp',
-          cidrBlocks: ['0.0.0.0/0'],
+          prefixListIds: [cloudfrontOriginFacingPrefixList.id],
         },
       ],
       // egress를 명시하지 않으면 Terraform이 아웃바운드를 전부 막아버린다(ecs-task-sg와

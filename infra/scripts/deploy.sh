@@ -10,6 +10,10 @@
 #   됐다. 그래서 예전에 있던 "backend 2차 배포"(FRONTEND_URL ↔ NEXT_PUBLIC_API_URL 순환 의존
 #   해결용) 단계가 사라졌다 — ALB는 backend-stack 배포가 끝나는 즉시 DNS 이름을 알 수 있으므로,
 #   그 값을 그대로 backend의 FRONTEND_URL과 frontend 빌드용 NEXT_PUBLIC_API_URL 둘 다에 쓴다.
+# - ALB 앞단에 CloudFront(HTTPS 종단)를 추가한 이후로는 ALB URL이 아니라 CloudFront URL을
+#   FRONTEND_URL/NEXT_PUBLIC_API_URL에 쓴다 (`.claude/docs/decisions/020-cloudfront-https.md`
+#   참고). ALB 보안그룹이 CloudFront 오리진 IP 대역만 허용하므로 ALB URL로는 어차피 직접
+#   접속되지 않는다.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -44,17 +48,18 @@ else
   echo "==> backend 이미지가 이미 존재 — 스킵 (이미지 교체는 npm run deploy --workspace=backend)"
 fi
 
-echo "==> [3/5] backend-stack 배포 (ECS 클러스터 + 공유 ALB + backend 서비스)"
+echo "==> [3/5] backend-stack 배포 (ECS 클러스터 + 공유 ALB + CloudFront + backend 서비스)"
 cdktf deploy "$BACKEND_STACK" --ignore-missing-stack-dependencies
 
-# ALB는 backend-stack 배포가 끝나는 즉시 DNS 이름을 알 수 있다 (frontend-stack 배포를
-# 기다릴 필요가 없다 — App Runner 시절의 2단계 배포가 더 이상 필요 없는 이유).
-ALB_URL="$(terraform -chdir="cdktf.out/stacks/${BACKEND_STACK}" output -raw alb_url)"
-echo "    ALB URL (backend + frontend 공유): ${ALB_URL}"
+# CloudFront는 backend-stack 배포가 끝나는 즉시 도메인을 알 수 있다 (frontend-stack 배포를
+# 기다릴 필요가 없다 — App Runner 시절의 2단계 배포가 더 이상 필요 없는 이유). frontend
+# 빌드/런타임 모두 ALB URL이 아니라 이 CloudFront URL(HTTPS)을 참조한다.
+CLOUDFRONT_URL="$(terraform -chdir="cdktf.out/stacks/${BACKEND_STACK}" output -raw cloudfront_url)"
+echo "    CloudFront URL (backend + frontend 공유): ${CLOUDFRONT_URL}"
 
 if ! image_exists "$FRONTEND_REPO"; then
-  echo "==> frontend 이미지가 ECR에 없음 (최초 배포) — 이미지 빌드 & push (NEXT_PUBLIC_API_URL=${ALB_URL})"
-  docker build -f "$REPO_ROOT/frontend/Dockerfile" --build-arg NEXT_PUBLIC_API_URL="$ALB_URL" -t petlog-frontend "$REPO_ROOT"
+  echo "==> frontend 이미지가 ECR에 없음 (최초 배포) — 이미지 빌드 & push (NEXT_PUBLIC_API_URL=${CLOUDFRONT_URL})"
+  docker build -f "$REPO_ROOT/frontend/Dockerfile" --build-arg NEXT_PUBLIC_API_URL="$CLOUDFRONT_URL" -t petlog-frontend "$REPO_ROOT"
   docker tag petlog-frontend:latest "${REGISTRY_HOST}/${FRONTEND_REPO}:latest"
   docker push "${REGISTRY_HOST}/${FRONTEND_REPO}:latest"
 else
@@ -65,4 +70,4 @@ echo "==> [4/5] frontend-stack 배포 (공유 ALB의 frontend 타겟 그룹에 E
 cdktf deploy "$FRONTEND_STACK" --ignore-missing-stack-dependencies
 
 echo "==> [5/5] 완료"
-echo "    접속 URL (backend /api/* + frontend 그 외 전부, 동일 ALB 도메인): ${ALB_URL}"
+echo "    접속 URL (backend /api/* + frontend 그 외 전부, 동일 CloudFront 도메인, HTTPS): ${CLOUDFRONT_URL}"
