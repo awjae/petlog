@@ -115,6 +115,80 @@ VPC/ALB/태스크 정의를 직접 설계하는 경험 자체는 포트폴리오
   `backend`/`frontend`의 `docker:deploy`에 `aws ecs update-service --force-new-deployment`
   호출을 추가했다(`docker:force-redeploy` 스크립트).
 
+## 실제 배포 후에만 드러난 문제들
+
+`cdktf synth`/`terraform validate`/`cdktf diff`를 전부 통과한 뒤에도, 실제로 `cdktf deploy`를
+실행하고 ECS 태스크가 뜨는 것까지 확인하는 과정에서 아래 문제들이 추가로 드러났다. 정적 검증
+(synth/validate/diff)이 잡아주지 못하는 종류의 오류라는 공통점이 있어 기록해둔다 — 다음에
+비슷한 인프라를 만들 때 같은 실수를 반복하지 않기 위함이다.
+
+### 네트워크/보안그룹
+
+- **`aws_security_group`의 `description`은 ASCII만 허용한다.** 한글 설명을 넣었더니
+  `Character sets beyond ASCII are not supported` 에러로 거부됐다(`network-stack.ts`의
+  `alb-sg`/`ecs-task-sg`, `database-stack.ts`의 DB Subnet Group도 동일 — 후자는 "non-printable
+  control characters" 라는 다른 에러 메시지였지만 원인은 같다). `TerraformVariable`/
+  `TerraformOutput`의 `description`(Terraform 메타데이터일 뿐 실제 AWS API 필드가 아님)은
+  한글이어도 문제없다 — AWS API로 실제 전달되는 필드인지 아닌지를 구분해야 한다.
+- **Terraform의 `aws_security_group`은 `egress`를 명시하지 않으면 아웃바운드를 전부 차단한다.**
+  AWS 콘솔에서 보안그룹을 만들면 "전체 아웃바운드 허용" 규칙이 기본으로 붙지만, Terraform
+  리소스로 선언할 때 `egress` 필드를 아예 안 쓰면 그 기본 규칙이 생기지 않는다. `alb-sg`/
+  `ecs-task-sg` 둘 다 이 상태였고, 그 결과 ECS 태스크가 ECR 이미지도 SSM 시크릿도 못 가져와서
+  타임아웃으로 계속 죽었다. 전체 허용 egress를 명시적으로 추가해서 해결했다.
+- **보안그룹 참조를 바꾸면서 옛 보안그룹을 같은 apply에서 지우면 순서 문제가 생길 수 있다.**
+  `rds-sg`의 인그레스 소스를 구 App Runner Connector SG에서 신규 ECS 태스크 SG로 바꾸는
+  동시에 그 구 SG를 삭제하려 했더니, Terraform이 "참조 업데이트 → 구 리소스 삭제" 순서를
+  스스로 보장해주지 않아 `DependencyViolation`으로 반복 실패했다. 결국 AWS CLI로 실제 인그레스
+  규칙을 원하는 최종 상태와 미리 맞춰둔 뒤 재적용해서 우회했다 — Terraform state 밖에서 수동
+  조작을 한 것이므로, 이후 `cdktf diff`로 "No changes"가 나오는지 재확인해서 state와 실제
+  상태가 어긋나지 않았음을 검증했다.
+
+### IAM
+
+- **컴퓨트 플랫폼을 바꿨는데 로컬 배포용 IAM 사용자의 정책은 그대로였다.** App Runner 시절
+  붙여둔 `AWSAppRunnerFullAccess`만 있고 `ecs:*` 권한이 전혀 없어서, `backend-stack`/
+  `frontend-stack` 배포가 `ecs:CreateCluster`/`ecs:RegisterTaskDefinition` 단계에서
+  `AccessDeniedException`으로 실패했다. IAM 사용자는 관리형 정책을 최대 10개까지만 붙일 수
+  있는 계정 기본 quota에 걸려 있었어서(이미 10개 꽉 채운 상태), 더 이상 안 쓰는
+  `AWSAppRunnerFullAccess`를 떼고 `AmazonECS_FullAccess`를 붙이는 방식으로 교체했다. **컴퓨트
+  플랫폼을 바꿀 때는 인프라 코드뿐 아니라 그걸 배포하는 사람/역할의 IAM 정책도 같이
+  점검해야 한다.**
+
+### 컨테이너 런타임
+
+- **Apple Silicon(ARM64)에서 빌드한 Docker 이미지가 Fargate 기본 아키텍처(x86_64)와 안 맞아
+  컨테이너가 뜨자마자 `exec format error`로 죽었다.** 이미지를 다시 빌드할 필요 없이, ECS
+  Task Definition에 `runtimePlatform: { cpuArchitecture: 'ARM64', operatingSystemFamily:
+  'LINUX' }`를 명시해서 해결했다 — 오히려 Graviton 기반이라 x86_64보다 비용도 더 저렴하다.
+  로컬 개발 환경(Mac)과 배포 환경(Fargate)의 기본 아키텍처가 다를 수 있다는 걸 놓치기 쉽다.
+- **`node:22-alpine` 런타임 이미지에는 OpenSSL이 없다.** 앱이 정상적으로 쓰는 Prisma 쿼리
+  엔진(빌드 시점에 `prisma generate`로 이미 만들어져 있음)은 영향받지 않았지만, RDS 스키마
+  마이그레이션을 위해 `npx prisma migrate deploy`를 즉석에서 실행했더니 스키마 엔진이 OpenSSL
+  버전 감지에 실패해 `Error: Could not parse schema engine response`로 죽었다. `apk add
+  --no-cache openssl`을 먼저 실행하고 나서 마이그레이션을 돌리는 방식으로 우회했다
+  (`backend/scripts/migrate-deploy-ecs.sh`).
+- **죽은 구버전 ECS 배포가 새 배포를 막을 수 있다.** ARM64로 고친 새 태스크 정의(revision 2)로
+  서비스를 업데이트했는데, 계속 실패를 반복하던 구버전(revision 1) 배포가 자리를 차지하고 있어
+  새 revision은 시도조차 되지 않았다. `aws ecs update-service --force-new-deployment`로
+  강제로 배포를 다시 트리거해서 해결했다(`docker:force-redeploy` 스크립트가 이미 이 목적으로
+  존재했다 — 코드 배포뿐 아니라 이렇게 "멈춘 배포를 다시 밀어붙이는" 용도로도 쓰인다).
+
+### CDKTF/Terraform 자체의 한계
+
+- **`cdktf deploy <단일 스택>`은 다른 스택이 필요로 하는 cross-stack output을 생성하지 않을 수
+  있다.** `cdktf deploy petlog-backend-dev`만 단독으로 실행했더니, `frontend-stack`이 참조하는
+  `backendStack.cluster.id`에 해당하는 output이 실제로는 생성되지 않아 `frontend-stack` 배포가
+  `Unsupported attribute` 에러로 실패했다. 전체 앱을 `synth`하면(모든 스택을 한 번에 합성하면)
+  이 output이 정상적으로 생성되는 것으로 보아, CDKTF가 "이번 배포 대상에 실제로 그 값을 참조하는
+  스택이 포함돼 있는지"에 따라 cross-stack output 생성 여부를 최적화하는 것으로 보인다. **서로
+  cross-stack reference로 연결된 스택들은 한 `cdktf deploy` 명령에 함께 지정해서 배포해야
+  안전하다** (`cdktf deploy petlog-backend-dev petlog-frontend-dev` 처럼).
+- 위 문제들 전부 `synth`/`validate`/`diff` 단계에서는 드러나지 않았다 — 이 검증들은 "TypeScript가
+  유효한 Terraform 설정으로 변환되는지"와 "AWS 리소스 스키마에 맞는지"까지만 보장하고, 실제 AWS
+  서비스의 런타임 동작(권한, 네트워크 도달성, 아키텍처 호환성, 리소스 삭제 순서)은 검증하지
+  않는다. 개인 프로젝트 규모에서는 이 간극을 메울 자동화된 통합 테스트가 없으므로, 당분간은
+  "실제로 배포해서 헬스체크가 200을 반환하는지"까지 확인하는 걸 최종 검증 기준으로 삼는다.
+
 ## 관련 문서
 
 - `infra/README.md`의 "아키텍처 결정 요약" 절 — 최종 구현된 네트워크/ALB/ECS 구조
