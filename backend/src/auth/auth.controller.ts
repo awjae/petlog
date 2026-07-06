@@ -18,7 +18,9 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { WithdrawAccountDto } from './dto/withdraw-account.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserService } from '../user/user.service';
 
 const ACCESS_COOKIE = 'access_token';
@@ -78,7 +80,13 @@ export class AuthController {
 
     res.cookie(ACCESS_COOKIE, accessToken, accessCookieOptions);
     res.cookie(REFRESH_COOKIE, refreshToken, refreshCookieOptions);
-    return { message: '로그인 성공' };
+
+    const accountPendingDeletion = user.deletionRequestedAt !== null;
+    const deletionRemainingDays = accountPendingDeletion
+      ? this.authService.getDeletionRemainingDays(user.deletionRequestedAt)
+      : null;
+
+    return { message: '로그인 성공', accountPendingDeletion, deletionRemainingDays };
   }
 
   @Post('refresh')
@@ -121,6 +129,34 @@ export class AuthController {
     res.clearCookie(ACCESS_COOKIE, accessCookieOptions);
     res.clearCookie(REFRESH_COOKIE, refreshCookieOptions);
     return { message: '로그아웃 성공' };
+  }
+
+  @Post('withdraw')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiCookieAuth()
+  @ApiOperation({ summary: '계정 삭제(탈퇴) — 소프트 삭제 + 30일 그레이스 기간 시작' })
+  async withdraw(
+    @Body() dto: WithdrawAccountDto,
+    @Req() req: Request & { user: { id: string; email: string } },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.withdrawAccount(req.user.id, dto.password);
+
+    res.clearCookie(ACCESS_COOKIE, accessCookieOptions);
+    res.clearCookie(REFRESH_COOKIE, refreshCookieOptions);
+    return { message: '탈퇴 처리되었어요. 30일 이내 로그인하면 복구할 수 있어요.' };
+  }
+
+  @Post('restore')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth()
+  @ApiOperation({ summary: '계정 복구 — 그레이스 기간 중 재로그인 후 탈퇴 취소' })
+  async restore(@Req() req: Request & { user: { id: string; email: string } }) {
+    await this.authService.restoreAccount(req.user.id);
+    return { message: '계정이 복구되었어요.' };
   }
 
   @Post('forgot-password')

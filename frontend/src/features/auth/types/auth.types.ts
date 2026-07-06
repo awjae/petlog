@@ -8,6 +8,12 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface LoginResponse {
+  message: string;
+  accountPendingDeletion: boolean;
+  deletionRemainingDays: number | null;
+}
+
 export interface AuthError {
   statusCode: number;
   message: string;
@@ -31,5 +37,13 @@ export interface ResetPasswordPayload {
 }
 
 export interface ResetPasswordResponse {
+  message: string;
+}
+
+export interface WithdrawResponse {
+  message: string;
+}
+
+export interface RestoreResponse {
   message: string;
 }

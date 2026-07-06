@@ -1,4 +1,10 @@
-import { GoneException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  GoneException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
@@ -24,6 +30,7 @@ export interface TokenPair {
 
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30일
 const PASSWORD_RESET_TOKEN_TTL_MS = 30 * 60 * 1000; // 30분
+const DELETION_GRACE_PERIOD_DAYS = 30;
 
 @Injectable()
 export class AuthService {
@@ -179,5 +186,46 @@ export class AuthService {
 
     await this.userService.updatePassword(record.userId, newPassword);
     await this.revokeAllRefreshTokens(record.userId);
+  }
+
+  // 계정 삭제(탈퇴) 확정 — 본인 확인 후 소프트 삭제(deletionRequestedAt)를 세팅하고
+  // 전 기기 Refresh Token을 폐기한다. revokeAllRefreshTokens는 updateMany 기반으로
+  // 그 자체로 원자적이라 별도 트랜잭션 클라이언트 없이 기존 메서드를 그대로 재사용한다.
+  async withdrawAccount(userId: string, password: string): Promise<void> {
+    const valid = await this.userService.verifyPassword(userId, password);
+    if (!valid) {
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { deletionRequestedAt: new Date() },
+    });
+
+    await this.revokeAllRefreshTokens(userId);
+  }
+
+  // 계정 복구 — 그레이스 기간(30일) 중 재로그인한 사용자가 탈퇴를 취소한다.
+  // anonymizedAt이 이미 세팅된(익명화 배치가 실행된) 경우는 복구 불가능한 레이스 상황이므로
+  // updateMany + count로 원자적으로 조건부 업데이트한다.
+  async restoreAccount(userId: string): Promise<void> {
+    const restored = await this.prisma.user.updateMany({
+      where: { id: userId, anonymizedAt: null },
+      data: { deletionRequestedAt: null },
+    });
+
+    if (restored.count !== 1) {
+      throw new ConflictException('복구 가능 기간이 지났어요. 새로 가입해주세요.');
+    }
+  }
+
+  // 로그인 응답에 그레이스 기간 안내를 포함하기 위한 헬퍼.
+  getDeletionRemainingDays(deletionRequestedAt: Date | null): number | null {
+    if (!deletionRequestedAt) return null;
+
+    const elapsedDays = Math.floor(
+      (Date.now() - deletionRequestedAt.getTime()) / (24 * 60 * 60 * 1000),
+    );
+    return Math.max(0, DELETION_GRACE_PERIOD_DAYS - elapsedDays);
   }
 }

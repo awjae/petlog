@@ -29,6 +29,7 @@ Petlog 전체가 TypeScript 기반이므로 인프라도 같은 언어로 작성
 | `storage-stack` | `stacks/storage-stack.ts` | 1순위 구현 완료 (S3 + CloudFront + 백엔드 IAM) |
 | `network-stack` | `stacks/network-stack.ts` | 구현 완료 (VPC + private 서브넷 2개 + public 서브넷 2개 + IGW + ALB/ECS 태스크 보안그룹, NAT 없음) |
 | `database-stack` | `stacks/database-stack.ts` | 구현 완료 (RDS PostgreSQL, Railway managed DB 완전 대체) |
+| `bastion-stack` | `stacks/bastion-stack.ts` | 구현 완료 (SSM 전용 EC2, private RDS에 대한 IAM 기반 팀 접근 — `scripts/db-tunnel.sh` 참고) |
 | `backend-stack` | `stacks/backend-stack.ts` | 구현 완료 (ECS Fargate + 공유 ALB + ALB 앞단 CloudFront(HTTPS) + ECS 클러스터, Railway 완전 대체) |
 | `frontend-stack` | `stacks/frontend-stack.ts` | 구현 완료 (ECS Fargate, backend-stack의 공유 ALB에 등록, Vercel 완전 대체) |
 

@@ -54,6 +54,7 @@ export class NetworkStack extends TerraformStack {
   public readonly rdsSecurityGroup: SecurityGroup;
   public readonly albSecurityGroup: SecurityGroup;
   public readonly ecsTaskSecurityGroup: SecurityGroup;
+  public readonly bastionSecurityGroup: SecurityGroup;
 
   constructor(scope: Construct, id: string, props: NetworkStackProps) {
     super(scope, id);
@@ -283,10 +284,38 @@ export class NetworkStack extends TerraformStack {
     });
     this.ecsTaskSecurityGroup = ecsTaskSecurityGroup;
 
+    // --- SSM Bastion 보안그룹 (RDS 팀 접근용, bastion-stack의 EC2가 사용) ---
+    // 인바운드 규칙이 하나도 없다 — SSM Session Manager는 에이전트가 SSM 서비스로 아웃바운드
+    // HTTPS(443)로 접속하는 방식(long-polling)이라 인바운드 포트를 열 필요가 자체가 없다.
+    // 즉 이 보안그룹만 봐서는 "누구도 인터넷에서 직접 이 인스턴스로 들어올 수 없다" — 접근 통제는
+    // SG의 CIDR/IP가 아니라 IAM(ssm:StartSession 권한)이 담당한다. 이것이 IP 화이트리스트 방식
+    // 대비 이 구조를 도입한 핵심 이유(`.claude/docs` 참고 — 팀원마다 IP가 바뀌는 문제, 감사 로그
+    // 부재 문제를 해결).
+    const bastionSecurityGroup = new SecurityGroup(this, 'bastion-sg', {
+      name: `petlog-bastion-sg-${environment}`,
+      description: 'Security group for SSM-only RDS access bastion (no inbound rules)',
+      vpcId: vpc.id,
+      // 아웃바운드: SSM 엔드포인트(443) + RDS(5432). 범위를 좁혀도 되지만, ecs-task-sg와 같은
+      // 이유(NAT 없이 public 서브넷 직접 인터넷 접근, 인바운드가 이미 전혀 없어 아웃바운드
+      // 전체 허용이 보안 경계를 약화시키지 않음)로 단순화한다.
+      egress: [
+        {
+          description: 'Allow all outbound (SSM Session Manager, RDS 5432)',
+          fromPort: 0,
+          toPort: 0,
+          protocol: '-1',
+          cidrBlocks: ['0.0.0.0/0'],
+        },
+      ],
+      tags: { Name: `petlog-bastion-sg-${environment}` },
+    });
+    this.bastionSecurityGroup = bastionSecurityGroup;
+
     // --- RDS 보안그룹 ---
-    // 인바운드 5432는 오직 ECS 태스크 보안그룹에서 오는 트래픽만 허용한다 (기존에는 App Runner
-    // Connector 보안그룹을 소스로 했으나, 컴퓨트가 ECS Fargate로 바뀌면서 소스만 교체한다 —
-    // RDS 인스턴스 자체는 건드리지 않으므로 다운타임 없는 변경이다).
+    // 인바운드 5432는 ECS 태스크 보안그룹(런타임 백엔드)과 bastion 보안그룹(팀원의 수동 DB
+    // 접근, SSM 포트포워딩 경유)에서 오는 트래픽만 허용한다 (기존에는 App Runner Connector
+    // 보안그룹을 소스로 했으나, 컴퓨트가 ECS Fargate로 바뀌면서 소스만 교체한다 — RDS 인스턴스
+    // 자체는 건드리지 않으므로 다운타임 없는 변경이다).
     //
     // 주의: 이 SecurityGroup의 **최상위 `description` 필드는 절대 바꾸지 않는다.** AWS EC2
     // SecurityGroup의 GroupDescription은 불변(ForceNew) 속성이라, 값을 바꾸면 Terraform이
@@ -308,6 +337,13 @@ export class NetworkStack extends TerraformStack {
           toPort: 5432,
           protocol: 'tcp',
           securityGroups: [ecsTaskSecurityGroup.id],
+        },
+        {
+          description: 'Allow PostgreSQL (5432) from SSM bastion (team RDS access)',
+          fromPort: 5432,
+          toPort: 5432,
+          protocol: 'tcp',
+          securityGroups: [bastionSecurityGroup.id],
         },
       ],
       tags: { Name: `petlog-rds-sg-${environment}` },
@@ -344,6 +380,11 @@ export class NetworkStack extends TerraformStack {
       value: ecsTaskSecurityGroup.id,
       description:
         'ECS 태스크(backend/frontend)의 networkConfiguration.securityGroups가 참조하는 보안그룹 ID',
+    });
+
+    new TerraformOutput(this, 'bastion_security_group_id', {
+      value: bastionSecurityGroup.id,
+      description: 'bastion-stack의 EC2 인스턴스가 참조하는 보안그룹 ID',
     });
   }
 }

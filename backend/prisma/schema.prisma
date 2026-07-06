@@ -17,6 +17,13 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // 탈퇴 요청 시각. NULL이면 정상 계정, NOT NULL이면 30일 그레이스 기간 중.
+  // 그레이스 기간 중 재로그인 시 이 값을 다시 NULL로 되돌리는 것이 "계정 복구"다.
+  deletionRequestedAt DateTime? @map("deletion_requested_at")
+
+  // 익명화 배치가 실행된 시각. 한 번 세팅되면 되돌리지 않는다.
+  anonymizedAt DateTime? @map("anonymized_at")
+
   pets                Pet[]
   notifications       Notification[]
   pushTokens          PushToken[]

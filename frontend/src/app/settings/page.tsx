@@ -7,6 +7,7 @@ import { PawPrint, Check, Bell, Pill, KeyRound, LogOut, ChevronRight } from 'luc
 import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
+import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
 import styles from './page.module.css';
@@ -22,6 +23,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { name, email, loading } = useCurrentUser();
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
@@ -133,6 +135,15 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* ── 회원 탈퇴 (오탭 방지를 위해 카드 바깥에 저강도로 배치) ── */}
+        <button
+          type="button"
+          className={styles.withdrawBtn}
+          onClick={() => setIsWithdrawSheetOpen(true)}
+        >
+          회원 탈퇴
+        </button>
+
         <p className={styles.version}>Petlog v0.1.0-beta</p>
       </div>
 
@@ -142,6 +153,15 @@ export default function SettingsPage() {
         isOpen={isEditOpen}
         currentName={name}
         onClose={() => setIsEditOpen(false)}
+      />
+
+      <WithdrawInfoSheet
+        isOpen={isWithdrawSheetOpen}
+        onClose={() => setIsWithdrawSheetOpen(false)}
+        onProceed={() => {
+          setIsWithdrawSheetOpen(false);
+          router.push('/settings/withdraw');
+        }}
       />
     </main>
   );

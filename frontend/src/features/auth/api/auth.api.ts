@@ -1,9 +1,12 @@
 import type {
   LoginPayload,
+  LoginResponse,
   RegisterPayload,
   ForgotPasswordResponse,
   VerifyResetTokenResponse,
   ResetPasswordResponse,
+  WithdrawResponse,
+  RestoreResponse,
 } from '../types/auth.types';
 
 export class ApiError extends Error {
@@ -57,8 +60,20 @@ export async function registerUser(payload: RegisterPayload): Promise<void> {
   await postJson('/api/auth/register', payload);
 }
 
-export async function loginUser(payload: LoginPayload): Promise<void> {
-  await postJson('/api/auth/login', payload);
+export async function loginUser(payload: LoginPayload): Promise<LoginResponse> {
+  return postJson<LoginResponse>('/api/auth/login', payload);
+}
+
+export async function logoutUser(): Promise<void> {
+  await postJson('/api/auth/logout', {});
+}
+
+export async function withdrawAccount(password: string): Promise<WithdrawResponse> {
+  return postJson<WithdrawResponse>('/api/auth/withdraw', { password });
+}
+
+export async function restoreAccount(): Promise<RestoreResponse> {
+  return postJson<RestoreResponse>('/api/auth/restore', {});
 }
 
 export async function requestPasswordReset(email: string): Promise<ForgotPasswordResponse> {

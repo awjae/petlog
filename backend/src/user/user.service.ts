@@ -35,6 +35,15 @@ export class UserService {
     return user;
   }
 
+  // 계정 삭제(탈퇴) 흐름에서 사용. validateUser()는 email 기반이라 이미 로그인된
+  // 사용자(id 기준)의 본인 확인에는 맞지 않아 별도로 둔다.
+  async verifyPassword(id: string, password: string): Promise<boolean> {
+    const user = await this.findById(id);
+    if (!user) return false;
+
+    return bcrypt.compare(password, user.password);
+  }
+
   async updateProfile(id: string, name: string): Promise<PrismaUser> {
     return this.prisma.user.update({ where: { id }, data: { name } });
   }

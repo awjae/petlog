@@ -4,9 +4,14 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLogin } from '@/features/auth/hooks/useLogin';
+import { AccountRestoreModal } from '@/features/auth/components/AccountRestoreModal';
 import styles from './page.module.css';
 
 const SUCCESS_BANNER_DURATION_MS = 3500;
+
+interface PendingRestore {
+  remainingDays: number | null;
+}
 
 function LoginContent() {
   const router = useRouter();
@@ -19,6 +24,7 @@ function LoginContent() {
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState('');
   const [showResetBanner, setShowResetBanner] = useState(resetSuccess);
+  const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null);
 
   useEffect(() => {
     if (!resetSuccess) return;
@@ -33,8 +39,16 @@ function LoginContent() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid()) return;
-    const ok = await login(email, password);
-    if (ok !== null) router.push('/home');
+    const result = await login(email, password);
+    if (result === null) return;
+
+    if (result.accountPendingDeletion) {
+      setPendingRestore({ remainingDays: result.deletionRemainingDays });
+      setPassword('');
+      return;
+    }
+
+    router.push('/home');
   }
 
   const forgotPasswordHref = email
@@ -114,6 +128,17 @@ function LoginContent() {
           </Link>
         </p>
       </div>
+
+      {pendingRestore && (
+        <AccountRestoreModal
+          remainingDays={pendingRestore.remainingDays}
+          onClose={() => setPendingRestore(null)}
+          onRestored={() => {
+            setPendingRestore(null);
+            router.push('/home');
+          }}
+        />
+      )}
     </main>
   );
 }

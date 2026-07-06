@@ -8,6 +8,7 @@ import { RegistryStack } from './stacks/registry-stack';
 import { StorageStack } from './stacks/storage-stack';
 import { NetworkStack } from './stacks/network-stack';
 import { DatabaseStack } from './stacks/database-stack';
+import { BastionStack } from './stacks/bastion-stack';
 import { BackendStack } from './stacks/backend-stack';
 import { FrontendStack } from './stacks/frontend-stack';
 import { getEnvironment } from './config';
@@ -38,6 +39,14 @@ const networkStack = new NetworkStack(app, `petlog-network-${environment}`, { en
 // database-stack은 network-stack의 private 서브넷/보안그룹을 cross-stack reference로
 // 읽어야 하므로 반드시 network-stack 다음에 생성한다.
 const databaseStack = new DatabaseStack(app, `petlog-database-${environment}`, {
+  environment,
+  networkStack,
+});
+
+// bastion-stack은 network-stack의 public 서브넷/bastion 보안그룹만 참조하므로 database-stack과
+// 독립적이다 (RDS 자체를 만들지 않는다 — RDS의 rds-sg가 bastionSecurityGroup을 소스로
+// 참조할 뿐). SSM 기반 팀 DB 접근용 EC2로, `scripts/db-tunnel.sh`가 사용한다.
+new BastionStack(app, `petlog-bastion-${environment}`, {
   environment,
   networkStack,
 });
