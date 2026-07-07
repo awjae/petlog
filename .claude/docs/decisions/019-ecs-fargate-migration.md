@@ -112,8 +112,8 @@ VPC/ALB/태스크 정의를 직접 설계하는 경험 자체는 포트폴리오
 - ALB 비용은 서울 리전 기준 시간당 약 $0.0252(월 약 $18)로, Trade-off 절에서 추정한 ~$16/월보다
   약간 높다. 실제 비용 표는 `infra/README.md`의 "비용 관련 참고사항"을 최신 출처로 삼는다.
 - ECS는 App Runner의 `auto_deployments_enabled`처럼 ECR push만으로 자동 재배포되지 않아,
-  `backend`/`frontend`의 `docker:deploy`에 `aws ecs update-service --force-new-deployment`
-  호출을 추가했다(`docker:force-redeploy` 스크립트).
+  `backend`/`frontend`의 `deploy:image`에 `aws ecs update-service --force-new-deployment`
+  호출을 추가했다(`deploy:ecs-force-redeploy` 스크립트).
 
 ## 실제 배포 후에만 드러난 문제들
 
@@ -170,7 +170,7 @@ VPC/ALB/태스크 정의를 직접 설계하는 경험 자체는 포트폴리오
 - **죽은 구버전 ECS 배포가 새 배포를 막을 수 있다.** ARM64로 고친 새 태스크 정의(revision 2)로
   서비스를 업데이트했는데, 계속 실패를 반복하던 구버전(revision 1) 배포가 자리를 차지하고 있어
   새 revision은 시도조차 되지 않았다. `aws ecs update-service --force-new-deployment`로
-  강제로 배포를 다시 트리거해서 해결했다(`docker:force-redeploy` 스크립트가 이미 이 목적으로
+  강제로 배포를 다시 트리거해서 해결했다(`deploy:ecs-force-redeploy` 스크립트가 이미 이 목적으로
   존재했다 — 코드 배포뿐 아니라 이렇게 "멈춘 배포를 다시 밀어붙이는" 용도로도 쓰인다).
 
 ### CDKTF/Terraform 자체의 한계

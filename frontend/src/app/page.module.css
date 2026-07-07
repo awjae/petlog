@@ -22,7 +22,7 @@
 }
 
 .landingDesc {
-  font: var(--font-body);
+  font: var(--font-caption);
   color: var(--color-text-secondary);
   margin: 0;
   max-width: 260px;

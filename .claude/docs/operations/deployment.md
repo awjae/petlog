@@ -54,7 +54,7 @@ aws ecs update-service --force-new-deployment (npm run deploy --workspace=fronte
 ```
 
 App Runner와 달리 ECS는 ECR에 새 `latest` 이미지를 push해도 자동으로 재배포하지 않는다 —
-`frontend/package.json`의 `docker:deploy`가 push 직후 `docker:force-redeploy`
+`frontend/package.json`의 `deploy:image`가 push 직후 `deploy:ecs-force-redeploy`
 (`aws ecs update-service --force-new-deployment`)를 함께 실행해 최신 이미지로 태스크를
 다시 띄운다.
 

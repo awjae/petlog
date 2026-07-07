@@ -3,7 +3,7 @@
 ## Status
 
 결정 및 구현 완료 (`infra/scripts/deploy.sh`, `infra/package.json`, `backend`/`frontend`의
-`docker:login`/`docker:push`).
+`deploy:ecr-login`/`deploy:ecr-push`).
 
 ---
 
@@ -53,11 +53,11 @@
 
 ### `backend`/`frontend`: 계정 ID 하드코딩 제거
 
-`docker:login`/`docker:push`가 `aws sts get-caller-identity`로 계정 ID를 매번 동적으로 조회하도록
+`deploy:ecr-login`/`deploy:ecr-push`가 `aws sts get-caller-identity`로 계정 ID를 매번 동적으로 조회하도록
 바꿨다. 리전/환경(`AWS_REGION`/`PETLOG_ENV`)만 각 워크스페이스의 로컬 env 파일로 관리한다
 (`backend/.env`, `frontend/.env.local` — 각각 `.env.example`/`.env.local.example`에 기본값 문서화,
 기본값은 `ap-northeast-2`/`dev`). 루트에 있던 `ecr:login` 스크립트는 제거하고, 그 로그인 로직을
-`backend`/`frontend`의 `docker:login`으로 각각 이전해 각 워크스페이스가 자기 배포에 필요한 걸
+`backend`/`frontend`의 `deploy:ecr-login`으로 각각 이전해 각 워크스페이스가 자기 배포에 필요한 걸
 스스로 해결하도록(self-contained) 만들었다.
 
 ---
@@ -78,7 +78,7 @@ AWS 프로필/자격증명 자체가 "어떤 계정인지"를 이미 알고 있�
 
 ### 워크스페이스는 자기 배포를 스스로 완결해야 한다
 
-루트에 있던 `ecr:login`은 `backend`/`frontend`의 `docker:push`가 로그인을 스스로 못해서 생긴
+루트에 있던 `ecr:login`은 `backend`/`frontend`의 `deploy:ecr-push`가 로그인을 스스로 못해서 생긴
 임시방편이었다. 로그인을 각 워크스페이스로 이전하면 `npm run deploy --workspace=backend` 한
 번으로 로그인부터 push까지 끝난다 — "인프라 구조가 바뀌면 `infra`에서, 애플리케이션 코드만
 바뀌면 `backend`/`frontend`에서"라는 책임 분리와 맞아떨어진다.

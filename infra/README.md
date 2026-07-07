@@ -182,7 +182,7 @@ NEXT_PUBLIC_API_URL="<backend-stack의 cloudfront_url, https://...>" npm run dep
 CloudFront URL이 바뀌면**(예: backend-stack을 삭제 후 재생성) **이미지를 다시 빌드해야 한다** —
 `NEXT_PUBLIC_API_URL`이 빌드 시점에 고정되기 때문이다.
 
-`backend`/`frontend`의 `docker:login`/`docker:push`는 계정 ID를 코드에 두지 않고
+`backend`/`frontend`의 `deploy:ecr-login`/`deploy:ecr-push`는 계정 ID를 코드에 두지 않고
 `aws sts get-caller-identity`로 매번 동적으로 조회한다(`infra/scripts/deploy.sh`와 동일한 패턴).
 리전/환경만 `backend/.env`·`frontend/.env.local`의 `AWS_REGION`/`PETLOG_ENV`로 관리한다(각각
 `.env.example`/`.env.local.example` 참고, 기본값은 `ap-northeast-2`/`dev`).
