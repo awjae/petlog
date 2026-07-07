@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import styles from './page.module.css';
 
 export default function LandingPage() {
   return (
     <main className={styles.landing} aria-label="Petlog 소개">
       <span className={styles.landingIcon} aria-hidden="true">
-        🐾
+        <Image src="/main-logo.png" alt="" width={64} height={64} priority />
       </span>
       <h1 className={styles.landingTitle}>반려동물 건강 기록</h1>
       <p className={styles.landingDesc}>
