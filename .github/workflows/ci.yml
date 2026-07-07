@@ -7,6 +7,20 @@ on:
     branches: [main]
 
 jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            mobile:
+              - 'mobile/**'
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
@@ -54,3 +68,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test --workspace=backend
+
+  sync-mobile:
+    name: Capacitor Sync (Android)
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    env:
+      # 비밀 값이 아니라 배포 도메인이므로 Secrets가 아닌 Repository Variable로 등록한다
+      # (Settings > Secrets and variables > Actions > Variables > MOBILE_APP_URL).
+      # infra/stacks/backend-stack.ts의 domain_name과 동일하게 코드-설정을 분리하는 목적이다.
+      MOBILE_APP_URL: ${{ vars.MOBILE_APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run sync:android --workspace=mobile

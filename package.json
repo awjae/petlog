@@ -10,7 +10,8 @@
     "libs/mail",
     "backend",
     "frontend",
-    "infra"
+    "infra",
+    "mobile"
   ],
   "scripts": {
     "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai libs/storage libs/mail",
