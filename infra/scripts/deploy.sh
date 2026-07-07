@@ -33,8 +33,8 @@ image_exists() {
   aws ecr describe-images --region "$REGION" --repository-name "$1" --image-ids imageTag=latest >/dev/null 2>&1
 }
 
-echo "==> [1/5] registry / storage / network / database 스택 배포"
-cdktf deploy "petlog-registry-${ENV}" "petlog-storage-${ENV}" "petlog-network-${ENV}" "petlog-database-${ENV}"
+echo "==> [1/5] registry / storage / network / database / bastion 스택 배포"
+cdktf deploy "petlog-registry-${ENV}" "petlog-storage-${ENV}" "petlog-network-${ENV}" "petlog-database-${ENV}" "petlog-bastion-${ENV}"
 
 echo "==> [2/5] ECR 로그인"
 aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$REGISTRY_HOST"

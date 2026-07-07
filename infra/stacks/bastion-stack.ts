@@ -124,7 +124,11 @@ export class BastionStack extends TerraformStack {
     // --- EC2 인스턴스 ---
     const instance = new Instance(this, 'bastion-instance', {
       ami: al2023Arm64Ami.value,
-      instanceType: 't4g.nano',
+      // 이 AWS 계정은 Free Tier 대상 인스턴스 타입만 허용하도록 제한되어 있다(RunInstances가
+      // InvalidParameterCombination으로 거부). `aws ec2 describe-instance-types
+      // --filters Name=free-tier-eligible,Values=true`로 확인한 결과 t4g 계열은 `.nano`가
+      // 아니라 `.micro` 사이즈만 Free Tier 대상이라 이 크기를 쓴다.
+      instanceType: 't4g.micro',
       subnetId: networkStack.publicSubnets[0].id,
       vpcSecurityGroupIds: [networkStack.bastionSecurityGroup.id],
       iamInstanceProfile: instanceProfile.name,

@@ -11,9 +11,11 @@
     "typecheck": "tsc --noEmit",
     "diff:bootstrap": "dotenv -e .env -- cdktf diff petlog-bootstrap",
     "deploy:bootstrap": "dotenv -e .env -- cdktf deploy petlog-bootstrap",
-    "diff:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash -c 'for s in petlog-registry-dev petlog-storage-dev petlog-network-dev petlog-database-dev petlog-backend-dev petlog-frontend-dev; do echo \"=== $s ===\"; cdktf diff $s --ignore-missing-stack-dependencies; done'",
+    "diff:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash -c 'for s in petlog-registry-dev petlog-storage-dev petlog-network-dev petlog-database-dev petlog-bastion-dev petlog-backend-dev petlog-frontend-dev; do echo \"=== $s ===\"; cdktf diff $s --ignore-missing-stack-dependencies; done'",
     "deploy:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash scripts/deploy.sh",
-    "output:cdn:url": "dotenv -e .env -- terraform -chdir=cdktf.out/stacks/petlog-backend-dev output -raw cloudfront_url"
+    "output:cdn:url": "dotenv -e .env -- terraform -chdir=cdktf.out/stacks/petlog-backend-dev output -raw cloudfront_url",
+    "db:tunnel": "bash scripts/db-tunnel.sh",
+    "db:credentials": "bash scripts/db-credentials.sh"
   },
   "dependencies": {
     "cdktf": "^0.21.0",
