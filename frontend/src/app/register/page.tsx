@@ -22,7 +22,9 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!isValid()) return;
     const ok = await register(email, password);
-    if (ok !== null) router.push('/pets/new');
+    // /home 진입 시 OnboardingOverlay가 hasCompletedOnboarding() 여부를 스스로 판단해
+    // 노출 여부를 결정하므로, 여기서는 항상 /home으로 보내면 된다.
+    if (ok !== null) router.push('/home');
   }
 
   return (

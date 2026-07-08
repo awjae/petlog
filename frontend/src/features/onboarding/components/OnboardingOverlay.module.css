@@ -1,0 +1,98 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  /* 세로로 긴 슬라이드 이미지 때문에 카드가 작은 화면 뷰포트보다 커질 수 있다.
+     overflow-y: auto로 스크롤을 허용하고, align-items: safe center로 넘칠 때
+     상단이 화면 밖으로 밀려 CTA 버튼에 닿지 못하는 걸 방지한다. */
+  align-items: safe center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgba(28, 28, 30, 0.48);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.overlayVisible {
+  opacity: 1;
+}
+
+.overlayExiting {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+
+.cardWrap {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  opacity: 0;
+  transform: scale(0.92) translateY(12px);
+}
+
+.cardWrapVisible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity 240ms cubic-bezier(0.4, 0, 0.2, 1) 40ms,
+    transform 240ms cubic-bezier(0.4, 0, 0.2, 1) 40ms;
+}
+
+.cardWrapExiting {
+  opacity: 0;
+  transform: scale(0.95) translateY(8px);
+  transition:
+    opacity 160ms ease-in,
+    transform 160ms ease-in;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 32px rgba(28, 28, 30, 0.24),
+    0 2px 8px rgba(28, 28, 30, 0.12);
+  padding: 8px 20px 24px;
+  outline: none;
+}
+
+.viewport {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.track {
+  display: flex;
+  width: 100%;
+  touch-action: none;
+  will-change: transform;
+}
+
+.indicatorRow {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.buttonRow {
+  margin-top: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlayVisible,
+  .overlayExiting {
+    transition-property: opacity;
+  }
+
+  .cardWrap,
+  .cardWrapVisible,
+  .cardWrapExiting {
+    transform: none;
+    transition-property: opacity;
+  }
+}

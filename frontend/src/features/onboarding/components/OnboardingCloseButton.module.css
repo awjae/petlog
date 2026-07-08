@@ -1,0 +1,49 @@
+/* 카드 바깥으로 튀어나와 배경 위에 홀로 떠 있던 이전 배치 대신, 슬라이드 이미지
+   영역(.viewport) 안쪽 우상단에 얹어 카드에 속한 컨트롤로 보이게 한다. 이미지 내용과
+   무관하게 항상 대비가 나오도록 반투명 다크 스크림을 쓴다. */
+.hit {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: rgba(28, 28, 30, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease;
+}
+
+@media (hover: hover) {
+  .hit:hover .circle {
+    background: rgba(28, 28, 30, 0.56);
+  }
+}
+
+.hit:active .circle {
+  background: rgba(0, 0, 0, 0.6);
+  transform: scale(0.9);
+}
+
+.hit:focus-visible {
+  outline: none;
+}
+
+.hit:focus-visible .circle {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85);
+}

@@ -49,6 +49,9 @@ function LoginContent() {
       return;
     }
 
+    // /home 진입 시 OnboardingOverlay가 hasCompletedOnboarding() 여부를 스스로 판단해
+    // 노출 여부를 결정하므로 (이 기기에서 온보딩을 아직 본 적 없는 사용자에게만 뜬다),
+    // 여기서는 항상 /home으로 보내면 된다.
     router.push('/home');
   }
 

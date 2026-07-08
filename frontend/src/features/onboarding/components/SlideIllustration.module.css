@@ -1,0 +1,58 @@
+/* 원본 슬라이드 에셋은 375x667(세로가 긴 인물/캐릭터 일러스트) 비율이지만, 이 비율을
+   그대로 쓰면 카드 전체 높이가 작은 화면의 뷰포트를 넘어간다. 4:5로 완화한 세로 프레임을
+   쓰되, object-fit: contain으로 잘라내지 않고 원본 비율 그대로 프레임 안에 담는다. */
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 230px;
+  aspect-ratio: 4 / 6;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f2f2f7;
+}
+
+.image {
+  object-fit: contain;
+}
+
+.imageHidden {
+  object-fit: contain;
+  opacity: 0;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f2f2f7 25%, #e5e5ea 37%, #f2f2f7 63%);
+  background-size: 400% 100%;
+  animation: onboardingShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes onboardingShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.errorState {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f2f7;
+}
+
+.errorIcon {
+  width: 40px;
+  height: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

@@ -8,6 +8,8 @@ import {
 } from '@/features/shared/utils/lastSelectedPet';
 import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
+import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
+import { OnboardingOverlay } from '@/features/onboarding/components/OnboardingOverlay';
 import { PetSelector } from '@/features/home/components/PetSelector';
 import { TodayRecordBanner } from '@/features/home/components/TodayRecordBanner';
 import { QuickRecordButtons } from '@/features/home/components/QuickRecordButtons';
@@ -38,11 +40,20 @@ export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
   const [selectedPetId, setSelectedPetId] = useState<string | null>(() => getLastSelectedPetId());
   const { toasts, addToast, dismiss } = useToast();
+  // 홈 데이터 로딩 완료를 기다리지 않고, 마운트 즉시 온보딩 완료 여부만 판단한다.
+  // 서버 렌더링에서는 항상 false(미노출)이므로 hydration mismatch가 없다.
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const message = consumePendingToast();
     if (message) addToast(message, 'success');
   }, []);
+
+  useEffect(() => {
+    setShowOnboarding(!hasCompletedOnboarding());
+  }, []);
+
+  const onboardingOverlay = showOnboarding ? <OnboardingOverlay /> : null;
 
   function handleSelectPet(petId: string) {
     setSelectedPetId(petId);
@@ -56,40 +67,49 @@ export default function HomePage() {
   /* ── 로딩 ── */
   if (loading && !data) {
     return (
-      <main className={styles.main} aria-label="홈">
-        <div className={styles.skeletonHeader} aria-hidden="true" />
-        <HomeSkeleton />
-        <BottomNav />
-        <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      </main>
+      <>
+        {onboardingOverlay}
+        <main className={styles.main} aria-label="홈">
+          <div className={styles.skeletonHeader} aria-hidden="true" />
+          <HomeSkeleton />
+          <BottomNav />
+          <ToastContainer toasts={toasts} onDismiss={dismiss} />
+        </main>
+      </>
     );
   }
 
   /* ── 에러 ── */
   if (error && !data) {
     return (
-      <main className={styles.main} aria-label="홈">
-        <div className={styles.errorState} role="alert">
-          <p className={styles.errorText}>기록을 불러오지 못했어요</p>
-          <p className={styles.errorHint}>잠시 후 다시 시도해 주세요</p>
-          <button className={styles.retryButton} onClick={() => refetch()}>
-            다시 시도
-          </button>
-        </div>
-        <BottomNav />
-        <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      </main>
+      <>
+        {onboardingOverlay}
+        <main className={styles.main} aria-label="홈">
+          <div className={styles.errorState} role="alert">
+            <p className={styles.errorText}>기록을 불러오지 못했어요</p>
+            <p className={styles.errorHint}>잠시 후 다시 시도해 주세요</p>
+            <button className={styles.retryButton} onClick={() => refetch()}>
+              다시 시도
+            </button>
+          </div>
+          <BottomNav />
+          <ToastContainer toasts={toasts} onDismiss={dismiss} />
+        </main>
+      </>
     );
   }
 
   /* ── 반려동물 미등록 ── */
   if (!data || data.pets.length === 0) {
     return (
-      <main className={styles.main} aria-label="홈">
-        <HomeNoPetContent />
-        <BottomNav />
-        <ToastContainer toasts={toasts} onDismiss={dismiss} />
-      </main>
+      <>
+        {onboardingOverlay}
+        <main className={styles.main} aria-label="홈">
+          <HomeNoPetContent />
+          <BottomNav />
+          <ToastContainer toasts={toasts} onDismiss={dismiss} />
+        </main>
+      </>
     );
   }
 
@@ -100,39 +120,42 @@ export default function HomePage() {
   const phase: DataPhase = resolveDataPhase(totalRecordCount);
 
   return (
-    <main className={styles.main} aria-label="홈">
-      <PetSelector pets={data.pets} selectedPetId={activePetId} onSelect={handleSelectPet} />
+    <>
+      {onboardingOverlay}
+      <main className={styles.main} aria-label="홈">
+        <PetSelector pets={data.pets} selectedPetId={activePetId} onSelect={handleSelectPet} />
 
-      {phase === 1 ? (
-        <HomePhase1Content pet={selectedPet} upcomingSchedules={data.upcomingSchedules} />
-      ) : (
-        <div className={styles.content}>
-          {reportStatus?.canGenerateThisMonth && (
-            <HomeAIUnlockBanner
-              petId={activePetId}
+        {phase === 1 ? (
+          <HomePhase1Content pet={selectedPet} upcomingSchedules={data.upcomingSchedules} />
+        ) : (
+          <div className={styles.content}>
+            {reportStatus?.canGenerateThisMonth && (
+              <HomeAIUnlockBanner
+                petId={activePetId}
+                petName={selectedPet.name}
+                canGenerateThisMonth={reportStatus.canGenerateThisMonth}
+                hasEnoughRecords={reportStatus.hasEnoughRecords}
+              />
+            )}
+
+            <TodayRecordBanner
+              count={selectedPet.todayRecordCount}
               petName={selectedPet.name}
-              canGenerateThisMonth={reportStatus.canGenerateThisMonth}
-              hasEnoughRecords={reportStatus.hasEnoughRecords}
+              streak={data.streak}
             />
-          )}
 
-          <TodayRecordBanner
-            count={selectedPet.todayRecordCount}
-            petName={selectedPet.name}
-            streak={data.streak}
-          />
+            <QuickRecordButtons petId={activePetId} />
 
-          <QuickRecordButtons petId={activePetId} />
+            <UpcomingScheduleList schedules={data.upcomingSchedules} />
 
-          <UpcomingScheduleList schedules={data.upcomingSchedules} />
+            <RecentHealthRecordList petId={activePetId} records={selectedPet.recentHealthRecords} />
+          </div>
+        )}
 
-          <RecentHealthRecordList petId={activePetId} records={selectedPet.recentHealthRecords} />
-        </div>
-      )}
-
-      <FAB href="/records/new" label="기록 추가" />
-      <BottomNav />
-      <ToastContainer toasts={toasts} onDismiss={dismiss} />
-    </main>
+        <FAB href="/records/new" label="기록 추가" />
+        <BottomNav />
+        <ToastContainer toasts={toasts} onDismiss={dismiss} />
+      </main>
+    </>
   );
 }
