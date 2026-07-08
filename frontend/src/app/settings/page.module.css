@@ -261,11 +261,19 @@
   margin: 0 20px;
 }
 
+.contact {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 16px 0 0;
+  opacity: 0.6;
+}
+
 .version {
   font: var(--font-caption);
   color: var(--color-text-secondary);
   text-align: center;
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   opacity: 0.6;
 }
 

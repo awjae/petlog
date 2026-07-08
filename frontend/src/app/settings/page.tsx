@@ -144,6 +144,7 @@ export default function SettingsPage() {
           회원 탈퇴
         </button>
 
+        <p className={styles.contact}>문의: aw.js.share@gmail.com</p>
         <p className={styles.version}>Petlog v0.1.0-beta</p>
       </div>
 
