@@ -59,6 +59,28 @@ npm run run:android --workspace=mobile
 에뮬레이터가 아니라 실물 기기(USB 연결)라면 `10.0.2.2` 대신 `adb reverse tcp:3001 tcp:3001`로
 포트를 포워딩하고 `MOBILE_APP_URL=http://localhost:3001`을 쓴다.
 
+## 릴리즈 AAB 빌드
+
+`npm run build:android --workspace=mobile`이 `android/`에서 `./gradlew bundleRelease`를 실행한다.
+서명하려면 `mobile/android/key.properties`가 필요하다 (`key.properties.example` 참고, 미커밋).
+GitHub Actions에서는 `workflow_dispatch`로 `build-release-aab` 잡을 수동 실행하면 secrets로부터
+서명 설정을 만들어 동일한 스크립트를 실행하고, 결과 AAB를 아티팩트로 업로드한다.
+
+> **주의**: `build:android`는 `cap sync`를 포함하지 않는다. 로컬 에뮬레이터 테스트 직후
+> 바로 릴리즈 빌드를 돌리면 `mobile/.env`의 에뮬레이터용 `MOBILE_APP_URL`(예: `10.0.2.2:3001`)이
+> 그대로 번들에 들어가 실기기에서 검정/빈 화면이 뜬다. 릴리즈 전엔 반드시 프로덕션 URL로
+> 재sync한다.
+>
+> ```bash
+> MOBILE_APP_URL=https://petlog.quest npx cap sync android
+> npm run build:android --workspace=mobile
+> ```
+>
+> 산출물은 `mobile/android/app/build/outputs/bundle/release/`에 두 개 생긴다.
+> `app-release.aab`(CI 아티팩트 업로드가 참조하는 고정 이름)와,
+> Play Console에 업로드할 때 versionCode를 헷갈리지 않도록 버전이 파일명에 들어간
+> `petlog-{versionName}-{versionCode}.aab`(예: `petlog-1.0.1-2.aab`) — 둘은 동일한 파일이다.
+
 ## TODO (다음 단계)
 
 - [ ] 오프라인/네트워크 에러 화면: `server.url` 모드는 로드 실패 시 빈 화면만 보이므로,

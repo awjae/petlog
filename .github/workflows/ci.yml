@@ -126,8 +126,7 @@ jobs:
           keyPassword=$ANDROID_KEY_PASSWORD
           KEYPROPS
       - name: Build signed AAB
-        working-directory: mobile/android
-        run: ./gradlew bundleRelease
+        run: npm run build:android --workspace=mobile
       - name: Remove signing material
         if: always()
         working-directory: mobile/android

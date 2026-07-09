@@ -8,7 +8,8 @@
     "sync:android": "cap sync android",
     "open:ios": "cap open ios",
     "open:android": "cap open android",
-    "run:android": "cap run android"
+    "run:android": "cap run android",
+    "build:android": "cd android && ./gradlew clean bundleRelease"
   },
   "dependencies": {
     "@capacitor/app": "^7.0.0",

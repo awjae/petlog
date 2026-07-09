@@ -51,3 +51,7 @@ infra/terraform.tfstate*
 infra/.terraform/
 infra/.terraform.lock.hcl
 infra/*.tfplan
+
+# Android 릴리즈 서명 키 — 절대 커밋하지 않는다 (mobile/libs/.gitignore와 이중 방어)
+mobile/libs/*.jks
+mobile/libs/*.keystore

@@ -1,4 +1,4 @@
-package com.petlog.app;
+package quest.petlog.app;
 
 import com.getcapacitor.BridgeActivity;
 
