@@ -187,6 +187,15 @@ CloudFront URL이 바뀌면**(예: backend-stack을 삭제 후 재생성) **이�
 리전/환경만 `backend/.env`·`frontend/.env.local`의 `AWS_REGION`/`PETLOG_ENV`로 관리한다(각각
 `.env.example`/`.env.local.example` 참고, 기본값은 `ap-northeast-2`/`dev`).
 
+**버전은 릴리즈(배포) 단위로 각 workspace의 `package.json` version을 수동으로 bump한다**
+(workspace별 독립 버전 — root/backend/frontend/mobile이 각자 관리). `npm run deploy`
+(`deploy:image`) 체인은 빌드 전에 `deploy:check-version`
+(`infra/scripts/check-version-not-deployed.sh`)을 먼저 실행해서, 로컬 `package.json` version과
+동일한 태그가 ECR에 이미 있으면(=bump를 깜빡함) 배포를 중단한다. `deploy:ecr-push`
+(`infra/scripts/ecr-push.sh`)는 이미지를 `:latest`와 `:<version>` 두 태그로 함께 푸시해서 ECR
+자체가 배포 이력 근거가 되게 한다. 백엔드 버전은 `GET /api/health` 응답(`{ status, version }`)에,
+프론트엔드 버전은 `/settings` 화면 하단에 노출한다.
+
 **현재 `diff:all`/`deploy:all`은 `dev` 환경 전용이다** — `dotenv -v PETLOG_ENV=dev`로 값을 고정해
 호출하므로, 셸에서 `PETLOG_ENV=prod`를 설정해도 무시되고 항상 `-dev` 스택만 대상이 된다. `prod`를
 도입하는 시점에는 `diff:all:prod`/`deploy:all:prod` 같은 별도 스크립트를 추가하거나(가장 간단한

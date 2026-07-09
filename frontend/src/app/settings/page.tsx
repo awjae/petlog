@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useApolloClient } from '@apollo/client/react';
-import { PawPrint, Check, Bell, Pill, KeyRound, LogOut, ChevronRight } from 'lucide-react';
+import { PawPrint, Check, Bell, Pill, KeyRound, LogOut, ChevronRight, Shield } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
 import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { version } from '../../../package.json';
 import styles from './page.module.css';
 
 const THEMES = [
@@ -128,6 +130,17 @@ export default function SettingsPage() {
               />
             </button>
             <div className={styles.divider} />
+            <Link href="/privacy" className={styles.listItem}>
+              <Shield size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
+              <span className={styles.listLabel}>개인정보처리방침</span>
+              <ChevronRight
+                size={16}
+                strokeWidth={2}
+                className={styles.chevron}
+                aria-hidden="true"
+              />
+            </Link>
+            <div className={styles.divider} />
             <button className={styles.listItemDanger} onClick={handleLogout}>
               <LogOut size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
               <span className={styles.listLabelDanger}>로그아웃</span>
@@ -145,7 +158,7 @@ export default function SettingsPage() {
         </button>
 
         <p className={styles.contact}>문의: aw.js.share@gmail.com</p>
-        <p className={styles.version}>Petlog v0.1.0-beta</p>
+        <p className={styles.version}>Petlog v{version}</p>
       </div>
 
       <BottomNav />

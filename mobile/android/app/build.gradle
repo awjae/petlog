@@ -1,5 +1,16 @@
 apply plugin: 'com.android.application'
 
+// 릴리즈 서명 설정: mobile/android/key.properties(gitignore 대상)가 있으면 로컬/CI 모두 이 파일을
+// 읽어 서명한다. CI는 워크플로가 실행 시점에 secrets로부터 keystore 파일과 key.properties를 생성한다.
+// 파일이 없으면(기본 상태) release 빌드는 서명되지 않은 채로 만들어진다 — 기존 sync-mobile 잡처럼
+// 서명이 필요 없는 작업을 깨뜨리지 않기 위함. 템플릿은 key.properties.example 참고.
+def keystorePropertiesFile = rootProject.file('key.properties')
+def hasKeystoreProperties = keystorePropertiesFile.exists()
+def keystoreProperties = new Properties()
+if (hasKeystoreProperties) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace "com.petlog.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -16,8 +27,19 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasKeystoreProperties) {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            signingConfig hasKeystoreProperties ? signingConfigs.release : null
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

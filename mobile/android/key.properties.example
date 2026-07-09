@@ -1,0 +1,9 @@
+# 이 파일을 key.properties로 복사한 뒤 실제 값을 채운다. key.properties는 절대 커밋하지 않는다
+# (mobile/android/.gitignore에 등록되어 있음).
+#
+# storeFile은 이 프로젝트(mobile/android) 밖의 안전한 경로를 절대 경로로 지정하는 것을 권장한다.
+# 예: /Users/you/secure/petlog-release.jks
+storeFile=/absolute/path/to/petlog-release.jks
+storePassword=
+keyAlias=petlog-upload
+keyPassword=

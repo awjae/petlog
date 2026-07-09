@@ -10,7 +10,7 @@ loadEnv();
 const appUrl = process.env.MOBILE_APP_URL ?? 'http://localhost:3000';
 
 const config: CapacitorConfig = {
-  appId: 'com.petlog.app',
+  appId: 'quest.petlog.app',
   appName: 'Petlog',
   webDir: 'www',
   server: {
