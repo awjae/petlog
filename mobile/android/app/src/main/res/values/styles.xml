@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -18,5 +18,9 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- targetSdk 35(Android 15)부터 edge-to-edge가 강제되어 웹뷰가 상단 카메라
+             컷아웃 영역까지 그려진다. shortEdges로 명시해 컷아웃 뒤까지 레이아웃을
+             확장하고, 실제 여백은 CSS env(safe-area-inset-top)으로 보정한다. -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="p">shortEdges</item>
     </style>
 </resources>

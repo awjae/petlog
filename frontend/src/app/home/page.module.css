@@ -7,7 +7,7 @@
 }
 
 .skeletonHeader {
-  height: 52px;
+  height: calc(52px + env(safe-area-inset-top));
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   position: sticky;

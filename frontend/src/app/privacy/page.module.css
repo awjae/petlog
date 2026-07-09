@@ -1,5 +1,6 @@
 .main {
   min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
   padding-bottom: 48px;
   background: var(--color-bg);
 }

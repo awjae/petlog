@@ -11,6 +11,11 @@ if (hasKeystoreProperties) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// versionName은 mobile/package.json의 "version"을 따라간다 — 버전 문자열을
+// 두 곳에서 따로 관리하지 않기 위함. versionCode는 Play Store가 요구하는 단조증가
+// 정수라 semver 문자열과 자동 매핑할 수 없어 그대로 수동으로 올린다.
+def mobilePackageJson = new groovy.json.JsonSlurper().parse(file('../../package.json'))
+
 android {
     namespace "quest.petlog.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -18,8 +23,8 @@ android {
         applicationId "quest.petlog.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName mobilePackageJson.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

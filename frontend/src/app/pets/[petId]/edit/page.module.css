@@ -18,13 +18,14 @@
 .header {
   position: sticky;
   top: 0;
-  height: 52px;
+  height: calc(52px + env(safe-area-inset-top));
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
+  padding-top: env(safe-area-inset-top);
   z-index: 80;
 }
 
@@ -409,7 +410,7 @@
   align-items: center;
   justify-content: center;
   gap: 20px;
-  padding: 24px;
+  padding: calc(env(safe-area-inset-top) + 24px) 24px 24px;
   text-align: center;
 }
 
