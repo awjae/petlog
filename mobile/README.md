@@ -63,8 +63,8 @@ npm run run:android --workspace=mobile
 
 `npm run build:android --workspace=mobile`이 `android/`에서 `./gradlew bundleRelease`를 실행한다.
 서명하려면 `mobile/android/key.properties`가 필요하다 (`key.properties.example` 참고, 미커밋).
-GitHub Actions에서는 `workflow_dispatch`로 `build-release-aab` 잡을 수동 실행하면 secrets로부터
-서명 설정을 만들어 동일한 스크립트를 실행하고, 결과 AAB를 아티팩트로 업로드한다.
+릴리즈 빌드는 CI가 아니라 **로컬에서만** 수행한다 — 서명 키(`mobile/libs/petlog-release.jks`)와
+`key.properties`가 로컬에만 존재하고 CI로는 옮기지 않기로 했다.
 
 > **주의**: `build:android`는 `cap sync`를 포함하지 않는다. 로컬 에뮬레이터 테스트 직후
 > 바로 릴리즈 빌드를 돌리면 `mobile/.env`의 에뮬레이터용 `MOBILE_APP_URL`(예: `10.0.2.2:3001`)이

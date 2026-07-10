@@ -1,119 +1,15 @@
-'use client';
+// filepath: src/app/register/page.tsx
+//
+// 회원가입 화면은 상태/이벤트 처리가 많아 클라이언트 컴포넌트(RegisterPageClient)로 구현하되,
+// metadata export는 서버 컴포넌트에서만 가능하므로 이 파일은 얇은 서버 래퍼 역할만 한다.
+import type { Metadata } from 'next';
+import { RegisterPageClient } from './RegisterPageClient';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
-import { useRegister } from '@/features/auth/hooks/useRegister';
-import styles from './page.module.css';
+export const metadata: Metadata = {
+  title: '회원가입',
+  description: 'Petlog에 가입하고 반려동물의 건강 기록을 관리해보세요.',
+};
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const { loading, error, register } = useRegister();
-
-  function isValid() {
-    return email.includes('@') && password.length >= 8 && password === confirm;
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid()) return;
-    const ok = await register(email, password);
-    // /home 진입 시 OnboardingOverlay가 hasCompletedOnboarding() 여부를 스스로 판단해
-    // 노출 여부를 결정하므로, 여기서는 항상 /home으로 보내면 된다.
-    if (ok !== null) router.push('/home');
-  }
-
-  return (
-    <main className={styles.main} aria-label="회원가입">
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backBtn}
-          onClick={() => router.back()}
-          aria-label="뒤로 가기"
-        >
-          <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
-        </button>
-        <h1 className={styles.title}>회원가입</h1>
-        <div className={styles.headerRight} aria-hidden="true" />
-      </header>
-
-      <div className={styles.inner}>
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          <div className={styles.fieldGroup}>
-            <label className={styles.label} htmlFor="email">
-              이메일
-            </label>
-            <input
-              id="email"
-              type="email"
-              className={styles.input}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="hello@petlog.kr"
-              autoComplete="email"
-              autoFocus
-              required
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label} htmlFor="password">
-              비밀번호
-            </label>
-            <input
-              id="password"
-              type="password"
-              className={styles.input}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="8자 이상"
-              autoComplete="new-password"
-              required
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label} htmlFor="confirm">
-              비밀번호 확인
-            </label>
-            <input
-              id="confirm"
-              type="password"
-              className={`${styles.input} ${confirm && password !== confirm ? styles.inputError : ''}`}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="비밀번호를 한 번 더 입력해주세요"
-              autoComplete="new-password"
-              required
-            />
-            {confirm && password !== confirm && (
-              <p className={styles.fieldError}>비밀번호가 일치하지 않아요</p>
-            )}
-          </div>
-
-          {error && (
-            <p className={styles.errorMsg} role="alert">
-              {error}
-            </p>
-          )}
-
-          <button type="submit" className={styles.submitBtn} disabled={!isValid() || loading}>
-            {loading ? '가입 중...' : '회원가입'}
-          </button>
-        </form>
-
-        <p className={styles.footer}>
-          이미 계정이 있으신가요?{' '}
-          <Link href="/login" className={styles.footerLink}>
-            로그인
-          </Link>
-        </p>
-      </div>
-    </main>
-  );
+  return <RegisterPageClient />;
 }

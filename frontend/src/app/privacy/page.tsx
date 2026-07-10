@@ -3,8 +3,9 @@ import Link from 'next/link';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
-  title: '개인정보처리방침 | Petlog',
-  description: 'Petlog 개인정보처리방침',
+  title: '개인정보처리방침',
+  description:
+    'Petlog 개인정보처리방침. 회원·반려동물·건강 기록 정보의 수집, 이용, 보관, 파기 절차를 안내합니다.',
 };
 
 const EFFECTIVE_DATE = '2026-07-09';

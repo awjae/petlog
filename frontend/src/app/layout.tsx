@@ -4,11 +4,16 @@ import type { Metadata, Viewport } from 'next';
 import { ApolloProvider } from '@/providers/ApolloProvider';
 import { MSWProvider } from '@/providers/MSWProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/shared/config/site';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Petlog',
-  description: '반려동물 건강 기록 서비스',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
 };
 
 // viewport-fit=cover: 웹뷰가 상단 카메라(펀치홀)/노치 영역까지 화면을 그리게 하고,

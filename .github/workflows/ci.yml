@@ -5,9 +5,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # 릴리즈 AAB는 커밋마다 자동으로 만들지 않는다 — versionCode는 수동으로 올린 뒤
-  # Actions 탭에서 이 워크플로를 의도적으로 실행해야 한다.
-  workflow_dispatch:
 
 jobs:
   changes:
@@ -90,49 +87,3 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run sync:android --workspace=mobile
-
-  build-release-aab:
-    name: Build Release AAB (Android)
-    # 수동 실행 전용 — push/pull_request 이벤트에서는 절대 돌지 않는다.
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    env:
-      MOBILE_APP_URL: ${{ vars.MOBILE_APP_URL }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - run: npm ci
-      - run: npm run sync:android --workspace=mobile
-      - name: Write signing config from secrets
-        working-directory: mobile/android
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > release.jks
-          cat > key.properties <<KEYPROPS
-          storeFile=release.jks
-          storePassword=$ANDROID_KEYSTORE_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          keyPassword=$ANDROID_KEY_PASSWORD
-          KEYPROPS
-      - name: Build signed AAB
-        run: npm run build:android --workspace=mobile
-      - name: Remove signing material
-        if: always()
-        working-directory: mobile/android
-        run: rm -f release.jks key.properties
-      - uses: actions/upload-artifact@v4
-        with:
-          name: petlog-release-aab
-          path: mobile/android/app/build/outputs/bundle/release/app-release.aab
-          retention-days: 14
