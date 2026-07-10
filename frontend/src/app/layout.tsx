@@ -14,6 +14,11 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  verification: {
+    other: {
+      'naver-site-verification': 'f2d8a6a3429f8bb20c4820d9304237a2cb104caf',
+    },
+  },
 };
 
 // viewport-fit=cover: 웹뷰가 상단 카메라(펀치홀)/노치 영역까지 화면을 그리게 하고,
