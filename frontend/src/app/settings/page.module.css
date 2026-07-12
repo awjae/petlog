@@ -256,6 +256,41 @@
   border-radius: var(--radius-full);
 }
 
+/* ===== 테스트 알림 보내기 ===== */
+.testPushBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  font: var(--font-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 100ms,
+    opacity 100ms;
+}
+
+.testPushBtn:not(:disabled):active {
+  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.testPushBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.testPushError {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0 4px;
+}
+
 .divider {
   height: 1px;
   background: var(--color-border);

@@ -6,6 +6,7 @@
     { "path": "./libs/ai" },
     { "path": "./libs/storage" },
     { "path": "./libs/mail" },
+    { "path": "./libs/push" },
     { "path": "./backend" },
     { "path": "./frontend" }
   ]

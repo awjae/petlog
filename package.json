@@ -8,13 +8,14 @@
     "libs/ai",
     "libs/storage",
     "libs/mail",
+    "libs/push",
     "backend",
     "frontend",
     "infra",
     "mobile"
   ],
   "scripts": {
-    "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai libs/storage libs/mail",
+    "dev:libs": "tsc --build --watch libs/types libs/utils libs/ai libs/storage libs/mail libs/push",
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
     "build": "npm run build --workspaces --if-present",

@@ -3,6 +3,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ApolloProvider } from '@/providers/ApolloProvider';
 import { MSWProvider } from '@/providers/MSWProvider';
+import { NotificationProvider } from '@/providers/NotificationProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/shared/config/site';
 import './globals.css';
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <MSWProvider>
-            <ApolloProvider>{children}</ApolloProvider>
+            <ApolloProvider>
+              <NotificationProvider>{children}</NotificationProvider>
+            </ApolloProvider>
           </MSWProvider>
         </ThemeProvider>
       </body>

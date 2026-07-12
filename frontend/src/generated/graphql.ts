@@ -279,6 +279,20 @@ export type MedicationsQuery = {
   }>;
 };
 
+export type RegisterPushTokenMutationVariables = Exact<{
+  token: string;
+}>;
+
+export type RegisterPushTokenMutation = { registerPushToken: boolean };
+
+export type SendTestPushNotificationMutationVariables = Exact<{ [key: string]: never }>;
+
+export type SendTestPushNotificationMutation = { sendTestPushNotification: boolean };
+
+export type NotificationAuthCheckQueryVariables = Exact<{ [key: string]: never }>;
+
+export type NotificationAuthCheckQuery = { me: { id: string } };
+
 export type CreatePetMutationVariables = Exact<{
   input: CreatePetInput;
 }>;
@@ -1173,6 +1187,82 @@ export const MedicationsDocument = {
     },
   ],
 } as unknown as DocumentNode<MedicationsQuery, MedicationsQueryVariables>;
+export const RegisterPushTokenDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'RegisterPushToken' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'token' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'registerPushToken' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'token' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'token' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RegisterPushTokenMutation, RegisterPushTokenMutationVariables>;
+export const SendTestPushNotificationDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SendTestPushNotification' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'sendTestPushNotification' } }],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  SendTestPushNotificationMutation,
+  SendTestPushNotificationMutationVariables
+>;
+export const NotificationAuthCheckDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'NotificationAuthCheck' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'me' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'id' } }],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<NotificationAuthCheckQuery, NotificationAuthCheckQueryVariables>;
 export const CreatePetDocument = {
   kind: 'Document',
   definitions: [

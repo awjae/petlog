@@ -11,8 +11,10 @@ import { EditProfileModal } from '@/features/settings/components/EditProfileModa
 import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import { version } from '../../../package.json';
 import styles from './page.module.css';
+import { useSendTestPushNotification } from '@/features/notification/hooks/useSendTestPushNotification';
 
 const THEMES = [
   { value: 'pastel-sky' as const, label: '파스텔 스카이', preview: '#6baed6' },
@@ -26,12 +28,23 @@ export default function SettingsPage() {
   const { name, email, loading } = useCurrentUser();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
+  const { toasts, addToast, dismiss } = useToast();
+  const {
+    sendTestPushNotification,
+    loading: sendingTestPush,
+    error: testPushError,
+  } = useSendTestPushNotification();
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     removeLastSelectedPetId();
     await client.clearStore();
     router.push('/login');
+  }
+
+  async function handleSendTestPush() {
+    const ok = await sendTestPushNotification();
+    if (ok) addToast('테스트 알림을 보냈습니다', 'success');
   }
 
   return (
@@ -108,6 +121,20 @@ export default function SettingsPage() {
               <span className={styles.badge}>준비 중</span>
             </button>
           </div>
+
+          {/* Firebase push 알림 테스트 UI */}
+          {false && (
+            <button
+              type="button"
+              className={styles.testPushBtn}
+              onClick={handleSendTestPush}
+              disabled={sendingTestPush}
+            >
+              <Bell size={16} strokeWidth={2} aria-hidden="true" />
+              {sendingTestPush ? '전송 중...' : '테스트 알림 보내기'}
+            </button>
+          )}
+          {testPushError && <p className={styles.testPushError}>{testPushError}</p>}
         </section>
 
         {/* ── 계정 ── */}
@@ -177,6 +204,8 @@ export default function SettingsPage() {
           router.push('/settings/withdraw');
         }}
       />
+
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </main>
   );
 }

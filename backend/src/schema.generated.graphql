@@ -171,6 +171,8 @@ type Mutation {
   deletePet(id: ID!): Boolean!
   deleteVaccination(id: ID!): Boolean!
   generateReport(periodEnd: DateTime!, periodStart: DateTime!, petId: ID!): GenerateReportResult!
+  registerPushToken(token: String!): Boolean!
+  sendTestPushNotification: Boolean!
   updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!

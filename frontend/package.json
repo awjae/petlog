@@ -22,6 +22,7 @@
     "@apollo/client": "^4.2.3",
     "@capacitor/app": "^7.0.0",
     "@capacitor/core": "^7.0.0",
+    "@capacitor/push-notifications": "^7.0.0",
     "@sentry/nextjs": "^10.63.0",
     "graphql": "^16.14.2",
     "lucide-react": "^1.21.0",

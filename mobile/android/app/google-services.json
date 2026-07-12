@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "997603500944",
+    "project_id": "petlog-ddddf",
+    "storage_bucket": "petlog-ddddf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:997603500944:android:3267eba62e9f98387fc915",
+        "android_client_info": {
+          "package_name": "quest.petlog.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBD1wkYPe9za_xnbogzUiS2CIln2VA39O4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

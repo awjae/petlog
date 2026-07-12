@@ -55,3 +55,7 @@ infra/*.tfplan
 # Android 릴리즈 서명 키 — 절대 커밋하지 않는다 (mobile/libs/.gitignore와 이중 방어)
 mobile/libs/*.jks
 mobile/libs/*.keystore
+
+# Firebase 서비스 계정 키 — 실제 프라이빗 키가 들어있어 절대 커밋하지 않는다.
+# backend는 이 파일을 직접 읽지 않고 backend/.env의 FIREBASE_* 값으로 동작한다.
+libs/firebase/serviceAccountKey.json

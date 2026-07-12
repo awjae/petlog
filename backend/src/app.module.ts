@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ScheduleModule } from '@nestjs/schedule';
 import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './common/prisma/prisma.module';
@@ -17,10 +18,12 @@ import { UploadModule } from './upload/upload.module';
 import { AiModule } from './ai/ai.module';
 import { ReportModule } from './report/report.module';
 import { HealthModule } from './health/health.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     HealthModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -42,6 +45,7 @@ import { HealthModule } from './health/health.module';
     UploadModule,
     AiModule,
     ReportModule,
+    NotificationModule,
   ],
   providers: [DateTimeScalar],
 })

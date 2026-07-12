@@ -29,6 +29,9 @@ type Documents = {
   '\n  mutation CreateMedication($input: CreateMedicationInput!) {\n    createMedication(input: $input) {\n      id\n      name\n      startDate\n    }\n  }\n': typeof types.CreateMedicationDocument;
   '\n    mutation DeleteMedication($id: ID!) {\n      deleteMedication(id: $id)\n    }\n  ': typeof types.DeleteMedicationDocument;
   '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.MedicationsDocument;
+  '\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n': typeof types.RegisterPushTokenDocument;
+  '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n': typeof types.SendTestPushNotificationDocument;
+  '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n': typeof types.NotificationAuthCheckDocument;
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n': typeof types.CreatePetDocument;
   '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ': typeof types.UpdatePetDocument;
   '\n    mutation DeletePet($id: ID!) {\n      deletePet(id: $id)\n    }\n  ': typeof types.DeletePetDocument;
@@ -76,6 +79,12 @@ const documents: Documents = {
     types.DeleteMedicationDocument,
   '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n':
     types.MedicationsDocument,
+  '\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n':
+    types.RegisterPushTokenDocument,
+  '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n':
+    types.SendTestPushNotificationDocument,
+  '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n':
+    types.NotificationAuthCheckDocument,
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n':
     types.CreatePetDocument,
   '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ':
@@ -211,6 +220,24 @@ export function gql(
 export function gql(
   source: '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n',
 ): (typeof documents)['\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n',
+): (typeof documents)['\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n',
+): (typeof documents)['\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n',
+): (typeof documents)['\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
