@@ -55,6 +55,9 @@ export class PrismaService implements OnModuleInit {
   get notification() {
     return this.client.notification;
   }
+  get notificationPreference() {
+    return this.client.notificationPreference;
+  }
   get $transaction() {
     return this.client.$transaction.bind(this.client);
   }

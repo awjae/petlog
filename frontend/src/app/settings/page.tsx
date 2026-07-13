@@ -4,7 +4,17 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useApolloClient } from '@apollo/client/react';
-import { PawPrint, Check, Bell, Pill, KeyRound, LogOut, ChevronRight, Shield } from 'lucide-react';
+import {
+  PawPrint,
+  Check,
+  Bell,
+  Syringe,
+  Stethoscope,
+  KeyRound,
+  LogOut,
+  ChevronRight,
+  Shield,
+} from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
@@ -15,6 +25,7 @@ import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import { version } from '../../../package.json';
 import styles from './page.module.css';
 import { useSendTestPushNotification } from '@/features/notification/hooks/useSendTestPushNotification';
+import { useNotificationPreference } from '@/features/notification/hooks/useNotificationPreference';
 
 const THEMES = [
   { value: 'pastel-sky' as const, label: '파스텔 스카이', preview: '#6baed6' },
@@ -34,6 +45,12 @@ export default function SettingsPage() {
     loading: sendingTestPush,
     error: testPushError,
   } = useSendTestPushNotification();
+  const {
+    preference,
+    loading: preferenceLoading,
+    updating: preferenceUpdating,
+    updatePreference,
+  } = useNotificationPreference();
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
@@ -109,17 +126,75 @@ export default function SettingsPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>알림</h2>
           <div className={styles.listCard}>
-            <button className={styles.listItem} disabled>
-              <Bell size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
-              <span className={styles.listLabel}>건강 기록 알림</span>
-              <span className={styles.badge}>준비 중</span>
-            </button>
+            <div className={styles.listItem}>
+              <Syringe
+                size={18}
+                strokeWidth={1.75}
+                className={styles.listIcon}
+                aria-hidden="true"
+              />
+              <span className={styles.listLabel}>예방접종 알림</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={preference?.vaccinationDueEnabled ?? true}
+                aria-label="예방접종 알림"
+                className={`${styles.switch} ${(preference?.vaccinationDueEnabled ?? true) ? styles.switchOn : ''}`}
+                disabled={preferenceLoading || preferenceUpdating}
+                onClick={() =>
+                  updatePreference({
+                    vaccinationDueEnabled: !(preference?.vaccinationDueEnabled ?? true),
+                  })
+                }
+              >
+                <span className={styles.switchKnob} aria-hidden="true" />
+              </button>
+            </div>
             <div className={styles.divider} />
-            <button className={styles.listItem} disabled>
-              <Pill size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
-              <span className={styles.listLabel}>투약·접종 알림</span>
-              <span className={styles.badge}>준비 중</span>
-            </button>
+            <div className={styles.listItem}>
+              <Stethoscope
+                size={18}
+                strokeWidth={1.75}
+                className={styles.listIcon}
+                aria-hidden="true"
+              />
+              <span className={styles.listLabel}>병원 방문 알림</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={preference?.appointmentReminderEnabled ?? true}
+                aria-label="병원 방문 알림"
+                className={`${styles.switch} ${(preference?.appointmentReminderEnabled ?? true) ? styles.switchOn : ''}`}
+                disabled={preferenceLoading || preferenceUpdating}
+                onClick={() =>
+                  updatePreference({
+                    appointmentReminderEnabled: !(preference?.appointmentReminderEnabled ?? true),
+                  })
+                }
+              >
+                <span className={styles.switchKnob} aria-hidden="true" />
+              </button>
+            </div>
+            <div className={styles.divider} />
+            <div className={styles.listItem}>
+              <Bell size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
+              <span className={styles.listLabel}>건강기록 권장 알림</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={preference?.weeklyCheckinEnabled ?? true}
+                aria-label="건강기록 권장 알림"
+                className={`${styles.switch} ${(preference?.weeklyCheckinEnabled ?? true) ? styles.switchOn : ''}`}
+                disabled={preferenceLoading || preferenceUpdating}
+                onClick={() =>
+                  updatePreference({
+                    weeklyCheckinEnabled: !(preference?.weeklyCheckinEnabled ?? true),
+                  })
+                }
+              >
+                <span className={styles.switchKnob} aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           {/* Firebase push 알림 테스트 UI */}

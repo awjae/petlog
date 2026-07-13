@@ -30,6 +30,55 @@ export const SEND_TEST_PUSH_NOTIFICATION_MUTATION: TypedDocumentNode<
   }
 `;
 
+export interface NotificationPreference {
+  vaccinationDueEnabled: boolean;
+  appointmentReminderEnabled: boolean;
+  weeklyCheckinEnabled: boolean;
+}
+
+interface NotificationPreferenceData {
+  notificationPreference: NotificationPreference;
+}
+
+export const NOTIFICATION_PREFERENCE_QUERY: TypedDocumentNode<
+  NotificationPreferenceData,
+  Record<string, never>
+> = gql`
+  query NotificationPreference {
+    notificationPreference {
+      vaccinationDueEnabled
+      appointmentReminderEnabled
+      weeklyCheckinEnabled
+    }
+  }
+`;
+
+export interface UpdateNotificationPreferenceInput {
+  vaccinationDueEnabled?: boolean;
+  appointmentReminderEnabled?: boolean;
+  weeklyCheckinEnabled?: boolean;
+}
+
+interface UpdateNotificationPreferenceData {
+  updateNotificationPreference: NotificationPreference;
+}
+interface UpdateNotificationPreferenceVariables {
+  input: UpdateNotificationPreferenceInput;
+}
+
+export const UPDATE_NOTIFICATION_PREFERENCE_MUTATION: TypedDocumentNode<
+  UpdateNotificationPreferenceData,
+  UpdateNotificationPreferenceVariables
+> = gql`
+  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {
+    updateNotificationPreference(input: $input) {
+      vaccinationDueEnabled
+      appointmentReminderEnabled
+      weeklyCheckinEnabled
+    }
+  }
+`;
+
 // 로그인 여부만 확인하기 위한 최소 쿼리. settings 기능의 SettingsMe(name, email)와는
 // 목적이 다르므로 별도 오퍼레이션으로 분리한다 — 동일 Query.me 루트 필드를 조회하지만
 // Apollo 캐시에서 정규화되어 병합되므로 중복 요청 비용은 없다.

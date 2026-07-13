@@ -24,11 +24,12 @@ model User {
   // 익명화 배치가 실행된 시각. 한 번 세팅되면 되돌리지 않는다.
   anonymizedAt DateTime? @map("anonymized_at")
 
-  pets                Pet[]
-  notifications       Notification[]
-  pushTokens          PushToken[]
-  refreshTokens       RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
+  pets                   Pet[]
+  notifications          Notification[]
+  pushTokens             PushToken[]
+  notificationPreference NotificationPreference?
+  refreshTokens          RefreshToken[]
+  passwordResetTokens    PasswordResetToken[]
 
   @@map("users")
 }
@@ -223,6 +224,24 @@ model PushToken {
 
   @@index([userId])
   @@map("push_tokens")
+}
+
+// ─── NotificationPreference ───────────────────────────────────────────────────
+// 사용자별 알림 종류 on/off 설정. 행이 없으면(최초 로그인 등) 전부 활성화된 것으로
+// 간주한다 — 서비스는 "옵트아웃" 모델이라 설정 화면을 아직 안 연 사용자도 알림을 받는다.
+
+model NotificationPreference {
+  id                         String   @id @default(uuid())
+  userId                     String   @unique @map("user_id")
+  vaccinationDueEnabled      Boolean  @default(true) @map("vaccination_due_enabled")
+  appointmentReminderEnabled Boolean  @default(true) @map("appointment_reminder_enabled")
+  weeklyCheckinEnabled       Boolean  @default(true) @map("weekly_checkin_enabled")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }
 
 // ─── Notification ─────────────────────────────────────────────────────────────

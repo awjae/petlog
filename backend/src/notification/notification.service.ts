@@ -1,7 +1,15 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { NotificationReferenceType, NotificationType } from '@prisma/client';
+import { AppointmentStatus, NotificationReferenceType, NotificationType } from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
+
+// 알림 설정 행이 없는 사용자(설정 화면을 아직 안 연 경우)는 전부 활성화된 것으로 간주한다.
+const DEFAULT_PREFERENCE: NotificationPreference = {
+  vaccinationDueEnabled: true,
+  appointmentReminderEnabled: true,
+  weeklyCheckinEnabled: true,
+};
 
 interface SendAndLogParams {
   userId: string;
@@ -48,17 +56,42 @@ export class NotificationService {
     return true;
   }
 
-  // 접종 예정일(nextDueAt) D-7 스캔. 하루 1회 크론이 전체 pet을 훑으므로
+  // 알림 설정 조회. 행이 없으면(최초 로그인 등) 전부 활성화된 기본값을 반환한다.
+  async getPreference(userId: string): Promise<NotificationPreference> {
+    const pref = await this.prisma.notificationPreference.findUnique({ where: { userId } });
+    if (!pref) return DEFAULT_PREFERENCE;
+    return {
+      vaccinationDueEnabled: pref.vaccinationDueEnabled,
+      appointmentReminderEnabled: pref.appointmentReminderEnabled,
+      weeklyCheckinEnabled: pref.weeklyCheckinEnabled,
+    };
+  }
+
+  async updatePreference(
+    userId: string,
+    input: UpdateNotificationPreferenceInput,
+  ): Promise<NotificationPreference> {
+    const pref = await this.prisma.notificationPreference.upsert({
+      where: { userId },
+      create: { userId, ...DEFAULT_PREFERENCE, ...input },
+      update: { ...input },
+    });
+    return {
+      vaccinationDueEnabled: pref.vaccinationDueEnabled,
+      appointmentReminderEnabled: pref.appointmentReminderEnabled,
+      weeklyCheckinEnabled: pref.weeklyCheckinEnabled,
+    };
+  }
+
+  // 접종 예정일(nextDueAt) 당일 스캔. 하루 1회 크론이 전체 pet을 훑으므로
   // pet별로는 자연히 하루 1회 스캔이 된다.
   //
   // 중복 발송 방지: 동일 vaccination.id에 대해 이미 발송 이력(Notification.sentAt not null)이
-  // 있으면 건너뛴다. nextDueAt이 바뀌지 않는 한 하나의 접종 기록이 D-7 구간에 들어오는 시점은
+  // 있으면 건너뛴다. nextDueAt이 바뀌지 않는 한 하나의 접종 기록이 당일 구간에 들어오는 시점은
   // 단 하루뿐이므로, "이 접종에 대해 한 번이라도 보냈는지"만 확인하면 당일 중복 스캔과
   // 매일 재스캔에 의한 중복 발송을 동시에 막을 수 있다.
   async scanAndSendVaccinationDue(): Promise<void> {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 7);
-    const { start, end } = dayRange(targetDate);
+    const { start, end } = dayRange(new Date());
 
     const dueVaccinations = await this.prisma.vaccination.findMany({
       where: {
@@ -70,6 +103,9 @@ export class NotificationService {
 
     for (const vaccination of dueVaccinations) {
       if (vaccination.pet.deletedAt) continue;
+
+      const preference = await this.getPreference(vaccination.pet.userId);
+      if (!preference.vaccinationDueEnabled) continue;
 
       const alreadySent = await this.prisma.notification.findFirst({
         where: {
@@ -85,13 +121,57 @@ export class NotificationService {
         userId: vaccination.pet.userId,
         type: NotificationType.vaccinationDue,
         title: `[Petlog] ${vaccination.pet.name} 접종 예정 알림`,
-        body: `${vaccination.name} 접종 예정일이 7일 남았어요.`,
+        body: `오늘은 ${vaccination.name} 접종 예정일이에요.`,
         referenceId: vaccination.id,
         referenceType: NotificationReferenceType.vaccination,
       });
     }
 
     this.logger.log(`접종 임박 알림 스캔 완료: ${dueVaccinations.length}건 대상`);
+  }
+
+  // 병원 방문 예정일(scheduledAt) 당일 스캔. 접종과 동일하게 당일 구간 조회 +
+  // referenceId 기준 발송 이력 체크로 중복 발송을 방지한다. 취소/완료된
+  // 예약(status !== scheduled)은 대상에서 제외한다.
+  async scanAndSendAppointmentReminder(): Promise<void> {
+    const { start, end } = dayRange(new Date());
+
+    const dueAppointments = await this.prisma.appointment.findMany({
+      where: {
+        deletedAt: null,
+        status: AppointmentStatus.scheduled,
+        scheduledAt: { gte: start, lt: end },
+      },
+      include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
+    });
+
+    for (const appointment of dueAppointments) {
+      if (appointment.pet.deletedAt) continue;
+
+      const preference = await this.getPreference(appointment.pet.userId);
+      if (!preference.appointmentReminderEnabled) continue;
+
+      const alreadySent = await this.prisma.notification.findFirst({
+        where: {
+          type: NotificationType.appointmentReminder,
+          referenceId: appointment.id,
+          referenceType: NotificationReferenceType.appointment,
+          sentAt: { not: null },
+        },
+      });
+      if (alreadySent) continue;
+
+      await this.sendAndLog({
+        userId: appointment.pet.userId,
+        type: NotificationType.appointmentReminder,
+        title: `[Petlog] ${appointment.pet.name} 병원 방문 알림`,
+        body: `오늘은 ${appointment.hospitalName} 방문 예정일이에요.`,
+        referenceId: appointment.id,
+        referenceType: NotificationReferenceType.appointment,
+      });
+    }
+
+    this.logger.log(`병원 방문 알림 스캔 완료: ${dueAppointments.length}건 대상`);
   }
 
   // 건강기록 권장 알림. pet의 최신 HealthRecord.recordedAt이 7일 이상 경과하면 발송한다.
@@ -121,6 +201,9 @@ export class NotificationService {
       const lastRecordedAt = latestRecord?.recordedAt ?? null;
 
       if (lastRecordedAt && lastRecordedAt > sevenDaysAgo) continue;
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.weeklyCheckinEnabled) continue;
 
       const lastNotification = await this.prisma.notification.findFirst({
         where: {

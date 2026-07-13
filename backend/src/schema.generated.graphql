@@ -177,9 +177,16 @@ type Mutation {
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
   updateMedication(id: ID!, input: UpdateMedicationInput!): Medication!
+  updateNotificationPreference(input: UpdateNotificationPreferenceInput!): NotificationPreference!
   updatePet(id: ID!, input: UpdatePetInput!): Pet!
   updateProfile(input: UpdateProfileInput!): User!
   updateVaccination(id: ID!, input: UpdateVaccinationInput!): Vaccination!
+}
+
+type NotificationPreference {
+  appointmentReminderEnabled: Boolean!
+  vaccinationDueEnabled: Boolean!
+  weeklyCheckinEnabled: Boolean!
 }
 
 type Pet {
@@ -212,6 +219,7 @@ type Query {
   me: User!
   medicalEvents(petId: ID!): [MedicalEvent!]!
   medications(petId: ID!): [Medication!]!
+  notificationPreference: NotificationPreference!
   pet(id: ID!): Pet!
   pets: [Pet!]!
   report(id: ID!): Report
@@ -325,6 +333,12 @@ input UpdateMedicationInput {
   frequency: String
   name: String
   startDate: DateTime
+}
+
+input UpdateNotificationPreferenceInput {
+  appointmentReminderEnabled: Boolean
+  vaccinationDueEnabled: Boolean
+  weeklyCheckinEnabled: Boolean
 }
 
 input UpdatePetInput {

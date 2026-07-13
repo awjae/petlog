@@ -256,6 +256,43 @@
   border-radius: var(--radius-full);
 }
 
+/* ===== 알림 토글 스위치 ===== */
+.switch {
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+  background: var(--color-border);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 150ms;
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.switchOn {
+  background: var(--color-primary);
+}
+
+.switchKnob {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform 150ms;
+}
+
+.switchOn .switchKnob {
+  transform: translateX(20px);
+}
+
 /* ===== 테스트 알림 보내기 ===== */
 .testPushBtn {
   display: flex;
