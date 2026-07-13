@@ -42,11 +42,39 @@ Petlog 전체가 TypeScript 기반이므로 인프라도 같은 언어로 작성
 
 ## 사전 준비물 (로컬 개발 환경)
 
-- Node.js 22, npm (레포 루트와 동일)
+- Node.js 22, npm (레포 루트와 동일) — **정확히 22여야 한다.** 자세한 이유는 아래
+  "CDKTF CLI의 단점: Node 버전 고정" 참고.
 - [Terraform CLI](https://developer.hashicorp.com/terraform/install) — `cdktf get`이 로컬에서
   AWS Provider 스키마를 생성할 때 내부적으로 사용한다.
 - AWS CLI + 자격증명 (`aws configure`) — **실제 배포(diff/deploy)에만 필요**하다. 코드 작성,
   타입체크, `cdktf synth`, `terraform validate`는 자격증명 없이도 가능하다.
+
+### CDKTF CLI의 단점: Node 버전 고정
+
+CDKTF CLI(`cdktf synth`/`diff`/`deploy`)는 내부적으로 `@cdktf/node-pty-prebuilt-multiarch`라는
+네이티브 애드온에 의존한다(대화형 plan/apply 출력을 pty로 렌더링하기 위함). 이 패키지는 Node
+버전별로 미리 컴파일된(prebuilt) 바이너리를 배포하는데, 그 시점에 아직 지원하지 않는 최신 Node
+버전으로 실행하면 `synth`를 포함한 **모든 cdktf 서브커맨드가 즉시 죽는다** — `CI=true` 등으로
+비대화형 모드를 강제해도 우회되지 않는다(pty 모듈 자체를 서브커맨드 분기 이전, CLI 진입 시점에
+require하기 때문).
+
+실제로 2026-07-13에 로컬 Node를 v24.18.0으로 올린 상태에서 `cdktf synth`/`diff`/`deploy`를
+실행했더니 전부 다음 에러로 실패했다.
+
+```
+Error: Cannot find module '../build/Release/pty.node'
+Require stack:
+- .../node_modules/@cdktf/node-pty-prebuilt-multiarch/lib/prebuild-loader.js
+...
+```
+
+즉 "TypeScript로 인프라를 작성한다"는 CDKTF의 장점과 별개로, **로컬 Node 버전을 CLI가 지원하는
+버전(현재 22 LTS)에 계속 맞춰줘야 하는 운영 부담**이 있다. Terraform 코드 자체(synth 결과물)는
+Node 버전과 무관하므로, `terraform` CLI를 이미 synth된 `cdktf.out/`에 직접 호출하는 우회는
+가능하지만(`scripts/db-credentials.sh`, `scripts/refresh-database-url-ssm.sh` 참고), **코드를
+바꾼 뒤 다시 synth해야 하는 경우**(즉 실제 인프라 변경을 반영해야 하는 경우)에는 이 우회가
+통하지 않는다 — 결국 Node 22로 맞추는 것 외에는 방법이 없다. nvm 등으로 Node 22를 별도
+설치해서 이 워크스페이스 작업 시에만 전환하는 걸 권장한다.
 
 ## 자격증명 관리 (로컬)
 

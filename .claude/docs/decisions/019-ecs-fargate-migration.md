@@ -183,6 +183,18 @@ VPC/ALB/태스크 정의를 직접 설계하는 경험 자체는 포트폴리오
   스택이 포함돼 있는지"에 따라 cross-stack output 생성 여부를 최적화하는 것으로 보인다. **서로
   cross-stack reference로 연결된 스택들은 한 `cdktf deploy` 명령에 함께 지정해서 배포해야
   안전하다** (`cdktf deploy petlog-backend-dev petlog-frontend-dev` 처럼).
+- **CDKTF CLI 자체가 로컬 Node 버전에 고정된다.** `cdktf synth`/`diff`/`deploy`는 내부적으로
+  `@cdktf/node-pty-prebuilt-multiarch` 네이티브 애드온(대화형 plan/apply 출력용 pty)에 의존하는데,
+  이 패키지가 아직 지원하지 않는 최신 Node 버전(2026-07-13 기준 v24.18.0)으로 실행하면
+  `Cannot find module '../build/Release/pty.node'`로 **모든 서브커맨드가, `synth`조차** 즉시
+  죽는다. `CI=true`로 비대화형을 강제해도 우회되지 않는다 — 서브커맨드 분기 이전, CLI 진입
+  시점에 이미 그 모듈을 require하기 때문이다. Terraform 코드(synth 결과물) 자체는 Node
+  버전과 무관하므로 이미 synth된 `cdktf.out/`에 `terraform` CLI를 직접 호출하는 우회는
+  가능하지만(`infra/scripts/db-credentials.sh`, `infra/scripts/refresh-database-url-ssm.sh`),
+  **코드를 바꾼 뒤 다시 synth해야 하는 경우**엔 이 우회가 통하지 않는다. "TypeScript로 인프라를
+  작성한다"는 CDKTF의 장점과 별개로, 로컬 Node 버전을 CLI가 지원하는 버전(현재 22 LTS)에
+  계속 맞춰야 하는 운영 부담이 있다는 뜻이다 (`infra/README.md`의 "CDKTF CLI의 단점: Node
+  버전 고정" 절 참고).
 - 위 문제들 전부 `synth`/`validate`/`diff` 단계에서는 드러나지 않았다 — 이 검증들은 "TypeScript가
   유효한 Terraform 설정으로 변환되는지"와 "AWS 리소스 스키마에 맞는지"까지만 보장하고, 실제 AWS
   서비스의 런타임 동작(권한, 네트워크 도달성, 아키텍처 호환성, 리소스 삭제 순서)은 검증하지
