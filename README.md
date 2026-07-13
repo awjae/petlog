@@ -6,6 +6,8 @@
 
 실제 반려동물 보호자가 일상에서 사용하는 서비스를 목표로 합니다.
 
+**서비스 바로가기**: [https://petlog.quest](https://petlog.quest)
+
 ---
 
 ## 해결하는 문제
@@ -41,11 +43,16 @@
 - **PostgreSQL**
 
 ### AI
-- 현재: Mock AI Service (구조 검증용)
-- 향후: OpenAI Fine-tuned 모델 연동 — 반려동물 건강 데이터 기반 학습 (교체 가능한 추상화 구조)
+- **OpenAI Fine-tuned 모델**(`gpt-4o-mini` 기반, 반려동물 건강 데이터로 파인튜닝) 연동 완료 — 실제 건강 리포트 생성에 사용
+- Mock AI Service는 개발/테스트 환경용으로 유지 (교체 가능한 Provider 추상화 구조)
 
 ### 공유 모듈 (`libs/`)
 - 프론트엔드/백엔드 공통 타입, 유틸, 시드 데이터
+
+### Infrastructure
+- **AWS** (ECS Fargate + ALB + CloudFront + RDS PostgreSQL + S3)
+- **CDKTF** (TypeScript 기반 IaC, `infra/`)
+- 커스텀 도메인 **petlog.quest** — 프론트엔드/백엔드(`/api/*`)가 같은 CloudFront 배포를 공유
 
 ---
 
@@ -117,11 +124,12 @@ AI 기능은 교체 가능한 구조로 설계되어 있습니다.
 
 ```
 HealthReportGenerator (interface)
- ├── MockHealthReportGenerator        ← 현재 사용
- └── OpenAIHealthReportGenerator      ← 향후 연동 (Fine-tuned)
+ ├── LlmHealthReportGenerator     ← 실제 서비스 (OpenAI Fine-tuned 모델)
+ └── MockHealthReportGenerator    ← 개발/테스트 환경 (OPENAI_API_KEY 미설정 시 자동 선택)
 ```
 
-Mock → Fine-tuned 모델 전환 시 비즈니스 로직 변경 없이 Provider만 교체합니다.
+어떤 구현체를 쓸지는 `AiModule`의 Provider 팩토리 한 곳에서만 결정하며, `ReportService`는
+`HealthReportGenerator` 인터페이스만 알기 때문에 비즈니스 로직 변경 없이 Provider를 교체할 수 있습니다.
 
 ---
 
@@ -138,13 +146,13 @@ Mock → Fine-tuned 모델 전환 시 비즈니스 로직 변경 없이 Provider
 
 - [x] 도메인 모델 정의
 - [x] 공유 타입 및 유틸리티 (`libs/`)
-- [ ] PostgreSQL 스키마 및 마이그레이션
-- [ ] NestJS API 구현
-- [ ] Next.js 사용자 플로우
-- [ ] 건강 타임라인 UI
-- [ ] Mock AI 리포트 생성
-- [x] 배포 (AWS ECS Fargate + ALB, CDKTF로 관리 — Vercel/Railway 대체)
-- [ ] 실제 AI 연동 (Claude API)
+- [x] PostgreSQL 스키마 및 마이그레이션
+- [x] NestJS API 구현
+- [x] Next.js 사용자 플로우
+- [x] 건강 타임라인 UI
+- [x] Mock AI 리포트 생성
+- [x] 배포 (AWS ECS Fargate + ALB, CDKTF로 관리 — Vercel/Railway 대체, 커스텀 도메인 petlog.quest 연결)
+- [x] 실제 AI 연동 (OpenAI Fine-tuned 모델)
 
 ---
 
