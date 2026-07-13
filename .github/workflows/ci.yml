@@ -69,6 +69,22 @@ jobs:
       - run: npm ci
       - run: npm run test --workspace=backend
 
+  docker-build-backend:
+    name: Docker Build (Backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # workspaces 모노레포에서 backend/Dockerfile이 libs/* 패키지 추가를 누락하면
+      # (COPY 대상, tsc --build 대상) 배포 시점에야 발견된다. PR 단계에서 미리 잡는다.
+      - run: docker build -f backend/Dockerfile -t petlog-backend:ci .
+
+  docker-build-frontend:
+    name: Docker Build (Frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f frontend/Dockerfile -t petlog-frontend:ci .
+
   sync-mobile:
     name: Capacitor Sync (Android)
     needs: changes
