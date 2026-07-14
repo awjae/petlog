@@ -38,6 +38,12 @@ Thumbs.db
 # Testing
 coverage/
 
+# Playwright — 실 계정 httpOnly 쿠키(storageState)는 절대 커밋하지 않는다
+frontend/e2e/.auth/
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
+
 # Misc
 .vercel
 .turbo

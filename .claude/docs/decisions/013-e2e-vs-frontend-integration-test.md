@@ -166,3 +166,81 @@ CI 전략:
   PR      → --project=integration (MSW, 빠름)
   배포 전  → --project=e2e (실제 백엔드+DB)
 ```
+
+---
+
+## 구현 결과 (E2E 스캐폴딩 완료 후 추가, 2026-07-14)
+
+`auth.spec.ts` 4개 시나리오와 그 실행에 필요한 설정 파일을 위 구조 그대로 작성했다.
+Frontend Integration 5개 spec은 `test.skip` 스켈레톤(시나리오 목록 + TODO)만 남기고 본문
+구현은 다음 단계로 미뤘다.
+
+### 계획과 달라진 점
+
+- **`global-setup.ts`는 `/auth/login`이 아니라 `/auth/register`를 호출한다.** `auth.controller.ts`의
+  `register`가 가입과 동시에 access/refresh 쿠키를 즉시 심어주기 때문에, 별도 로그인 호출 없이
+  한 번의 요청으로 인증된 storageState를 만들 수 있다.
+- **계정 전략을 "고정 테스트 계정"이 아니라 "시나리오마다 신규 가입 + 종료 후 탈퇴"로 정했다.**
+  고정 계정은 (1) `010-refresh-token-security.md`의 RTR 재사용 감지 로직과 충돌할 수 있고 —
+  병렬/반복 실행 시 같은 계정으로 동시에 로그인하면 서로의 refresh token을 폐기시킨다 —
+  (2) 테스트가 만든 데이터가 계정에 계속 누적된다. 이메일은
+  `e2e+{scenario}-{timestamp}-{random}@petlog.test` 형태로 시나리오별 유니크하게 생성하고,
+  종료 시 `POST /auth/withdraw`로 정리한다. 단 로그아웃 시나리오는 로그아웃 자체가 세션을
+  끊어버려 탈퇴 API를 호출할 수 없다 — 이 계정은 정리하지 못한 채 남는다(아래 미해결 이슈 참고).
+- **인증 가드는 `middleware.ts`가 아니라 리액티브 구조로 실제 구현돼 있음을 코드에서 확인했다.**
+  전용 라우트 가드 파일은 없고, `/home`의 GraphQL 쿼리가 `UNAUTHENTICATED`로 실패 →
+  `errorLink.ts`가 `/auth/refresh`를 시도 → refresh 쿠키도 없어 401 → `window.location.href = '/login'`
+  으로 강제 이동시키는 흐름이다. 즉 **GraphQL 쿼리를 쏘지 않는 페이지에는 이 가드가 적용되지
+  않는다** — 이 문서가 원래 가정했던 "보호 경로 접근 시 리다이렉트"가 실제로는 "인증이 필요한
+  쿼리가 실패해야만" 작동하는 조건부 보호라는 뜻이다.
+- **회원가입 완료 후 이동 경로는 `/pets/new`가 아니라 `/home`이다.** 신규 계정은 pet이 0개라
+  `HomeNoPetContent`가 렌더링되고, 그 안의 "반려동물 등록하기" 링크를 눌러야 `/pets/new`에
+  도달한다.
+- **로그아웃은 `/settings` 페이지에서 처리된다** (`POST /auth/logout` → `router.push('/login')`).
+
+### 라이브 실행 검증 완료 (2026-07-14)
+
+로컬에서 실제 백엔드(`npm run dev:backend`) + DB(`npm run db:up`)를 띄운 뒤
+`npx playwright test --project=e2e`로 4개 시나리오 모두 통과를 확인했다. 정적 검증만으로는
+잡지 못했던 문제 2개가 실제 실행에서 드러나 수정했다:
+
+- `getByLabel('비밀번호')`가 "비밀번호"/"비밀번호 확인" 두 필드 모두에 매칭되는 strict mode
+  위반 → `{ exact: true }` 추가
+- 신규 계정 최초 로그인 시 `OnboardingOverlay`가 `/home`에 즉시 뜨면서 CTA 클릭을 가로막음 →
+  CTA를 누르기 전에 `aria-label="온보딩 닫기"` 버튼을 먼저 클릭하도록 수정
+
+### CI 연동 (2026-07-14)
+
+`.github/workflows/ci.yml`에 `test-e2e` job을 추가했다. `if: github.event_name == 'push'`로
+**main에 push될 때만** 실행되고 PR에서는 돌지 않는다 — 별도 배포 파이프라인이 없어 배포가
+수동(`npm run deploy`)이므로, "배포 전에만 실행한다"는 원래 원칙을 실제 트리거로 옮기면
+"main 머지 직후(=배포 직전)"가 가장 가까운 대리 신호이기 때문이다. PR마다 돌리면 매번 실제
+Postgres+백엔드를 띄워야 해서 PR 피드백 루프가 느려지는 것도 이유다.
+
+job 구성: `postgres:16-alpine` service container → `prisma migrate deploy` → 백엔드/프론트엔드
+각각 build 후 백그라운드로 기동(watch 모드가 아니라 build+start로 실행해 배포 시 실제 돌아가는
+방식에 더 가깝게 맞췄다) → curl 폴링으로 준비될 때까지 대기 → `playwright install --with-deps
+chromium` → `npm run test:e2e`. 실패 시에만 `playwright-report`를 아티팩트로 업로드한다.
+
+CI 환경변수 중 `NODE_ENV`는 `production`이 아니라 `test`로 고정했다 — `auth.controller.ts`가
+`NODE_ENV==='production'`일 때만 쿠키에 `secure`를 켜는데, CI는 `http://localhost`로 접속하므로
+`production`으로 두면 브라우저가 Secure 쿠키를 버려 로그인 자체가 깨진다.
+
+Integration 프로젝트(`--project=integration`)는 아직 CI에 추가하지 않았다 — 4개 spec이 전부
+`test.skip` 스켈레톤이라 지금 추가해봐도 실제로 검증하는 게 없는 "통과는 하지만 의미 없는" job이
+되기 때문이다(`test-backend`의 `--passWithNoTests`와 동일한 함정). 본문을 구현한 뒤 PR 트리거로
+추가한다.
+
+### 남은 미해결 이슈
+
+- **시드 계정 누적**: 로컬/CI에서 반복 실행할수록 `e2e+seed-*` 계정이 DB에 계속 쌓인다.
+  로그아웃 시나리오의 미정리 계정과 합쳐, 언젠가 일괄 정리용 `global-teardown.ts` 또는
+  주기적 cleanup 스크립트가 필요하다. CI는 매 실행마다 새 Postgres 컨테이너라 무관하지만,
+  로컬 개발 DB는 계속 누적된다.
+- **가드 우회 가능성**: 인증 가드가 리액티브 구조(위 "계획과 달라진 점" 참고)라, 앞으로 GraphQL
+  쿼리를 아예 쏘지 않는 정적 보호 페이지가 추가되면 이 가드를 우회한다. 그 시점에는
+  `middleware.ts` 도입을 재검토해야 한다.
+- **lint 범위 밖**: `eslint.config.mjs`가 `src/**/*.{ts,tsx}`만 대상으로 해서 `e2e/`와
+  `playwright.config.ts`는 현재 lint 대상이 아니다(CI의 `lint-frontend`도 동일).
+- **Integration 4종 미구현**: `home/pet/health-record/report.spec.ts`는 시나리오 목록만 있는
+  스켈레톤이다.

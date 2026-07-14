@@ -82,6 +82,91 @@ jobs:
       # --passWithNoTests는 그대로 둬도 무해하지만, 이 TODO는 테스트 작성 후 지운다.
       - run: npm run test --workspace=backend -- --passWithNoTests
 
+  test-e2e:
+    name: Test (E2E)
+    # 별도 배포 파이프라인이 없어 배포는 수동(npm run deploy)이다. "배포 전에만
+    # 돈다"(.claude/docs/decisions/013-e2e-vs-frontend-integration-test.md)는 원칙을
+    # 실제 트리거로 옮기면 "main에 push된 시점(=머지 직후, 배포 직전)"이 가장 가까운
+    # 대리 신호다. PR마다 돌리면 매번 실제 Postgres+백엔드를 띄워야 해서 PR 피드백
+    # 루프가 느려지므로 push에서만 실행한다.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: petlog
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # auth.controller.ts는 NODE_ENV==='production'일 때만 쿠키에 secure를 켠다.
+      # CI는 http://localhost로 접속하므로 production으로 두면 브라우저가 Secure
+      # 쿠키를 버려 로그인 자체가 깨진다.
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/petlog
+      JWT_SECRET: ci-e2e-access-secret
+      JWT_EXPIRES_IN: 15m
+      REFRESH_TOKEN_SECRET: ci-e2e-refresh-secret
+      REFRESH_TOKEN_EXPIRES_IN: 30d
+      PORT: 4000
+      FRONTEND_URL: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NEXT_PUBLIC_USE_MOCK: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run prisma:generate --workspace=backend
+      - name: Run database migrations
+        working-directory: backend
+        run: npx prisma migrate deploy
+      - run: npm run build --workspace=backend
+      - name: Start backend
+        working-directory: backend
+        run: nohup npm start > /tmp/backend.log 2>&1 &
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4000/api/health && exit 0
+            sleep 2
+          done
+          echo "backend did not become ready in time"; cat /tmp/backend.log; exit 1
+      - run: npm run build --workspace=frontend
+      - name: Start frontend
+        working-directory: frontend
+        run: nohup npm start > /tmp/frontend.log 2>&1 &
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && exit 0
+            sleep 2
+          done
+          echo "frontend did not become ready in time"; cat /tmp/frontend.log; exit 1
+      - name: Install Playwright Browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E tests
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
   docker-build-backend:
     name: Docker Build (Backend)
     runs-on: ubuntu-latest
