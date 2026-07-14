@@ -116,7 +116,6 @@ jobs:
       JWT_EXPIRES_IN: 15m
       REFRESH_TOKEN_SECRET: ci-e2e-refresh-secret
       REFRESH_TOKEN_EXPIRES_IN: 30d
-      PORT: 4000
       FRONTEND_URL: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:4000/api
       NEXT_PUBLIC_USE_MOCK: 'false'
@@ -144,6 +143,11 @@ jobs:
       - run: npm run build --workspace=backend
       - name: Start backend
         working-directory: backend
+        # PORT는 이 스텝에만 한정한다 — job 레벨 env에 두면 frontend의 `next start`도
+        # 이 값을 이어받아 4000번으로 붙으려다 backend와 EADDRINUSE로 충돌한다
+        # (Next CLI가 -p 미지정 시 process.env.PORT를 기본값으로 쓰기 때문).
+        env:
+          PORT: '4000'
         run: nohup npm start > /tmp/backend.log 2>&1 &
       - name: Wait for backend
         run: |
