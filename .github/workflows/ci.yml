@@ -131,6 +131,11 @@ jobs:
       - name: Run database migrations
         working-directory: backend
         run: npx prisma migrate deploy
+      # backend는 @petlog/ai, @petlog/mail, @petlog/push, @petlog/storage 등 워크스페이스
+      # libs를 참조하는데, TypeScript project reference(tsconfig.base.json)라 libs를
+      # 먼저 tsc --build로 컴파일해 dist/*.d.ts를 만들어두지 않으면 `nest build`가
+      # TS6305로 실패한다 (backend/Dockerfile의 빌드 순서와 동일하게 맞춘다).
+      - run: npx tsc --build libs/types libs/utils libs/ai libs/storage libs/mail libs/push
       - run: npm run build --workspace=backend
       - name: Start backend
         working-directory: backend
