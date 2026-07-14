@@ -127,6 +127,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
+      # --ignore-scripts는 infra 워크스페이스의 postinstall(cdktf get, Terraform CLI
+      # 필요)을 피하려는 목적인데(다른 test/lint job과 동일), 그 부작용으로 bcrypt의
+      # install 스크립트(node-pre-gyp, 네이티브 바인딩 설치)도 건너뛰어 백엔드 서버
+      # 기동 시 MODULE_NOT_FOUND로 죽는다. bcrypt만 콕 집어 rebuild한다.
+      - run: npm rebuild bcrypt
       - run: npm run prisma:generate --workspace=backend
       - name: Run database migrations
         working-directory: backend
