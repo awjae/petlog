@@ -77,6 +77,10 @@ jobs:
       # 테스트는 실제로 @prisma/client를 임포트하므로 backend만 generate한다.
       # infra의 cdktf get(Terraform CLI 필요)은 이 잡과 무관하므로 건너뛴다.
       - run: npm ci --ignore-scripts
+      # auth.service.spec.ts가 auth.service.ts → user.service.ts를 거쳐 실제 bcrypt를
+      # import한다. --ignore-scripts가 bcrypt의 네이티브 바인딩 설치(node-pre-gyp)도
+      # 건너뛰어 MODULE_NOT_FOUND로 죽는다 (test-e2e job과 동일한 원인).
+      - run: npm rebuild bcrypt
       - run: npm run prisma:generate --workspace=backend
       - run: npm run test --workspace=backend
 
