@@ -142,6 +142,35 @@ HealthReportGenerator (interface)
 
 ---
 
+## 테스트 전략
+
+계층마다 잡아내는 버그의 종류가 다르다는 전제로, 한 계층에 몰아넣지 않고 나눠서 쌓았습니다.
+
+| 계층 | 도구 | 대상 | 실행 시점 |
+|------|------|------|-----------|
+| Backend 유닛테스트 | Jest | 핵심 비즈니스 로직 (리포트 생성 정책, 건강 기록 검증, 인증/토큰 로테이션) | PR마다 |
+| E2E | Playwright | 인증 흐름 (httpOnly 쿠키는 Mock으로 재현 불가능해 실제 백엔드+DB 필요) | main push 시 |
+| Frontend Integration | Playwright + MSW | 나머지 화면 흐름 | 예정 |
+
+**왜 E2E만으로는 부족한가** — E2E는 실제로 화면 흐름 버그(Playwright strict-mode locator 충돌,
+신규 가입 시 온보딩 오버레이가 클릭을 가로막는 문제)를 잡아냈지만, "달력 날짜와 시각을 혼동해
+정상적인 날짜 선택이 거부되는" 것 같은 정책 로직 버그는 인증 흐름 E2E 4개 시나리오가 지나가지
+않는 지점이라 전혀 잡지 못합니다. 그래서 리포트 생성 정책·건강 기록 검증처럼 이미 한 번 실제로
+버그가 났던 로직부터 유닛테스트로 회귀를 막았습니다. 판단 근거는
+[`013-e2e-vs-frontend-integration-test.md`](.claude/docs/decisions/013-e2e-vs-frontend-integration-test.md),
+[`024-backend-unit-test-necessity.md`](.claude/docs/decisions/024-backend-unit-test-necessity.md)에
+정리했습니다.
+
+**E2E를 CI에 연동하며 실제로 잡은 버그들** — 로컬에서 통과한 뒤에도 CI에서만 재현되는 문제가
+여러 라운드에 걸쳐 나왔고, 그때마다 원인을 추적해 고쳤습니다.
+
+- 워크스페이스 공유 라이브러리(`libs/*`)를 먼저 빌드하지 않아 backend 빌드가 `TS6305`로 실패
+- `npm ci --ignore-scripts`가 `bcrypt` 네이티브 바인딩 설치까지 건너뛰어 서버가 `MODULE_NOT_FOUND`로 죽음
+- CI job의 환경변수(`PORT`)가 의도치 않게 다른 프로세스에 상속되어 포트 충돌
+- `nest build`가 `tsconfig.build.json` 부재로 테스트 파일까지 프로덕션 빌드에 포함
+
+---
+
 ## 개발 로드맵
 
 - [x] 도메인 모델 정의
@@ -153,6 +182,8 @@ HealthReportGenerator (interface)
 - [x] Mock AI 리포트 생성
 - [x] 배포 (AWS ECS Fargate + ALB, CDKTF로 관리 — Vercel/Railway 대체, 커스텀 도메인 petlog.quest 연결)
 - [x] 실제 AI 연동 (OpenAI Fine-tuned 모델)
+- [x] Backend 유닛테스트 + 인증 E2E (Jest/Playwright, CI 연동)
+- [ ] Frontend Integration 테스트 (MSW 기반)
 
 ---
 
