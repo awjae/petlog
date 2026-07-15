@@ -38,6 +38,10 @@ Thumbs.db
 # Testing
 coverage/
 
+# 로컬 개발용 LocalDiskStorageProvider가 저장하는 실제 업로드 파일 (mkdir로 자동 생성됨,
+# AWS_S3_BUCKET_NAME 미설정 시에만 사용됨 — backend/src/upload/upload.module.ts)
+backend/uploads/
+
 # Playwright — 실 계정 httpOnly 쿠키(storageState)는 절대 커밋하지 않는다
 frontend/e2e/.auth/
 frontend/playwright-report/
