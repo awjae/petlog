@@ -13,8 +13,8 @@ jobs:
     outputs:
       mobile: ${{ steps.filter.outputs.mobile }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -25,14 +25,14 @@ jobs:
     name: Type Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       # infra 워크스페이스의 postinstall(cdktf get)이 바인딩 생성을 위해 Terraform CLI를
       # 필요로 한다 (타입체크가 infra까지 포함하므로 이 잡만 실제로 필요하다).
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_wrapper: false
       - run: npm ci
@@ -42,8 +42,8 @@ jobs:
     name: Lint (Backend)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -57,8 +57,8 @@ jobs:
     name: Lint (Frontend)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -69,8 +69,8 @@ jobs:
     name: Test (Backend)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -122,8 +122,8 @@ jobs:
       NEXT_PUBLIC_API_URL: http://localhost:4000/api
       NEXT_PUBLIC_USE_MOCK: 'false'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -177,7 +177,7 @@ jobs:
         run: npm run test:e2e
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: frontend/playwright-report/
@@ -187,7 +187,7 @@ jobs:
     name: Docker Build (Backend)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # workspaces 모노레포에서 backend/Dockerfile이 libs/* 패키지 추가를 누락하면
       # (COPY 대상, tsc --build 대상) 배포 시점에야 발견된다. PR 단계에서 미리 잡는다.
       - run: docker build -f backend/Dockerfile -t petlog-backend:ci .
@@ -196,7 +196,7 @@ jobs:
     name: Docker Build (Frontend)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build -f frontend/Dockerfile -t petlog-frontend:ci .
 
   sync-mobile:
@@ -210,8 +210,8 @@ jobs:
       # infra/stacks/backend-stack.ts의 domain_name과 동일하게 코드-설정을 분리하는 목적이다.
       MOBILE_APP_URL: ${{ vars.MOBILE_APP_URL }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
