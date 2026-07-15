@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { DateTimeScalar } from './common/scalars/datetime.scalar';
+import { formatGraphQLError } from './common/filters/graphql-error-formatter';
 import { PetModule } from './pet/pet.module';
 import { HealthRecordModule } from './health-record/health-record.module';
 import { MedicalEventModule } from './medical-event/medical-event.module';
@@ -32,6 +33,7 @@ import { NotificationModule } from './notification/notification.module';
       playground: process.env.NODE_ENV !== 'production',
       path: '/api/graphql',
       context: ({ req }: { req: Request }) => ({ req }),
+      formatError: formatGraphQLError,
     }),
     PrismaModule,
     AuthModule,
