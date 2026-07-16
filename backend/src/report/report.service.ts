@@ -105,6 +105,25 @@ export class ReportService {
     return report;
   }
 
+  // runGeneration()은 fire-and-forget이라 서버 재시작 시 pending/processing에 멈춘
+  // 리포트가 남을 수 있다(report.scheduler.ts가 5분마다 호출). "5분 이상 갱신 없음"만
+  // 정리 대상으로 삼는 이유: 배포 중에는 신구 태스크가 잠깐 동시에 떠 있을 수 있는데
+  // (desiredCount 1이어도 rolling deployment 특성상), 구 태스크가 방금 갱신한 리포트를
+  // "재시작했으니 죽은 것"으로 착각해 잘못 실패 처리하면 안 되기 때문이다. pollStatus의
+  // 타임아웃과 동일한 기준(PROCESSING_TIMEOUT_MS)을 재사용해 일관성을 유지한다.
+  async cleanupStaleReports(): Promise<void> {
+    await this.prisma.report.updateMany({
+      where: {
+        status: { in: [ReportStatus.pending, ReportStatus.processing] },
+        updatedAt: { lt: new Date(Date.now() - PROCESSING_TIMEOUT_MS) },
+      },
+      data: {
+        status: ReportStatus.failed,
+        failedReason: '처리 시간이 초과됐습니다. 다시 시도해주세요.',
+      },
+    });
+  }
+
   async generateReport(userId: string, petId: string, periodStart: Date, periodEnd: Date) {
     const pet = await this.petService.assertOwnership(userId, petId);
 
@@ -152,9 +171,10 @@ export class ReportService {
       },
     });
 
-    // TODO: fire-and-forget 방식이라 서버 재시작 시 이 리포트가 pending/processing에
-    //   영구히 멈출 수 있음. BullMQ 등 큐로 옮기거나, 재시작 시 stale pending을
-    //   failed 처리하는 정리 job을 추가할 것.
+    // fire-and-forget 방식이라 서버 재시작 시 이 리포트가 pending/processing에 멈춘 채
+    // 남을 수 있다. cleanupStaleReports()가 5분마다 stale 상태를 failed로 정리한다
+    // (report.scheduler.ts) — 즉시 처리가 아니라 지연 복구지만, 이 기능의 트래픽
+    // 규모(desiredCount: 1)에서는 BullMQ 같은 큐보다 이 편이 합리적이다.
     void this.runGeneration(report.id, {
       petId,
       petName: pet.name,

@@ -48,6 +48,7 @@ describe('ReportService', () => {
       findMany: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
     };
   };
   let petService: { assertOwnership: jest.Mock };
@@ -61,6 +62,7 @@ describe('ReportService', () => {
         findMany: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn(),
       },
     };
     petService = { assertOwnership: jest.fn().mockResolvedValue(buildPet()) };
@@ -443,6 +445,35 @@ describe('ReportService', () => {
         orderBy: { createdAt: 'desc' },
       });
       expect(result).toBe(completedReports);
+    });
+  });
+
+  describe('cleanupStaleReports', () => {
+    const PROCESSING_TIMEOUT_MS = 5 * 60 * 1000;
+
+    beforeEach(() => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-07-15T12:00:00.000Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('5분 이상 갱신 없이 멈춰있는 pending/processing만 failed로 정리한다', async () => {
+      prisma.report.updateMany.mockResolvedValue({ count: 2 });
+
+      await service.cleanupStaleReports();
+
+      expect(prisma.report.updateMany).toHaveBeenCalledWith({
+        where: {
+          status: { in: [ReportStatus.pending, ReportStatus.processing] },
+          updatedAt: { lt: new Date(Date.now() - PROCESSING_TIMEOUT_MS) },
+        },
+        data: {
+          status: ReportStatus.failed,
+          failedReason: expect.any(String),
+        },
+      });
     });
   });
 });
