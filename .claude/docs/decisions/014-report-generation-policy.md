@@ -70,3 +70,14 @@ canGenerateThisMonth = 이번 달에 (failed가 아닌) 리포트가 없다
 
 - 월 중간에 실패(`failed`)해도 재시도 가능하도록 예외 처리했지만, "이번 달 리포트를 이미 확인했는데 다시 만들고 싶다"는 요구는 지원하지 않는다. 향후 유료 등급별로 월 생성 횟수를 늘리는 구조로 확장 가능하나 현재는 하드코딩된 상수(`MIN_RECORD_COUNT` 등)로 관리한다.
 - 기간 유효성 검증 로직이 `report.service.ts`에 날짜 계산 주석과 함께 다소 방어적으로 작성되어 있다. 타임존 관련 버그를 겪은 뒤 추가된 방어 코드이므로 임의로 단순화하지 않는다.
+
+## 이후 변경사항 (2026-07-16)
+
+`generateReport()`는 실제 AI 호출(`runGeneration`)을 await 없이 fire-and-forget으로 실행한다.
+서버가 배포/크래시로 재시작되면 그 리포트가 `pending`/`processing`에 멈춘 채 남고, 위 "월 1회
+생성 제한"이 `failed`가 아닌 리포트를 전부 "이미 존재함"으로 취급하는 탓에 그 유저는 그 달
+내내 재생성도 막히는 문제가 있었다. `report.scheduler.ts`에 5분 주기 정리 작업
+(`cleanupStaleReports`)을 추가해, `updatedAt`이 `PROCESSING_TIMEOUT_MS`(5분) 이상 갱신되지
+않은 `pending`/`processing` 리포트만 `failed`로 정리하도록 완화했다. "5분 이상 갱신 없음"
+조건은 ECS rolling deployment 중 신구 태스크가 잠깐 동시에 떠 있는 구간에, 살아있는 구
+태스크가 방금 갱신한 리포트를 새 태스크가 잘못 실패 처리하지 않기 위한 안전장치다.

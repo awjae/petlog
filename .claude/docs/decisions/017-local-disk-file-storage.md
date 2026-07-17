@@ -2,7 +2,9 @@
 
 ## Status
 
-결정됨. Object Storage(S3/R2) 전환은 상용화 단계로 예정 (`architecture.md` 12. Scalability Consideration: Local Storage → Object Storage와 연결).
+결정됨 (최초 로컬 디스크 결정). **Object Storage(S3) 전환 완료**(이슈 #2, 아래 "이후 변경사항" 참고),
+**magic-bytes 검증 완료**(이슈 #1, 2026-07-16). 이 문서의 Context/Decision/Reason은 로컬 디스크만
+쓰던 최초 결정 당시 기록이고, 그 이후 상태는 문서 하단 "이후 변경사항"을 최신 출처로 삼는다.
 
 ---
 
@@ -49,21 +51,46 @@ Object Storage 연동은 지금 하지 않고, 코드에 명시적 TODO로 남�
 
 ---
 
-## Trade-off (알려진 한계, 코드 내 TODO로 명시)
+## Trade-off (최초 결정 당시 알려진 한계 — 둘 다 해결됨, 아래 참고)
 
-### 서버 재시작 시 파일 유실 위험
+### 서버 재시작 시 파일 유실 위험 → 해결됨 (이슈 #2)
 
-로컬 디스크 저장은 배포 환경(컨테이너 재시작, 다중 인스턴스 스케일 아웃)에서 파일이 사라지거나 인스턴스 간 공유되지 않는다. **상용화 이전에 반드시 Object Storage로 전환해야 하는 항목**으로 코드에 `TODO(1)`로 표시했고, [awjae/petlog#2](https://github.com/awjae/petlog/issues/2)로 트래킹한다.
+로컬 디스크 저장은 배포 환경(컨테이너 재시작, 다중 인스턴스 스케일 아웃)에서 파일이 사라지거나 인스턴스 간 공유되지 않는다. **상용화 이전에 반드시 Object Storage로 전환해야 하는 항목**으로 코드에 `TODO(1)`로 표시했고, [awjae/petlog#2](https://github.com/awjae/petlog/issues/2)로 트래킹했다.
 
-### MIME 타입 검증의 한계
+### MIME 타입 검증의 한계 → 해결됨 (이슈 #1)
 
-현재 `fileFilter`는 클라이언트가 선언한 `file.mimetype`만 검사한다. 파일 확장자/Content-Type을 위조하면 우회 가능하다. 실제 파일 바이너리(magic bytes)를 검사하지 않으므로, 상용화 전 `file-type` 패키지 등으로 강화가 필요하다 (`TODO(2)`, [awjae/petlog#1](https://github.com/awjae/petlog/issues/1)). 현재는 5MB 크기 제한과 `JwtAuthGuard`로 인증된 사용자만 업로드 가능하도록 최소한의 방어만 되어 있다.
+~~현재 `fileFilter`는 클라이언트가 선언한 `file.mimetype`만 검사한다. 파일 확장자/Content-Type을 위조하면 우회 가능하다. 실제 파일 바이너리(magic bytes)를 검사하지 않으므로, 상용화 전 `file-type` 패키지 등으로 강화가 필요하다.~~ (`TODO(2)`, [awjae/petlog#1](https://github.com/awjae/petlog/issues/1))
+
+---
+
+## 이후 변경사항
+
+### Object Storage(S3) 전환 완료 (이슈 #2, CLOSED)
+
+`upload.module.ts`가 `AWS_S3_BUCKET_NAME` 환경변수 유무로 `LocalDiskStorageProvider` ↔
+`S3StorageProvider`를 DI 팩토리에서 자동 선택하도록 바뀌었다. 배포 환경(AWS ECS)은 S3 +
+CloudFront로 서빙하고, 로컬 개발은 그 값이 비어있을 때만 여전히 로컬 디스크를 쓴다(위에서
+설명한 "교체 가능한 경계 설계" 원칙 그대로 — `uploadImage` 핸들러와 `{ url }` 응답 형태는
+안 바뀌었다). `README.md`의 Infrastructure 섹션이 최신 배포 구조의 출처다.
+
+### magic-bytes 검증 추가 (이슈 #1, CLOSED, 2026-07-16)
+
+`fileFilter`가 클라이언트 선언 `file.mimetype`만 보던 걸, `file-type` 패키지로 업로드된
+버퍼의 실제 매직바이트를 검사하도록 `upload.controller.ts`를 바꿨다. 감지된 타입이 허용
+목록(jpeg/png/webp/gif) 밖이면 거부한다.
+
+이와 함께 **파일명 생성 방식도 바뀌었다** — 위 Decision 절의 `randomUUID() + extname(원본)`은
+더 이상 정확하지 않다. 클라이언트가 보낸 원본 파일명의 확장자를 신뢰하지 않고,
+`randomUUID() + '.' + (file-type이 감지한 실제 확장자)`로 저장 키를 만든다. S3에 저장할
+때의 `ContentType`도 클라이언트 선언값이 아니라 감지된 실제 mime 타입을 쓴다.
+
+기존 `fileFilter`(mimetype 체크)는 버퍼가 채워지기 전 단계라 값싼 사전 필터로만 남기고,
+실제 보안 경계는 핸들러의 매직바이트 검사로 옮겼다. 자세한 배경은 이슈 #1 코멘트와
+`upload.controller.spec.ts` 참고.
 
 ---
 
 ## 관련 이슈
 
-코드 내 TODO는 GitHub Issue로도 등록해 백로그를 트래킹한다.
-
-- [#1 이미지 업로드 파일 타입 검증을 magic-bytes 기반으로 강화](https://github.com/awjae/petlog/issues/1)
-- [#2 이미지 업로드를 Object Storage(S3/R2)로 전환](https://github.com/awjae/petlog/issues/2)
+- [#1 이미지 업로드 파일 타입 검증을 magic-bytes 기반으로 강화](https://github.com/awjae/petlog/issues/1) — CLOSED
+- [#2 이미지 업로드를 Object Storage(S3/R2)로 전환](https://github.com/awjae/petlog/issues/2) — CLOSED
