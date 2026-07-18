@@ -248,7 +248,9 @@ export class ReportService {
     return { recordCount, recordDays, hasEnoughRecords };
   }
 
-  private async assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
+  // ReportShareService 등 리포트 소유권 검증이 필요한 다른 서비스에서도 재사용한다 —
+  // 소유권 검증 로직(및 "존재하지 않음"과 "권한 없음"을 구분하지 않는 방식)을 한 곳에서만 유지한다.
+  async assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
     const report = await this.prisma.report.findFirst({
       where: { id: reportId, pet: { userId } },
     });

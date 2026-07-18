@@ -43,6 +43,9 @@ export class PrismaService implements OnModuleInit {
   get report() {
     return this.client.report;
   }
+  get reportShare() {
+    return this.client.reportShare;
+  }
   get pushToken() {
     return this.client.pushToken;
   }
