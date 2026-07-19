@@ -1,0 +1,234 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.rootVisible {
+  pointer-events: auto;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 60, 72, 0.5);
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.rootVisible .overlay {
+  opacity: 1;
+}
+
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 500px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border-radius: 20px 20px 0 0;
+  max-height: 88dvh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(100%);
+  opacity: 0;
+  transition:
+    transform 300ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheetVisible {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+.dragHandleArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 8px;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.dragHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+/* ── 헤더 ── */
+.header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font: var(--font-title-m);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.headerSpacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  transition: background 100ms;
+  touch-action: auto;
+  flex-shrink: 0;
+}
+
+.closeBtn:active {
+  background: var(--color-border);
+}
+
+/* ── 바디 ── */
+.body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 16px 20px calc(env(safe-area-inset-bottom) + 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inlineError {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* ── 푸터 ── */
+.footer {
+  flex-shrink: 0;
+  padding: 12px 20px calc(env(safe-area-inset-bottom) + 12px);
+  border-top: 1px solid var(--color-border);
+  position: relative;
+}
+
+.actionErrorBar {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.inlineToast {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 100%;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-text-primary);
+  color: #fff;
+  font: var(--font-caption);
+  box-shadow: var(--shadow-lg);
+  animation: toastSlideUp 0.22s ease-out;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionRow {
+  display: flex;
+  gap: 10px;
+}
+
+.copyBtn,
+.imageBtn {
+  flex: 1;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-full);
+  font: var(--font-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+
+.copyBtn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+}
+
+.imageBtn {
+  background: none;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border);
+}
+
+.copyBtn:disabled,
+.imageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copyBtn:active:not(:disabled),
+.imageBtn:active:not(:disabled) {
+  opacity: 0.85;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
