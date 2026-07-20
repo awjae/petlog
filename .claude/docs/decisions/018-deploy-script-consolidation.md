@@ -60,6 +60,13 @@
 `backend`/`frontend`의 `deploy:ecr-login`으로 각각 이전해 각 워크스페이스가 자기 배포에 필요한 걸
 스스로 해결하도록(self-contained) 만들었다.
 
+**[갱신]** `frontend/.env.local`은 `next dev`/`build`/`start`가 항상 자동으로 읽는 파일이라, 여기에
+실제 AWS 자격 증명·Sentry DSN을 두면 로컬 개발 서버에도 그 값이 로드되는 문제가 있었다. 그래서
+배포 스크립트(`deploy:check-version`/`ecr-login`/`ecr-push`/`ecs-force-redeploy`)가 읽는 시크릿 값은
+`frontend/.env.deploy`(gitignore, `frontend/.env.deploy.example`로 템플릿 문서화)로 분리하고,
+`frontend/.env.local`에는 `AWS_REGION`/`PETLOG_ENV`처럼 시크릿이 아닌 로컬 실행용 값만 남긴다.
+`backend/.env`는 이 분리 대상이 아니다(백엔드는 로컬 실행과 배포가 같은 값을 공유해도 문제없음).
+
 ---
 
 ## Reason
