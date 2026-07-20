@@ -1,0 +1,23 @@
+.masthead {
+  padding: 18px 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.petName {
+  font: var(--font-label);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.period {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  margin: 0;
+}

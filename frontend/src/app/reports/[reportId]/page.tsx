@@ -1,8 +1,8 @@
 'use client';
 
-import { use, type ReactNode } from 'react';
+import { use, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Share2 } from 'lucide-react';
 import { useQuery } from '@apollo/client/react';
 import { useReport } from '@/features/report/hooks/useReport';
 import {
@@ -13,6 +13,7 @@ import { ReportDetailSkeleton } from '@/features/report/components/ReportSkeleto
 import { ReportCover } from '@/features/report/components/ReportCover';
 import { ReportHeadline } from '@/features/report/components/ReportHeadline';
 import { ReportStatusNotice } from '@/features/report/components/ReportStatusNotice';
+import { ShareReportSheet } from '@/features/report/components/ShareReportSheet';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
 import { formatPeriodRange } from '@/features/report/utils/reportFormat';
 import type { ReportSectionType } from '@/features/report/components/ReportDetailSection';
@@ -23,6 +24,7 @@ const DETAIL_SECTION_ORDER: ReportSectionType[] = ['highlights', 'concerns', 're
 export default function ReportDetailPage({ params }: { params: Promise<{ reportId: string }> }) {
   const router = useRouter();
   const { reportId } = use(params);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const { report, loading, error } = useReport(reportId);
 
@@ -154,6 +156,26 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
           </p>
         </div>
       </div>
+
+      <footer className={styles.shareFooter}>
+        <button type="button" className={styles.shareBtn} onClick={() => setIsShareOpen(true)}>
+          <Share2 size={18} strokeWidth={2} aria-hidden="true" />
+          공유하기
+        </button>
+      </footer>
+
+      <ShareReportSheet
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        reportId={report.id}
+        petName={petName}
+        periodStart={report.periodStart}
+        periodEnd={report.periodEnd}
+        overview={report.overview}
+        highlights={report.highlights}
+        concerns={report.concerns}
+        recommendations={report.recommendations}
+      />
     </main>
   );
 }

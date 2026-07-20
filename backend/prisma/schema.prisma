@@ -204,11 +204,42 @@ model Report {
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("updated_at")
 
-  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  pet   Pet          @relation(fields: [petId], references: [id], onDelete: Cascade)
+  share ReportShare?
 
   // @@unique 제거 — Partial Unique Index로 교체 (migration.sql 참조)
   @@index([petId, createdAt(sort: Desc)])
   @@map("reports")
+}
+
+// ─── ReportShare ────────────────────────────────────────────────────────────
+// 리포트 1건당 공유 설정 1행(1:1) — reportId가 @unique.
+//
+// shareToken은 RefreshToken/PasswordResetToken과 달리 해시하지 않고 원문 저장한다.
+// 소유자가 설정 화면을 다시 열 때마다 동일한 공유 URL을 다시 보여줘야 하는데(재공유 시
+// 토큰 재발급 안 함), 단방향 해시로는 원문 복원이 불가능하기 때문이다. 대신
+// randomBytes(32).toString('hex')(PasswordResetToken과 동일한 생성 방식)로 추측
+// 불가능성을 확보한다 — 계정 자격 증명이 아니라 "링크를 아는 사람만 볼 수 있는"
+// capability URL이라 위협 모델이 다르다.
+//
+// isActive=false와 "공유한 적 없음(행 없음)"은 공개 조회 응답에서 절대 구분하지 않는다
+// — PasswordResetToken의 enumeration 방지와 동일 원칙.
+//
+// onDelete: Cascade는 현재는 쓰이지 않는다(Report는 재생성 시 기존 행을 삭제/덮어쓰지
+// 않으므로 무효화 로직이 필요 없다) — 미래에 리포트 삭제 기능이 생길 때를 대비한
+// 안전장치로만 둔다.
+model ReportShare {
+  id              String   @id @default(uuid())
+  reportId        String   @unique @map("report_id")
+  shareToken      String   @unique @map("share_token")
+  isActive        Boolean  @default(true) @map("is_active")
+  includeConcerns Boolean  @default(false) @map("include_concerns")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@map("report_shares")
 }
 
 // ─── PushToken ────────────────────────────────────────────────────────────────

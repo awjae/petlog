@@ -2,6 +2,7 @@ import { ErrorLink } from '@apollo/client/link/error';
 import { CombinedGraphQLErrors } from '@apollo/client';
 import { Observable } from 'rxjs';
 import { authFetch } from '@/lib/auth/authFetch';
+import { isPublicRoute } from '@/shared/config/publicRoutes';
 
 let isRefreshing = false;
 let pendingRequests: Array<() => void> = [];
@@ -38,7 +39,7 @@ export const errorLink = new ErrorLink(({ error, operation, forward }) => {
       })
       .catch(() => {
         pendingRequests = [];
-        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+        if (typeof window !== 'undefined' && !isPublicRoute(window.location.pathname)) {
           window.location.href = '/login';
         }
         observer.error(new Error('Session expired'));

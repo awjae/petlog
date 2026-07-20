@@ -1,0 +1,45 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+}
+
+.textGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.icon {
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+
+.text {
+  font: var(--font-body);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.stopBtn {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  font: var(--font-caption);
+  font-weight: 700;
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.stopBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

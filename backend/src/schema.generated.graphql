@@ -173,6 +173,9 @@ type Mutation {
   generateReport(periodEnd: DateTime!, periodStart: DateTime!, petId: ID!): GenerateReportResult!
   registerPushToken(token: String!): Boolean!
   sendTestPushNotification: Boolean!
+  setReportShareIncludeConcerns(includeConcerns: Boolean!, reportId: ID!): ReportShareSettings!
+  startReportShare(reportId: ID!): ReportShareSettings!
+  stopReportShare(reportId: ID!): ReportShareSettings!
   updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
@@ -225,6 +228,7 @@ type Query {
   report(id: ID!): Report
   reportPeriodPreview(periodEnd: DateTime!, periodStart: DateTime!, petId: ID!): ReportPeriodPreviewResult!
   reportPollStatus(id: ID!): ReportPollResult!
+  reportShareSettings(reportId: ID!): ReportShareSettings!
   reportStatus(petId: ID!): ReportStatusResult!
   reports(petId: ID!): [Report!]!
   upcomingAppointments: [Appointment!]!
@@ -266,6 +270,12 @@ type ReportPollResult {
   failedReason: String
   id: ID!
   status: ReportStatus!
+}
+
+type ReportShareSettings {
+  includeConcerns: Boolean!
+  isActive: Boolean!
+  shareToken: String
 }
 
 enum ReportStatus {

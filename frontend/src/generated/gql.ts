@@ -31,6 +31,8 @@ type Documents = {
   '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.MedicationsDocument;
   '\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n': typeof types.RegisterPushTokenDocument;
   '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n': typeof types.SendTestPushNotificationDocument;
+  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n': typeof types.NotificationPreferenceDocument;
+  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n': typeof types.UpdateNotificationPreferenceDocument;
   '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n': typeof types.NotificationAuthCheckDocument;
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n': typeof types.CreatePetDocument;
   '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ': typeof types.UpdatePetDocument;
@@ -38,6 +40,11 @@ type Documents = {
   '\n  query PetDetail($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n      recentWeight {\n        value\n        recordedAt\n      }\n      todayRecordCount\n      recentHealthRecords(limit: 5) {\n        id\n        type\n        recordedAt\n        summary\n      }\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.PetDetailDocument;
   '\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n': typeof types.PetEditDocument;
   '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n': typeof types.PetIdsDocument;
+  '\n  mutation StartReportShare($reportId: ID!) {\n    startReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.StartReportShareDocument;
+  '\n  mutation StopReportShare($reportId: ID!) {\n    stopReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.StopReportShareDocument;
+  '\n  mutation SetReportShareIncludeConcerns($reportId: ID!, $includeConcerns: Boolean!) {\n    setReportShareIncludeConcerns(reportId: $reportId, includeConcerns: $includeConcerns) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.SetReportShareIncludeConcernsDocument;
+  '\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.ReportShareSettingsDocument;
+  '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n': typeof types.ShareViewerDocument;
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n': typeof types.GenerateReportDocument;
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n': typeof types.ReportStatusDocument;
   '\n  query Reports($petId: ID!) {\n    reports(petId: $petId) {\n      id\n      status\n      overview\n      highlights\n      concerns\n      recommendations\n      generatedBy\n      periodStart\n      periodEnd\n      createdAt\n    }\n  }\n': typeof types.ReportsDocument;
@@ -83,6 +90,10 @@ const documents: Documents = {
     types.RegisterPushTokenDocument,
   '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n':
     types.SendTestPushNotificationDocument,
+  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n':
+    types.NotificationPreferenceDocument,
+  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n':
+    types.UpdateNotificationPreferenceDocument,
   '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n':
     types.NotificationAuthCheckDocument,
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n':
@@ -96,6 +107,15 @@ const documents: Documents = {
   '\n  query PetEdit($id: ID!) {\n    pet(id: $id) {\n      id\n      name\n      species\n      breed\n      birthDate\n      gender\n      weight\n      isNeutered\n      profileImageUrl\n    }\n  }\n':
     types.PetEditDocument,
   '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n': types.PetIdsDocument,
+  '\n  mutation StartReportShare($reportId: ID!) {\n    startReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n':
+    types.StartReportShareDocument,
+  '\n  mutation StopReportShare($reportId: ID!) {\n    stopReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n':
+    types.StopReportShareDocument,
+  '\n  mutation SetReportShareIncludeConcerns($reportId: ID!, $includeConcerns: Boolean!) {\n    setReportShareIncludeConcerns(reportId: $reportId, includeConcerns: $includeConcerns) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n':
+    types.SetReportShareIncludeConcernsDocument,
+  '\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n':
+    types.ReportShareSettingsDocument,
+  '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n': types.ShareViewerDocument,
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n':
     types.GenerateReportDocument,
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n':
@@ -236,6 +256,18 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
+  source: '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n',
+): (typeof documents)['\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
   source: '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n',
 ): (typeof documents)['\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n'];
 /**
@@ -274,6 +306,36 @@ export function gql(
 export function gql(
   source: '\n  query PetIds {\n    pets {\n      id\n    }\n  }\n',
 ): (typeof documents)['\n  query PetIds {\n    pets {\n      id\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation StartReportShare($reportId: ID!) {\n    startReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n',
+): (typeof documents)['\n  mutation StartReportShare($reportId: ID!) {\n    startReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation StopReportShare($reportId: ID!) {\n    stopReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n',
+): (typeof documents)['\n  mutation StopReportShare($reportId: ID!) {\n    stopReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation SetReportShareIncludeConcerns($reportId: ID!, $includeConcerns: Boolean!) {\n    setReportShareIncludeConcerns(reportId: $reportId, includeConcerns: $includeConcerns) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n',
+): (typeof documents)['\n  mutation SetReportShareIncludeConcerns($reportId: ID!, $includeConcerns: Boolean!) {\n    setReportShareIncludeConcerns(reportId: $reportId, includeConcerns: $includeConcerns) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n',
+): (typeof documents)['\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n',
+): (typeof documents)['\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

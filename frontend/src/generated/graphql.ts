@@ -80,6 +80,12 @@ export type ScheduleType = 'appointment' | 'medication' | 'vaccination';
 
 export type Species = 'cat' | 'dog';
 
+export type UpdateNotificationPreferenceInput = {
+  appointmentReminderEnabled?: boolean | null | undefined;
+  vaccinationDueEnabled?: boolean | null | undefined;
+  weeklyCheckinEnabled?: boolean | null | undefined;
+};
+
 export type UpdatePetInput = {
   birthDate?: string | null | undefined;
   breed?: string | null | undefined;
@@ -289,6 +295,28 @@ export type SendTestPushNotificationMutationVariables = Exact<{ [key: string]: n
 
 export type SendTestPushNotificationMutation = { sendTestPushNotification: boolean };
 
+export type NotificationPreferenceQueryVariables = Exact<{ [key: string]: never }>;
+
+export type NotificationPreferenceQuery = {
+  notificationPreference: {
+    vaccinationDueEnabled: boolean;
+    appointmentReminderEnabled: boolean;
+    weeklyCheckinEnabled: boolean;
+  };
+};
+
+export type UpdateNotificationPreferenceMutationVariables = Exact<{
+  input: UpdateNotificationPreferenceInput;
+}>;
+
+export type UpdateNotificationPreferenceMutation = {
+  updateNotificationPreference: {
+    vaccinationDueEnabled: boolean;
+    appointmentReminderEnabled: boolean;
+    weeklyCheckinEnabled: boolean;
+  };
+};
+
 export type NotificationAuthCheckQueryVariables = Exact<{ [key: string]: never }>;
 
 export type NotificationAuthCheckQuery = { me: { id: string } };
@@ -372,6 +400,47 @@ export type PetEditQuery = {
 export type PetIdsQueryVariables = Exact<{ [key: string]: never }>;
 
 export type PetIdsQuery = { pets: Array<{ id: string }> };
+
+export type StartReportShareMutationVariables = Exact<{
+  reportId: string | number;
+}>;
+
+export type StartReportShareMutation = {
+  startReportShare: { isActive: boolean; includeConcerns: boolean; shareToken: string | null };
+};
+
+export type StopReportShareMutationVariables = Exact<{
+  reportId: string | number;
+}>;
+
+export type StopReportShareMutation = {
+  stopReportShare: { isActive: boolean; includeConcerns: boolean; shareToken: string | null };
+};
+
+export type SetReportShareIncludeConcernsMutationVariables = Exact<{
+  reportId: string | number;
+  includeConcerns: boolean;
+}>;
+
+export type SetReportShareIncludeConcernsMutation = {
+  setReportShareIncludeConcerns: {
+    isActive: boolean;
+    includeConcerns: boolean;
+    shareToken: string | null;
+  };
+};
+
+export type ReportShareSettingsQueryVariables = Exact<{
+  reportId: string | number;
+}>;
+
+export type ReportShareSettingsQuery = {
+  reportShareSettings: { isActive: boolean; includeConcerns: boolean; shareToken: string | null };
+};
+
+export type ShareViewerQueryVariables = Exact<{ [key: string]: never }>;
+
+export type ShareViewerQuery = { me: { name: string | null } };
 
 export type GenerateReportMutationVariables = Exact<{
   petId: string | number;
@@ -1240,6 +1309,83 @@ export const SendTestPushNotificationDocument = {
   SendTestPushNotificationMutation,
   SendTestPushNotificationMutationVariables
 >;
+export const NotificationPreferenceDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'NotificationPreference' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'notificationPreference' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'vaccinationDueEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'appointmentReminderEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'weeklyCheckinEnabled' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<NotificationPreferenceQuery, NotificationPreferenceQueryVariables>;
+export const UpdateNotificationPreferenceDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdateNotificationPreference' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+          type: {
+            kind: 'NonNullType',
+            type: {
+              kind: 'NamedType',
+              name: { kind: 'Name', value: 'UpdateNotificationPreferenceInput' },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'updateNotificationPreference' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'vaccinationDueEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'appointmentReminderEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'weeklyCheckinEnabled' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UpdateNotificationPreferenceMutation,
+  UpdateNotificationPreferenceMutationVariables
+>;
 export const NotificationAuthCheckDocument = {
   kind: 'Document',
   definitions: [
@@ -1562,6 +1708,221 @@ export const PetIdsDocument = {
     },
   ],
 } as unknown as DocumentNode<PetIdsQuery, PetIdsQueryVariables>;
+export const StartReportShareDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'StartReportShare' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'startReportShare' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'includeConcerns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'shareToken' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<StartReportShareMutation, StartReportShareMutationVariables>;
+export const StopReportShareDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'StopReportShare' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'stopReportShare' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'includeConcerns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'shareToken' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<StopReportShareMutation, StopReportShareMutationVariables>;
+export const SetReportShareIncludeConcernsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SetReportShareIncludeConcerns' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeConcerns' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'setReportShareIncludeConcerns' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeConcerns' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeConcerns' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'includeConcerns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'shareToken' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  SetReportShareIncludeConcernsMutation,
+  SetReportShareIncludeConcernsMutationVariables
+>;
+export const ReportShareSettingsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ReportShareSettings' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'reportShareSettings' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'includeConcerns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'shareToken' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ReportShareSettingsQuery, ReportShareSettingsQueryVariables>;
+export const ShareViewerDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ShareViewer' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'me' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'name' } }],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ShareViewerQuery, ShareViewerQueryVariables>;
 export const GenerateReportDocument = {
   kind: 'Document',
   definitions: [
