@@ -52,8 +52,15 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @ApiOperation({ summary: '회원가입 — 계정 생성 후 자동 로그인' })
-  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const user = await this.userService.create(dto.email, dto.password, dto.name);
+  async register(
+    @Body() dto: RegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.userService.create(dto.email, dto.password, dto.name, dto.consents, {
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+    });
     const { accessToken, refreshToken } = this.authService.createTokens({
       id: user.id,
       email: user.email,

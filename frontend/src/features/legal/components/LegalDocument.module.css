@@ -1,0 +1,91 @@
+/*
+ * 법률 문서(이용약관/개인정보처리방침) 콘텐츠 블록 공용 스타일.
+ * /terms, /privacy 페이지와 LegalDocumentSheet 바텀시트가 함께 사용한다.
+ * frontend/src/app/privacy/page.module.css의 콘텐츠 블록 스타일을 그대로 옮겼다 — 새 스타일 아님.
+ */
+
+.intro {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin-bottom: 28px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
+}
+
+.paragraph {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 18px;
+  list-style: disc;
+  margin-bottom: 8px;
+}
+
+.list li {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--font-body);
+}
+
+.table th,
+.table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table tr:last-child th,
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table th {
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+  background: var(--color-primary-light);
+  white-space: nowrap;
+}
+
+.table td:nth-child(2) {
+  white-space: normal;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: underline;
+}

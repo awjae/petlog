@@ -1,6 +1,14 @@
+export interface RegisterConsents {
+  termsOfService: boolean;
+  privacyPolicy: boolean;
+  marketingNotification: boolean;
+}
+
 export interface RegisterPayload {
   email: string;
   password: string;
+  name?: string;
+  consents: RegisterConsents;
 }
 
 export interface LoginPayload {

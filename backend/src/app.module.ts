@@ -20,6 +20,7 @@ import { AiModule } from './ai/ai.module';
 import { ReportModule } from './report/report.module';
 import { HealthModule } from './health/health.module';
 import { NotificationModule } from './notification/notification.module';
+import { ConsentModule } from './consent/consent.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { NotificationModule } from './notification/notification.module';
     AiModule,
     ReportModule,
     NotificationModule,
+    ConsentModule,
   ],
   providers: [DateTimeScalar],
 })

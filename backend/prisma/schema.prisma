@@ -30,6 +30,7 @@ model User {
   notificationPreference NotificationPreference?
   refreshTokens          RefreshToken[]
   passwordResetTokens    PasswordResetToken[]
+  consents               UserConsent[]
 
   @@map("users")
 }
@@ -343,6 +344,30 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+// ─── UserConsent ──────────────────────────────────────────────────────────────
+// Append-only 이력 테이블 — RefreshToken/PasswordResetToken과 동일하게 updatedAt 없이
+// createdAt만 사용한다. 기존 행을 수정하지 않고 상태가 바뀔 때마다(가입 시 최초 동의,
+// 설정 화면의 마케팅 동의 토글 등) 새 행을 추가한다.
+// "현재 동의 상태"는 항상 (userId, consentType)별 가장 최근 행(createdAt DESC LIMIT 1)으로 판단한다.
+//
+// 필수 항목(termsOfService, privacyPolicy)은 agreed=false 행이 존재할 수 없다 —
+// migration.sql의 CHECK 제약(user_consents_required_agreed_check)으로 DB 레벨에서 강제한다.
+model UserConsent {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  consentType   ConsentType @map("consent_type")
+  policyVersion String      @map("policy_version")
+  agreed        Boolean
+  ipAddress     String?     @map("ip_address") @db.Inet
+  userAgent     String?     @map("user_agent")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consentType, createdAt(sort: Desc)])
+  @@map("user_consents")
+}
+
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum Species {
@@ -395,4 +420,10 @@ enum NotificationReferenceType {
   appointment
   vaccination
   medication
+}
+
+enum ConsentType {
+  termsOfService
+  privacyPolicy
+  marketingNotification
 }

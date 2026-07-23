@@ -14,6 +14,8 @@ import {
   LogOut,
   ChevronRight,
   Shield,
+  FileText,
+  Megaphone,
 } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BottomNav } from '@/features/shared/components/BottomNav';
@@ -26,6 +28,7 @@ import { version } from '../../../package.json';
 import styles from './page.module.css';
 import { useSendTestPushNotification } from '@/features/notification/hooks/useSendTestPushNotification';
 import { useNotificationPreference } from '@/features/notification/hooks/useNotificationPreference';
+import { useMarketingConsent } from '@/features/consent/hooks/useMarketingConsent';
 
 const THEMES = [
   { value: 'pastel-sky' as const, label: '파스텔 스카이', preview: '#6baed6' },
@@ -51,6 +54,11 @@ export default function SettingsPage() {
     updating: preferenceUpdating,
     updatePreference,
   } = useNotificationPreference();
+  const {
+    agreed: marketingAgreed,
+    loading: marketingLoading,
+    updateMarketingConsent,
+  } = useMarketingConsent();
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
@@ -62,6 +70,12 @@ export default function SettingsPage() {
   async function handleSendTestPush() {
     const ok = await sendTestPushNotification();
     if (ok) addToast('테스트 알림을 보냈습니다', 'success');
+  }
+
+  function handleToggleMarketing() {
+    updateMarketingConsent(!marketingAgreed, (ok) => {
+      if (!ok) addToast('설정을 변경하지 못했어요', 'error');
+    });
   }
 
   return (
@@ -212,6 +226,60 @@ export default function SettingsPage() {
           {testPushError && <p className={styles.testPushError}>{testPushError}</p>}
         </section>
 
+        {/* ── 약관 및 동의 ── */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>약관 및 동의</h2>
+          <div className={styles.listCard}>
+            <Link href="/terms" className={styles.listItem}>
+              <FileText
+                size={18}
+                strokeWidth={1.75}
+                className={styles.listIcon}
+                aria-hidden="true"
+              />
+              <span className={styles.listLabel}>이용약관</span>
+              <ChevronRight
+                size={16}
+                strokeWidth={2}
+                className={styles.chevron}
+                aria-hidden="true"
+              />
+            </Link>
+            <div className={styles.divider} />
+            <Link href="/privacy" className={styles.listItem}>
+              <Shield size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
+              <span className={styles.listLabel}>개인정보처리방침</span>
+              <ChevronRight
+                size={16}
+                strokeWidth={2}
+                className={styles.chevron}
+                aria-hidden="true"
+              />
+            </Link>
+            <div className={styles.divider} />
+            <div className={styles.listItem}>
+              <Megaphone
+                size={18}
+                strokeWidth={1.75}
+                className={styles.listIcon}
+                aria-hidden="true"
+              />
+              <span className={styles.listLabel}>마케팅 정보 수신 동의</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={marketingAgreed}
+                aria-label="마케팅 정보 수신 동의"
+                className={`${styles.switch} ${marketingAgreed ? styles.switchOn : ''}`}
+                disabled={marketingLoading}
+                onClick={handleToggleMarketing}
+              >
+                <span className={styles.switchKnob} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* ── 계정 ── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>계정</h2>
@@ -231,17 +299,6 @@ export default function SettingsPage() {
                 aria-hidden="true"
               />
             </button>
-            <div className={styles.divider} />
-            <Link href="/privacy" className={styles.listItem}>
-              <Shield size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
-              <span className={styles.listLabel}>개인정보처리방침</span>
-              <ChevronRight
-                size={16}
-                strokeWidth={2}
-                className={styles.chevron}
-                aria-hidden="true"
-              />
-            </Link>
             <div className={styles.divider} />
             <button className={styles.listItemDanger} onClick={handleLogout}>
               <LogOut size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />

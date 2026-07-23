@@ -37,6 +37,10 @@ enum CalendarEventType {
   vaccination
 }
 
+type ConsentStatus {
+  marketingNotificationAgreed: Boolean!
+}
+
 input CreateAppointmentInput {
   hospitalName: String!
   memo: String
@@ -178,6 +182,7 @@ type Mutation {
   stopReportShare(reportId: ID!): ReportShareSettings!
   updateAppointment(id: ID!, input: UpdateAppointmentInput!): Appointment!
   updateHealthRecord(id: ID!, input: UpdateHealthRecordInput!): HealthRecord!
+  updateMarketingConsent(agreed: Boolean!): ConsentStatus!
   updateMedicalEvent(id: ID!, input: UpdateMedicalEventInput!): MedicalEvent!
   updateMedication(id: ID!, input: UpdateMedicationInput!): Medication!
   updateNotificationPreference(input: UpdateNotificationPreferenceInput!): NotificationPreference!
@@ -218,6 +223,7 @@ type ProcessingReportInfo {
 type Query {
   activeMedications(petId: ID!): [Medication!]!
   appointments(petId: ID!): [Appointment!]!
+  consentStatus: ConsentStatus!
   healthRecords(petId: ID!): [HealthRecord!]!
   me: User!
   medicalEvents(petId: ID!): [MedicalEvent!]!

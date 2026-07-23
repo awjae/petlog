@@ -5,23 +5,38 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { useRegister } from '@/features/auth/hooks/useRegister';
+import { AgreementSection } from '@/features/auth/components/AgreementSection';
+import type { RegisterConsents } from '@/features/auth/types/auth.types';
 import styles from './page.module.css';
+
+const INITIAL_CONSENTS: RegisterConsents = {
+  termsOfService: false,
+  privacyPolicy: false,
+  marketingNotification: false,
+};
 
 export function RegisterPageClient() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [consents, setConsents] = useState<RegisterConsents>(INITIAL_CONSENTS);
   const { loading, error, register } = useRegister();
 
   function isValid() {
-    return email.includes('@') && password.length >= 8 && password === confirm;
+    return (
+      email.includes('@') &&
+      password.length >= 8 &&
+      password === confirm &&
+      consents.termsOfService &&
+      consents.privacyPolicy
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid()) return;
-    const ok = await register(email, password);
+    const ok = await register(email, password, consents);
     // /home 진입 시 OnboardingOverlay가 hasCompletedOnboarding() 여부를 스스로 판단해
     // 노출 여부를 결정하므로, 여기서는 항상 /home으로 보내면 된다.
     if (ok !== null) router.push('/home');
@@ -95,6 +110,8 @@ export function RegisterPageClient() {
               <p className={styles.fieldError}>비밀번호가 일치하지 않아요</p>
             )}
           </div>
+
+          <AgreementSection values={consents} onChange={setConsents} />
 
           {error && (
             <p className={styles.errorMsg} role="alert">
