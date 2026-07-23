@@ -17,3 +17,29 @@ export function formatCreatedAt(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
+
+export interface FailureNotice {
+  heading: string;
+  desc: string;
+}
+
+// failedReason은 서버 예외 메시지 원문을 담을 수 있어 그대로 노출하지 않고 카테고리화한다.
+export function categorizeFailureReason(reason: string | null | undefined): FailureNotice {
+  const normalized = reason?.toLowerCase() ?? '';
+  const isTimeout =
+    normalized.includes('시간') ||
+    normalized.includes('timed out') ||
+    normalized.includes('timeout');
+
+  if (isTimeout) {
+    return {
+      heading: '리포트 생성이 오래 걸렸어요',
+      desc: '처리 시간이 초과됐어요. 다시 시도해주세요',
+    };
+  }
+
+  return {
+    heading: '리포트 생성에 실패했어요',
+    desc: '일시적인 오류가 발생했어요. 다시 시도해주세요',
+  };
+}

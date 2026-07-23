@@ -6,10 +6,11 @@ interface UseReportReturn {
   report: Report | null;
   loading: boolean;
   error: unknown;
+  refetch: () => void;
 }
 
 export function useReport(id: string): UseReportReturn {
-  const { data, loading, error } = useQuery(REPORT_QUERY, {
+  const { data, loading, error, refetch } = useQuery(REPORT_QUERY, {
     variables: { id },
     skip: !id,
   });
@@ -18,5 +19,6 @@ export function useReport(id: string): UseReportReturn {
     report: data?.report ?? null,
     loading,
     error,
+    refetch: () => void refetch(),
   };
 }

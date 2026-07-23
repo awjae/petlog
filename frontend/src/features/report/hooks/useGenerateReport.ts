@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { GENERATE_REPORT_MUTATION } from '../api/report.mutations';
+import { extractGenerateReportErrorMessage } from '../api/report.errors';
 
 interface UseGenerateReportReturn {
   generateReport: (petId: string, periodStart: string, periodEnd: string) => Promise<string | null>;
@@ -13,9 +14,7 @@ interface UseGenerateReportReturn {
 export function useGenerateReport(): UseGenerateReportReturn {
   const [error, setError] = useState('');
 
-  const [mutate, { loading }] = useMutation(GENERATE_REPORT_MUTATION, {
-    onError: () => setError('리포트 생성에 실패했어요. 다시 시도해주세요.'),
-  });
+  const [mutate, { loading }] = useMutation(GENERATE_REPORT_MUTATION);
 
   async function generateReport(
     petId: string,
@@ -23,8 +22,13 @@ export function useGenerateReport(): UseGenerateReportReturn {
     periodEnd: string,
   ): Promise<string | null> {
     setError('');
-    const result = await mutate({ variables: { petId, periodStart, periodEnd } }).catch(() => null);
-    return result?.data?.generateReport.reportId ?? null;
+    try {
+      const result = await mutate({ variables: { petId, periodStart, periodEnd } });
+      return result.data?.generateReport.reportId ?? null;
+    } catch (err) {
+      setError(extractGenerateReportErrorMessage(err));
+      return null;
+    }
   }
 
   return { generateReport, loading, error };

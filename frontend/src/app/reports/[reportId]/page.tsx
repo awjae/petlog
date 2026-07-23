@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Share2 } from 'lucide-react';
 import { useQuery } from '@apollo/client/react';
 import { useReport } from '@/features/report/hooks/useReport';
+import { useReportPolling } from '@/features/report/hooks/useReportPolling';
+import { useGenerateReport } from '@/features/report/hooks/useGenerateReport';
 import {
   ReportDetailSection,
   isSectionVisible,
@@ -14,8 +16,11 @@ import { ReportCover } from '@/features/report/components/ReportCover';
 import { ReportHeadline } from '@/features/report/components/ReportHeadline';
 import { ReportStatusNotice } from '@/features/report/components/ReportStatusNotice';
 import { ShareReportSheet } from '@/features/report/components/ShareReportSheet';
-import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
-import { formatPeriodRange } from '@/features/report/utils/reportFormat';
+import {
+  PETS_FOR_REPORT_QUERY,
+  REPORT_POLL_STATUS_QUERY,
+} from '@/features/report/api/report.queries';
+import { categorizeFailureReason, formatPeriodRange } from '@/features/report/utils/reportFormat';
 import type { ReportSectionType } from '@/features/report/components/ReportDetailSection';
 import styles from './page.module.css';
 
@@ -26,7 +31,27 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
   const { reportId } = use(params);
   const [isShareOpen, setIsShareOpen] = useState(false);
 
-  const { report, loading, error } = useReport(reportId);
+  const { report, loading, error, refetch } = useReport(reportId);
+  const isInFlight = report?.status === 'pending' || report?.status === 'processing';
+
+  useReportPolling(isInFlight ? reportId : null, () => refetch());
+
+  const { data: pollData } = useQuery(REPORT_POLL_STATUS_QUERY, {
+    variables: { id: reportId },
+    skip: report?.status !== 'failed',
+    fetchPolicy: 'cache-first',
+  });
+  const failureNotice = categorizeFailureReason(pollData?.reportPollStatus.failedReason);
+
+  const { generateReport, loading: retrying, error: retryError } = useGenerateReport();
+
+  async function handleRetry() {
+    if (!report?.petId) return;
+    const newReportId = await generateReport(report.petId, report.periodStart, report.periodEnd);
+    if (newReportId) {
+      router.replace(`/reports/${newReportId}`);
+    }
+  }
 
   const { data: petsData } = useQuery(PETS_FOR_REPORT_QUERY, {
     fetchPolicy: 'cache-first',
@@ -95,7 +120,14 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
     return (
       <main className={styles.main} aria-label="리포트 상세">
         {renderHeader(subtitle)}
-        <ReportStatusNotice variant="failed" onBack={() => router.back()} />
+        <ReportStatusNotice
+          variant="failed"
+          heading={failureNotice.heading}
+          desc={retryError || failureNotice.desc}
+          onBack={() => router.back()}
+          onRetry={handleRetry}
+          retrying={retrying}
+        />
       </main>
     );
   }

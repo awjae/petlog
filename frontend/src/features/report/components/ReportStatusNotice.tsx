@@ -1,13 +1,17 @@
 'use client';
 
-import { Clock, AlertCircle } from 'lucide-react';
+import { Clock, AlertCircle, LoaderCircle } from 'lucide-react';
 import styles from './ReportStatusNotice.module.css';
 
 type ReportStatusNoticeVariant = 'processing' | 'failed';
 
 interface ReportStatusNoticeProps {
   variant: ReportStatusNoticeVariant;
+  heading?: string;
+  desc?: string;
   onBack: () => void;
+  onRetry?: () => void;
+  retrying?: boolean;
 }
 
 const NOTICE_CONTENT: Record<ReportStatusNoticeVariant, { heading: string; desc: string }> = {
@@ -21,8 +25,15 @@ const NOTICE_CONTENT: Record<ReportStatusNoticeVariant, { heading: string; desc:
   },
 };
 
-export function ReportStatusNotice({ variant, onBack }: ReportStatusNoticeProps) {
-  const { heading, desc } = NOTICE_CONTENT[variant];
+export function ReportStatusNotice({
+  variant,
+  heading,
+  desc,
+  onBack,
+  onRetry,
+  retrying = false,
+}: ReportStatusNoticeProps) {
+  const fallback = NOTICE_CONTENT[variant];
 
   return (
     <div className={styles.notice}>
@@ -36,11 +47,31 @@ export function ReportStatusNotice({ variant, onBack }: ReportStatusNoticeProps)
           aria-hidden="true"
         />
       )}
-      <h2 className={styles.heading}>{heading}</h2>
-      <p className={styles.desc}>{desc}</p>
-      <button type="button" className={styles.retryBtn} onClick={onBack}>
-        돌아가기
-      </button>
+      <h2 className={styles.heading}>{heading ?? fallback.heading}</h2>
+      <p className={styles.desc}>{desc ?? fallback.desc}</p>
+      <div className={styles.actions}>
+        {variant === 'failed' && onRetry && (
+          <button
+            type="button"
+            className={styles.retryBtn}
+            onClick={onRetry}
+            disabled={retrying}
+            aria-busy={retrying}
+          >
+            {retrying ? (
+              <>
+                <LoaderCircle size={18} className={styles.spinner} aria-hidden="true" />
+                다시 만드는 중...
+              </>
+            ) : (
+              '다시 만들기'
+            )}
+          </button>
+        )}
+        <button type="button" className={styles.backBtn} onClick={onBack} disabled={retrying}>
+          돌아가기
+        </button>
+      </div>
     </div>
   );
 }

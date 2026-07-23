@@ -31,7 +31,36 @@
   line-height: 1.6;
 }
 
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .retryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-primary);
+  font: var(--font-body);
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.retryBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.backBtn {
   height: 44px;
   padding: 0 24px;
   border-radius: var(--radius-full);
@@ -41,4 +70,19 @@
   font-weight: 600;
   color: var(--color-text-primary);
   cursor: pointer;
+}
+
+.backBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.spinner {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
