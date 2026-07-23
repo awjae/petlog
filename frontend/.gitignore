@@ -1,0 +1,4 @@
+# next dev/build가 실행될 때마다 참조 경로가 바뀌며 자동 재생성된다
+# (.next/dev/types/routes.d.ts ↔ .next/types/routes.d.ts). Next.js가 전적으로
+# 관리하는 파일이라 버전관리 대상이 아니다.
+next-env.d.ts
