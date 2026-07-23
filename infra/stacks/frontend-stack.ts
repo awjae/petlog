@@ -73,6 +73,18 @@ export class FrontendStack extends TerraformStack {
       description: '프론트엔드 ECS Fargate 서비스를 배포할 AWS 리전 (기본값: 서울)',
     });
 
+    // Next.js 서버(SSR)/edge 런타임이 컨테이너 시작 시점에 읽는 값 (sentry.server.config.ts,
+    // sentry.edge.config.ts). 클라이언트 번들에 박히는 NEXT_PUBLIC_SENTRY_DSN과 달리 이건
+    // 빌드 시점이 아니라 런타임 환경변수라 여기서 주입한다 — backend-stack.ts의 backend_sentry_dsn과
+    // 동일한 계약(비어있으면 Sentry 미초기화)이지만, 프론트/백엔드가 서로 다른 Sentry DSN을
+    // 쓰므로(별도 프로젝트) 변수 이름을 다르게 둔다(이유는 backend-stack.ts 주석 참고).
+    const sentryDsn = new TerraformVariable(this, 'frontend_sentry_dsn', {
+      type: 'string',
+      default: '',
+      description:
+        'Next.js 서버/edge용 Sentry DSN. 비어있으면 Sentry를 초기화하지 않는다. TF_VAR_frontend_sentry_dsn으로 주입.',
+    });
+
     new AwsProvider(this, 'aws', {
       region: awsRegion.stringValue,
       defaultTags: [
@@ -136,6 +148,7 @@ export class FrontendStack extends TerraformStack {
             // next.config.ts가 런타임에 읽어 next/image remotePatterns에 반영한다
             // (backend-stack.ts가 백엔드 컨테이너에 주입하는 값과 동일한 CloudFront 도메인).
             { name: 'AWS_CLOUDFRONT_DOMAIN', value: storageStack.distribution.domainName },
+            { name: 'SENTRY_DSN', value: sentryDsn.stringValue },
           ],
           logConfiguration: {
             logDriver: 'awslogs',

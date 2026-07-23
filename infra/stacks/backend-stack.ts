@@ -198,6 +198,19 @@ export class BackendStack extends TerraformStack {
         'CloudFront에 연결할 커스텀 도메인 (ACM 인증서와 동일해야 함). TF_VAR_domain_name으로 주입.',
     });
 
+    // 기본값을 빈 문자열로 두는 이유는 mail_provider와 동일하다 — 배포 자체는 항상 성공해야
+    // 하고, Sentry 초기화는 TF_VAR_backend_sentry_dsn을 명시적으로 줄 때만 켜진다
+    // (backend/src/instrument.ts의 `if (dsn)` 가드와 동일한 계약, backend/.env.example의 로컬
+    // 기본값과도 동일). backend/frontend가 서로 다른 Sentry DSN을 쓰므로(별도 프로젝트),
+    // frontend-stack.ts의 sentry_dsn 변수와 이름을 다르게 둔다 — 둘 다 TF_VAR_sentry_dsn을
+    // 쓰면 deploy.sh처럼 같은 셸 세션에서 두 스택을 연달아 배포할 때 값이 서로 새어 들어간다.
+    const sentryDsn = new TerraformVariable(this, 'backend_sentry_dsn', {
+      type: 'string',
+      default: '',
+      description:
+        '백엔드용 Sentry DSN. 비어있으면 Sentry를 초기화하지 않는다. TF_VAR_backend_sentry_dsn으로 주입.',
+    });
+
     // --- DATABASE_URL 조립 (RDS 완전 이전, AWS 관리형 마스터 비밀번호 사용) ---
     // database-stack이 manageMasterUserPassword로 만든 Secrets Manager 시크릿을 읽어서
     // username/password를 꺼낸다. 이 데이터 소스는 `cdktf deploy`를 실행하는 주체(로컬
@@ -555,6 +568,7 @@ export class BackendStack extends TerraformStack {
             { name: 'FRONTEND_URL', value: cloudfrontUrl },
             { name: 'MAIL_PROVIDER', value: mailProvider.stringValue },
             { name: 'MAIL_FROM_ADDRESS', value: mailFromAddress.stringValue },
+            { name: 'SENTRY_DSN', value: sentryDsn.stringValue },
           ],
           secrets: [
             { name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn },

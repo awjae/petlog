@@ -242,6 +242,12 @@ export TF_VAR_refresh_token_secret="<openssl rand -hex 32 등으로 생성>"
 npm run deploy:all
 ```
 
+`TF_VAR_backend_sentry_dsn`/`TF_VAR_frontend_sentry_dsn`은 `mail_provider`와 동일하게 기본값이
+`''`라 안 줘도 배포는 성공한다(그 경우 Sentry가 비활성 상태로 배포됨). `jwt_secret`처럼 매번
+export가 필요한 값이 아니라 `mail_provider`/`domain_name`과 같은 취급이라, `infra/.env`(gitignore)에
+한 번 채워두면 `npm run deploy:all`이 `dotenv -e .env`로 자동으로 읽는다 — backend/frontend가
+서로 다른 Sentry 프로젝트를 쓰므로 값도 서로 다르게 채운다.
+
 **RDS 마스터 비밀번호는 사람이 정하지 않는다.** `database-stack`이 `manageMasterUserPassword:
 true`로 RDS를 만들면 AWS가 비밀번호를 직접 생성해 Secrets Manager에 저장한다(로테이션도 AWS가
 관리). `backend-stack`은 이 시크릿을 `DataAwsSecretsmanagerSecretVersion`으로 읽어서
@@ -298,6 +304,9 @@ ECS Fargate + ALB로 전환하면서 이 문제 자체가 사라졌다. **backen
 | `DATABASE_URL` | `backend-stack`이 `database-stack`의 RDS 엔드포인트(cross-stack reference) + AWS 관리형 마스터 비밀번호(Secrets Manager)를 조합해 만든 SSM Parameter(SecureString) ARN | 시크릿 |
 | `JWT_SECRET` / `REFRESH_TOKEN_SECRET` | `backend-stack`이 만든 SSM Parameter(SecureString) ARN | 시크릿 |
 | `NEXT_PUBLIC_API_URL` (빌드 인자, 런타임 아님) | `backend-stack`의 `cloudfront_url` (frontend-stack이 `expected_next_public_api_url`로 다시 출력) | 일반 (프론트엔드 Docker 빌드 시점) |
+| `SENTRY_DSN` (backend) | `backend-stack`의 `TerraformVariable`(기본값 `''`, `TF_VAR_backend_sentry_dsn`으로 주입). 비어있으면 `backend/src/instrument.ts`가 Sentry를 초기화하지 않는다(로컬과 동일 계약) | 일반 |
+| `SENTRY_DSN` (frontend, 서버/edge용) | `frontend-stack`의 `TerraformVariable`(기본값 `''`, `TF_VAR_frontend_sentry_dsn`으로 주입). 비어있으면 `sentry.server.config.ts`/`sentry.edge.config.ts`가 Sentry를 초기화하지 않는다 | 일반 |
+| `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` (frontend, 빌드 인자) | `frontend/.env.deploy`(gitignore) — `deploy:build`가 `dotenv`로 읽어 `docker build --build-arg`로 전달. `next build` 시점에 클라이언트 번들에 인라인되므로 런타임 ECS 환경변수로는 넣을 수 없다 | 일반 (프론트엔드 Docker 빌드 시점) — backend/frontend가 서로 다른 Sentry DSN(별도 프로젝트)을 쓰므로 백엔드용과 이름을 분리했다 |
 
 `FRONTEND_URL`과 `NEXT_PUBLIC_API_URL`이 같은 값(공유 ALB 앞단 CloudFront HTTPS URL)을 가리키는
 것은 의도된 설계다 — "ALB 공유로 순환 의존이 사라진 이유" 절 참고. ALB 자체의 원시 URL

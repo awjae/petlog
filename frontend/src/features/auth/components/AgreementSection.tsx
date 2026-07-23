@@ -94,7 +94,7 @@ export function AgreementSection({ values, onChange }: AgreementSectionProps) {
                 <span className={styles.itemLabel}>
                   <span className={styles.badgeOptional}>[선택]</span> 마케팅 정보 수신 동의
                 </span>
-                <span className={styles.caption}>신제품 소식과 이벤트 정보를 보내드려요</span>
+                <span className={styles.caption}>소식과 이벤트 정보를 보내드려요</span>
               </span>
             </label>
           </div>

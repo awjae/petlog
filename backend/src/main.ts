@@ -1,3 +1,6 @@
+// Sentry는 다른 모듈이 평가되기 전에 초기화되어야 하므로 반드시 첫 줄에서 import한다.
+import './instrument';
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';

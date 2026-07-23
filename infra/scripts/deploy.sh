@@ -59,7 +59,16 @@ echo "    CloudFront URL (backend + frontend 공유): ${CLOUDFRONT_URL}"
 
 if ! image_exists "$FRONTEND_REPO"; then
   echo "==> frontend 이미지가 ECR에 없음 (최초 배포) — 이미지 빌드 & push (NEXT_PUBLIC_API_URL=${CLOUDFRONT_URL})"
-  docker build -f "$REPO_ROOT/frontend/Dockerfile" --build-arg NEXT_PUBLIC_API_URL="$CLOUDFRONT_URL" -t petlog-frontend "$REPO_ROOT"
+  # NEXT_PUBLIC_SENTRY_DSN 등은 최초 배포 시점에 셸에 없으면 빈 값으로 빌드된다(Sentry
+  # 비활성) — frontend/package.json의 deploy:build(npm run deploy --workspace=frontend)가
+  # frontend/.env.deploy에서 값을 읽어 다음 배포 때 정상 반영한다.
+  docker build -f "$REPO_ROOT/frontend/Dockerfile" \
+    --build-arg NEXT_PUBLIC_API_URL="$CLOUDFRONT_URL" \
+    --build-arg NEXT_PUBLIC_SENTRY_DSN="${NEXT_PUBLIC_SENTRY_DSN:-}" \
+    --build-arg SENTRY_ORG="${SENTRY_ORG:-}" \
+    --build-arg SENTRY_PROJECT="${SENTRY_PROJECT:-}" \
+    --build-arg SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}" \
+    -t petlog-frontend "$REPO_ROOT"
   docker tag petlog-frontend:latest "${REGISTRY_HOST}/${FRONTEND_REPO}:latest"
   docker push "${REGISTRY_HOST}/${FRONTEND_REPO}:latest"
 else

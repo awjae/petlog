@@ -7,7 +7,7 @@ import { PrismaClient, HealthRecordType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_PET_ID = '8b120830-18de-4ef7-ab54-d1bb33ce319b';
+const DEFAULT_PET_ID = 'c26bdf2b-f037-45d3-a704-b92865b7fe16';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type RecordInput = {

@@ -1,6 +1,6 @@
 {
   "name": "@petlog/frontend",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16,7 +16,7 @@
     "test:integration:ui": "playwright test --project=integration --ui",
     "deploy:check-version": "dotenv -e .env.deploy -e .env.local -- bash ../infra/scripts/check-version-not-deployed.sh petlog-frontend",
     "deploy:ecr-login": "dotenv -e .env.deploy -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; aws ecr get-login-password --region \"$REGION\" | docker login --username AWS --password-stdin \"$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$REGION.amazonaws.com\"'",
-    "deploy:build": "docker build -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=\"$NEXT_PUBLIC_API_URL\" -t petlog-frontend ..",
+    "deploy:build": "dotenv -e .env.deploy -e .env.local -- docker build -f Dockerfile --build-arg NEXT_PUBLIC_API_URL=\"$NEXT_PUBLIC_API_URL\" --build-arg NEXT_PUBLIC_SENTRY_DSN --build-arg SENTRY_ORG --build-arg SENTRY_PROJECT --build-arg SENTRY_AUTH_TOKEN -t petlog-frontend ..",
     "deploy:ecr-push": "dotenv -e .env.deploy -e .env.local -- bash ../infra/scripts/ecr-push.sh petlog-frontend petlog-frontend",
     "deploy:ecs-force-redeploy": "dotenv -e .env.deploy -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; aws ecs update-service --region \"$REGION\" --cluster \"petlog-cluster-$ENV\" --service \"petlog-frontend-$ENV\" --force-new-deployment >/dev/null'",
     "deploy:image": "npm run deploy:check-version && npm run deploy:ecr-login && npm run deploy:build && npm run deploy:ecr-push && npm run deploy:ecs-force-redeploy",

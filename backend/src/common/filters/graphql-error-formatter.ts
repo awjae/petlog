@@ -1,5 +1,6 @@
 import { HttpException, Logger } from '@nestjs/common';
 import { GraphQLError, type GraphQLFormattedError } from 'graphql';
+import * as Sentry from '@sentry/node';
 
 const logger = new Logger('GraphQLExceptionFilter');
 
@@ -18,6 +19,7 @@ export function formatGraphQLError(
   // 남긴다" 기준과 동일하게 안전한 쪽(로그)으로 처리한다.
   if (!(error instanceof GraphQLError)) {
     logger.error(`Unhandled GraphQL error at ${path} (non-GraphQLError value)`, String(error));
+    Sentry.captureException(error);
     return formattedError;
   }
 
@@ -34,6 +36,7 @@ export function formatGraphQLError(
     `Unhandled GraphQL error at ${path}`,
     originalError instanceof Error ? originalError.stack : String(originalError),
   );
+  Sentry.captureException(originalError);
 
   return formattedError;
 }
