@@ -29,7 +29,11 @@ test.describe('인증 흐름 @e2e', () => {
     // page 컨텍스트에 섞여 들어가면 "로그인 버튼을 눌러서 쿠키가 생겼다"는 인과관계를
     // 더 이상 확신할 수 없기 때문이다.
     const setupRes = await request.post('/api/auth/register', {
-      data: { email, password: TEST_PASSWORD },
+      data: {
+        email,
+        password: TEST_PASSWORD,
+        consents: { termsOfService: true, privacyPolicy: true, marketingNotification: false },
+      },
     });
     expect(setupRes.ok()).toBeTruthy();
 
@@ -86,6 +90,9 @@ test.describe('인증 흐름 @e2e', () => {
     await page.getByLabel('이메일').fill(email);
     await page.getByLabel('비밀번호', { exact: true }).fill(TEST_PASSWORD);
     await page.getByLabel('비밀번호 확인').fill(TEST_PASSWORD);
+    // 전체 동의를 체크해 필수 동의(이용약관/개인정보) 조건을 채운다 — 미체크 상태면
+    // 가입 버튼이 계속 비활성 상태로 남는다(AgreementSection.tsx).
+    await page.getByLabel('전체 동의').check();
     await page.getByRole('button', { name: '회원가입' }).click();
 
     // RegisterPageClient는 성공 시 항상 /home으로 보낸다(온보딩 노출 여부는
@@ -116,7 +123,11 @@ test.describe('인증 흐름 @e2e', () => {
     // 그대로 반영된다(page와 context.request는 쿠키 저장소를 공유한다) — 로그아웃
     // 자체가 검증 대상인 시나리오라 로그인 폼을 다시 거칠 필요가 없어 이 방식을 쓴다.
     const setupRes = await context.request.post('/api/auth/register', {
-      data: { email, password: TEST_PASSWORD },
+      data: {
+        email,
+        password: TEST_PASSWORD,
+        consents: { termsOfService: true, privacyPolicy: true, marketingNotification: false },
+      },
     });
     expect(setupRes.ok()).toBeTruthy();
 

@@ -25,7 +25,11 @@ export default async function globalSetup(): Promise<void> {
     // register는 성공 시 auth.controller.ts가 즉시 access/refresh 쿠키를 심어준다
     // (회원가입 = 자동 로그인)이므로 별도로 /auth/login을 호출할 필요가 없다.
     const res = await context.post('/api/auth/register', {
-      data: { email, password: SEED_PASSWORD },
+      data: {
+        email,
+        password: SEED_PASSWORD,
+        consents: { termsOfService: true, privacyPolicy: true, marketingNotification: false },
+      },
     });
 
     if (!res.ok()) {
