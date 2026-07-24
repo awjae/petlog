@@ -3,11 +3,13 @@ import {
   GoneException,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'crypto';
+import * as Sentry from '@sentry/node';
 import {
   buildResetPasswordEmailHtml,
   MAIL_SENDER,
@@ -34,6 +36,8 @@ const DELETION_GRACE_PERIOD_DAYS = 30;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
@@ -146,7 +150,19 @@ export class AuthService {
 
     const resetUrl = `${this.config.getOrThrow('FRONTEND_URL')}/reset-password?token=${rawToken}`;
     const html = buildResetPasswordEmailHtml({ resetUrl });
-    await this.mailSender.send(user.email, RESET_PASSWORD_EMAIL_SUBJECT, html);
+
+    // 메일 발송 실패(SES 샌드박스 미검증 수신자 등)가 그대로 전파되면 계정이 존재하지 않는
+    // 경우(200)와 상태 코드가 달라져 컨트롤러의 enumeration 방지 계약이 깨진다. 발송 실패는
+    // 로깅(Sentry 포함)만 하고 응답은 항상 동일하게 유지한다.
+    try {
+      await this.mailSender.send(user.email, RESET_PASSWORD_EMAIL_SUBJECT, html);
+    } catch (error) {
+      this.logger.error(
+        `비밀번호 재설정 메일 발송 실패 (userId=${user.id})`,
+        error instanceof Error ? error.stack : String(error),
+      );
+      Sentry.captureException(error);
+    }
   }
 
   // 토큰 검증(GET) — consumedAt을 건드리지 않고 유효성만 확인한다.

@@ -189,14 +189,24 @@ export class BackendStack extends TerraformStack {
       description: "메일 발송 Provider. 'ses'로 주입해야 실제 발송된다 (TF_VAR_mail_provider).",
     });
 
-    // SES는 샌드박스 모드에서 발신 주소를 콘솔에서 사전 검증(Verified Identity)해야 하므로,
-    // 이 값은 CDKTF가 대신 검증해줄 수 없다 — 여기서는 "그 검증된 주소로만 보낼 수 있다"는
-    // IAM 권한 범위를 좁히는 데 사용한다 (아래 SES IAM policy 참고).
+    // SES 발신 도메인. 도메인 단위로 Verified Identity를 등록하면(콘솔에서 DNS 검증, CDKTF가
+    // 대신할 수 없음) 이 도메인의 모든 발신 주소가 개별 검증 없이 허용된다 — 아래 mailFromAddress는
+    // 이 도메인에 속하는 주소이기만 하면 되고, 그 자체가 별도 identity일 필요는 없다.
+    const mailFromDomain = new TerraformVariable(this, 'mail_from_domain', {
+      type: 'string',
+      default: '',
+      description:
+        'SES에 도메인 단위로 Verified Identity를 등록한 발신 도메인(예: petlog.quest). ' +
+        'TF_VAR_mail_from_domain으로 주입.',
+    });
+
+    // 실제 발신 헤더(Source)에 쓰이는 주소. mailFromDomain이 검증된 도메인이면 이 주소는
+    // 그 도메인에 속하기만 하면 되므로 별도 IAM 리소스 범위 지정에는 쓰이지 않는다.
     const mailFromAddress = new TerraformVariable(this, 'mail_from_address', {
       type: 'string',
       default: '',
       description:
-        'SES에 Verified Identity로 등록한 발신 이메일 주소. TF_VAR_mail_from_address로 주입.',
+        'ECS 컨테이너의 MAIL_FROM_ADDRESS로 주입되는 발신 이메일 주소. TF_VAR_mail_from_address로 주입.',
     });
 
     // CloudFront에 붙일 커스텀 도메인. ACM 인증서 발급 시점의 DNS 검증(레코드 등록)은
@@ -529,12 +539,12 @@ export class BackendStack extends TerraformStack {
       policy: s3AccessPolicyDocument.json,
     });
 
-    // SES Identity: 콘솔에서 수동으로 Verified Identity를 등록한 것을 그대로 가져온다
-    // (`cdktf import`). 이메일 소유권 확인(인증 메일의 링크 클릭)은 CDKTF가 대신할 수
-    // 없으므로 이미 완료된 상태를 반영만 한다 — configurationSetName은 콘솔에서 이미
+    // SES Identity(도메인 단위): 콘솔에서 수동으로 DNS 검증을 완료한 도메인 Identity를
+    // 그대로 가져온다 (`cdktf import`). 도메인 소유권 확인(DNS 레코드 추가)은 CDKTF가 대신할
+    // 수 없으므로 이미 완료된 상태를 반영만 한다 — configurationSetName은 콘솔에서 이미
     // 붙어있던 값과 다르면 다음 apply에서 되돌려버리므로 실제 값을 그대로 맞춘다.
-    const mailIdentity = new Sesv2EmailIdentity(this, 'mail-from-identity', {
-      emailIdentity: mailFromAddress.stringValue,
+    const mailIdentity = new Sesv2EmailIdentity(this, 'mail-domain-identity', {
+      emailIdentity: mailFromDomain.stringValue,
       configurationSetName: 'my-first-configuration-set',
     });
 
