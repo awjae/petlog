@@ -156,6 +156,18 @@ export class BackendStack extends TerraformStack {
       description: 'Refresh Token 서명 시크릿. TF_VAR_refresh_token_secret으로 주입.',
     });
 
+    // 빈 값이면 backend/src/ai/ai.module.ts의 HEALTH_REPORT_GENERATOR 팩토리가 자동으로
+    // Mock generator로 폴백한다(로컬 .env와 동일 계약) — 배포 자체가 이 값 없이도 항상
+    // 성공해야 하므로 default: ''를 유지한다. 실제 AI 리포트를 내보내려면 배포 전 반드시
+    // TF_VAR_openai_api_key를 주입해야 한다.
+    const openaiApiKey = new TerraformVariable(this, 'openai_api_key', {
+      type: 'string',
+      sensitive: true,
+      default: '',
+      description:
+        'OpenAI API 키. 비어있으면 HEALTH_REPORT_GENERATOR가 Mock으로 폴백한다. TF_VAR_openai_api_key로 주입.',
+    });
+
     const jwtExpiresIn = new TerraformVariable(this, 'jwt_expires_in', {
       type: 'string',
       default: '15m',
@@ -251,6 +263,12 @@ export class BackendStack extends TerraformStack {
       name: `/petlog/${environment}/backend/refresh-token-secret`,
       type: 'SecureString',
       value: refreshTokenSecret.stringValue,
+    });
+
+    const openaiApiKeyParam = new SsmParameter(this, 'openai-api-key-param', {
+      name: `/petlog/${environment}/backend/openai-api-key`,
+      type: 'SecureString',
+      value: openaiApiKey.stringValue,
     });
 
     // --- ALB (backend/frontend 공유) ---
@@ -467,7 +485,12 @@ export class BackendStack extends TerraformStack {
             sid: 'AllowReadBackendSecrets',
             effect: 'Allow',
             actions: ['ssm:GetParameters'],
-            resources: [databaseUrlParam.arn, jwtSecretParam.arn, refreshTokenSecretParam.arn],
+            resources: [
+              databaseUrlParam.arn,
+              jwtSecretParam.arn,
+              refreshTokenSecretParam.arn,
+              openaiApiKeyParam.arn,
+            ],
           },
           {
             sid: 'AllowDecryptBackendSecrets',
@@ -574,6 +597,7 @@ export class BackendStack extends TerraformStack {
             { name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn },
             { name: 'JWT_SECRET', valueFrom: jwtSecretParam.arn },
             { name: 'REFRESH_TOKEN_SECRET', valueFrom: refreshTokenSecretParam.arn },
+            { name: 'OPENAI_API_KEY', valueFrom: openaiApiKeyParam.arn },
           ],
           logConfiguration: {
             logDriver: 'awslogs',

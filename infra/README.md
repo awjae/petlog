@@ -231,22 +231,31 @@ CloudFront URL이 바뀌면**(예: backend-stack을 삭제 후 재생성) **이�
 
 ## 백엔드 시크릿 채우기 (TF_VAR_*)
 
-`backend-stack`의 `JWT_SECRET`/`REFRESH_TOKEN_SECRET`은 코드에 실제 값이 없다
+`backend-stack`의 `JWT_SECRET`/`REFRESH_TOKEN_SECRET`/`OPENAI_API_KEY`는 코드에 실제 값이 없다
 (`TerraformVariable`의 `default: ''`는 `synth`/`diff`가 비대화형으로 통과하도록 하는
-placeholder일 뿐이다). 실제 `deploy:all` 전에 반드시 환경변수로 주입한다.
+placeholder일 뿐이다). `mail_provider`/`domain_name`/`*_sentry_dsn`과 동일하게, 이 값들도
+`infra/.env`(gitignore, git에 커밋되지 않음)에 한 번 채워두면 `npm run deploy:all`이
+`dotenv -e .env`로 자동으로 읽는다 — 배포마다 손으로 `export`할 필요가 없다.
 
 ```bash
-export TF_VAR_jwt_secret="<openssl rand -hex 32 등으로 생성>"
-export TF_VAR_refresh_token_secret="<openssl rand -hex 32 등으로 생성>"
+# infra/.env (gitignore됨, 최초 1회만 채우면 이후 deploy:all이 자동으로 읽는다)
+TF_VAR_jwt_secret=<openssl rand -hex 32 등으로 생성>
+TF_VAR_refresh_token_secret=<openssl rand -hex 32 등으로 생성>
+TF_VAR_openai_api_key=<OpenAI API 키>
 
 npm run deploy:all
 ```
 
-`TF_VAR_backend_sentry_dsn`/`TF_VAR_frontend_sentry_dsn`은 `mail_provider`와 동일하게 기본값이
-`''`라 안 줘도 배포는 성공한다(그 경우 Sentry가 비활성 상태로 배포됨). `jwt_secret`처럼 매번
-export가 필요한 값이 아니라 `mail_provider`/`domain_name`과 같은 취급이라, `infra/.env`(gitignore)에
-한 번 채워두면 `npm run deploy:all`이 `dotenv -e .env`로 자동으로 읽는다 — backend/frontend가
-서로 다른 Sentry 프로젝트를 쓰므로 값도 서로 다르게 채운다.
+`TF_VAR_openai_api_key`는 `jwt_secret`과 달리 비어있어도 배포 자체는 항상 성공한다 —
+`backend/src/ai/ai.module.ts`의 `HEALTH_REPORT_GENERATOR` 팩토리가 `OPENAI_API_KEY` 존재
+여부로 Mock/실제 LLM을 런타임에 자동 분기하기 때문이다. 하지만 이 값 없이 배포하면 실사용자가
+받는 AI 건강 리포트가 전부 Mock 결과물이 된다 — 실제 리포트를 내보내려면 배포 전 반드시
+채워야 한다.
+
+`npm run deploy:all`을 거치지 않고 `cdktf diff`/`cdktf deploy`를 직접 실행할 때는 `dotenv`를
+거치지 않으므로 `infra/.env`가 자동으로 로드되지 않는다 — 그때는 위 변수들을 셸에 직접
+`export`해야 한다. `infra/.env`가 아직 없는 새 환경(새 컴퓨터, CI 등)에서도 최초 1회는
+값을 직접 만들어 넣어야 한다.
 
 **RDS 마스터 비밀번호는 사람이 정하지 않는다.** `database-stack`이 `manageMasterUserPassword:
 true`로 RDS를 만들면 AWS가 비밀번호를 직접 생성해 Secrets Manager에 저장한다(로테이션도 AWS가
@@ -261,8 +270,9 @@ CDKTF 코드 안에서 직접 조립한다(완성된 연결 문자열이나 비�
 읽을 수 있는 `secretsmanager:GetSecretValue` 권한이 있어야 한다 — 데이터 소스 조회는 배포를
 실행하는 사람의 자격증명으로 이뤄지며, ECS Task Execution/Task Role과는 무관하다.
 
-이 값들은 셸 히스토리나 `.env`(레포 안)에 남기지 않는다 — 배포 직전에만 셸 세션에 export하고,
-필요하면 `unset` 하거나 새 셸을 연다. `TerraformOutput`에 시크릿 값 자체를 노출하지 않으므로
+이 값들은 `infra/.env`(gitignore, git에 커밋되지 않는 로컬 파일)에 보관한다 — git 히스토리에는
+남지 않지만 로컬 디스크에는 평문으로 남으므로, 이 파일을 다른 곳에 복사/공유하지 않는다.
+`TerraformOutput`에 시크릿 값 자체를 노출하지 않으므로
 (ECS 컨테이너 정의는 SSM 파라미터 ARN만 참조), state 파일에도 시크릿 원문이 그대로 노출되진 않는다
 — 단, Terraform 특성상 `SsmParameter.value`는 state에 평문으로 기록되므로 state 버킷 접근
 권한 관리(버킷 자체는 이미 완전 private, `bootstrap-stack` 참고)가 중요하다. RDS 마스터
@@ -303,6 +313,7 @@ ECS Fargate + ALB로 전환하면서 이 문제 자체가 사라졌다. **backen
 | `FRONTEND_URL` | `backend-stack`의 `cloudfront_url`(공유 ALB 앞단 CloudFront HTTPS URL, 자기 자신의 output을 그대로 컨테이너 환경변수로 사용) | 일반 |
 | `DATABASE_URL` | `backend-stack`이 `database-stack`의 RDS 엔드포인트(cross-stack reference) + AWS 관리형 마스터 비밀번호(Secrets Manager)를 조합해 만든 SSM Parameter(SecureString) ARN | 시크릿 |
 | `JWT_SECRET` / `REFRESH_TOKEN_SECRET` | `backend-stack`이 만든 SSM Parameter(SecureString) ARN | 시크릿 |
+| `OPENAI_API_KEY` | `backend-stack`의 `TerraformVariable`(기본값 `''`, `TF_VAR_openai_api_key`로 주입)을 SSM Parameter(SecureString)로 저장 후 ARN 참조. 비어있으면 `ai.module.ts`가 Mock generator로 폴백한다 | 시크릿 |
 | `NEXT_PUBLIC_API_URL` (빌드 인자, 런타임 아님) | `backend-stack`의 `cloudfront_url` (frontend-stack이 `expected_next_public_api_url`로 다시 출력) | 일반 (프론트엔드 Docker 빌드 시점) |
 | `SENTRY_DSN` (backend) | `backend-stack`의 `TerraformVariable`(기본값 `''`, `TF_VAR_backend_sentry_dsn`으로 주입). 비어있으면 `backend/src/instrument.ts`가 Sentry를 초기화하지 않는다(로컬과 동일 계약) | 일반 |
 | `SENTRY_DSN` (frontend, 서버/edge용) | `frontend-stack`의 `TerraformVariable`(기본값 `''`, `TF_VAR_frontend_sentry_dsn`으로 주입). 비어있으면 `sentry.server.config.ts`/`sentry.edge.config.ts`가 Sentry를 초기화하지 않는다 | 일반 |
