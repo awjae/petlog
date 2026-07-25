@@ -5,7 +5,6 @@ import {
   TerraformOutput,
   S3Backend,
   Fn,
-  Op,
   Token,
   propertyAccess,
 } from 'cdktf';
