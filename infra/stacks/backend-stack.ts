@@ -5,6 +5,7 @@ import {
   TerraformOutput,
   S3Backend,
   Fn,
+  Op,
   Token,
   propertyAccess,
 } from 'cdktf';
@@ -200,13 +201,45 @@ export class BackendStack extends TerraformStack {
         'TF_VAR_mail_from_domain으로 주입.',
     });
 
+    // Sesv2EmailIdentity는 mailProvider와 무관하게 항상 생성되므로(리소스를 count로 조건부화하면
+    // 주소가 `[0]`으로 바뀌어 import 절차가 더 복잡해진다), 실제 발송을 켠 경우에 도메인이
+    // 비어있지 않은지를 plan 단계에서 막는다.
+    mailFromDomain.addValidation({
+      condition: '${var.mail_provider != "ses" || var.mail_from_domain != ""}',
+      errorMessage:
+        'mail_provider=ses로 배포하려면 mail_from_domain을 반드시 채워야 한다 — ' +
+        '비워두면 SES Identity가 빈 문자열로 생성되려 해서 apply가 실패한다.',
+    });
+
     // 실제 발신 헤더(Source)에 쓰이는 주소. mailFromDomain이 검증된 도메인이면 이 주소는
     // 그 도메인에 속하기만 하면 되므로 별도 IAM 리소스 범위 지정에는 쓰이지 않는다.
+    //
+    // 다만 두 값이 독립적으로 주입되므로, 주소가 검증된 도메인에 속하지 않으면 SES가 발송을
+    // 거부한다. 그리고 auth.service의 requestPasswordReset은 enumeration 방지를 위해 발송
+    // 실패를 삼키므로(Sentry로는 보고되지만 사용자에게는 항상 200), 이 오설정은 사용자
+    // 경험 실패로만 드러난다 — 그래서 배포 시점(plan)에 미리 막는다.
     const mailFromAddress = new TerraformVariable(this, 'mail_from_address', {
       type: 'string',
       default: '',
       description:
-        'ECS 컨테이너의 MAIL_FROM_ADDRESS로 주입되는 발신 이메일 주소. TF_VAR_mail_from_address로 주입.',
+        'ECS 컨테이너의 MAIL_FROM_ADDRESS로 주입되는 발신 이메일 주소. ' +
+        'mail_from_domain에 속하는 주소여야 한다(예: noreply@petlog.quest). ' +
+        'TF_VAR_mail_from_address로 주입.',
+    });
+
+    // 변수 자신을 참조해야 하므로 생성 후에 붙인다. 둘 중 하나라도 비어있으면(= mock
+    // provider 경로) 검사를 건너뛰고, 둘 다 채워진 경우에만 주소가 "@<도메인>"으로 끝나는지
+    // 확인한다. (다른 변수를 참조하는 validation은 Terraform 1.9+ 필요 — infra/README.md 참고)
+    mailFromAddress.addValidation({
+      // Op.eq(x, '')/Op.eq(x, 0)은 cdktf 0.21이 우변 falsy 값을 흘려버려 `== undefined`로
+      // 렌더된다(synth 출력으로 확인). 유효한 Terraform이 아니므로 조건식은 HCL로 직접 쓴다.
+      condition:
+        '${var.mail_from_address == "" || var.mail_from_domain == "" ||' +
+        ' endswith(var.mail_from_address, "@${var.mail_from_domain}")}',
+      errorMessage:
+        'mail_from_address는 mail_from_domain에 속하는 주소여야 한다 ' +
+        '(예: domain=petlog.quest → address=noreply@petlog.quest). ' +
+        '불일치하면 SES가 발송을 거부하고, 그 실패는 비밀번호 재설정 응답에서 드러나지 않는다.',
     });
 
     // CloudFront에 붙일 커스텀 도메인. ACM 인증서 발급 시점의 DNS 검증(레코드 등록)은

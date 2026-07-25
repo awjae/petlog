@@ -257,6 +257,48 @@ npm run deploy:all
 `export`해야 한다. `infra/.env`가 아직 없는 새 환경(새 컴퓨터, CI 등)에서도 최초 1회는
 값을 직접 만들어 넣어야 한다.
 
+### SES: 이메일 주소 → 도메인 Identity 전환 (배포 전 1회 필요)
+
+SES Identity를 이메일 주소 단위(`noreply@petlog.quest`)에서 **도메인 단위**(`petlog.quest`)로
+바꿨다. 도메인 Identity를 쓰면 그 도메인의 모든 발신 주소가 개별 검증 없이 허용되므로, 발신
+주소를 바꿀 때마다 콘솔에서 검증할 필요가 없어진다.
+
+**이 전환은 `cdktf deploy`만으로는 끝나지 않는다.** Terraform 입장에서는 리소스가 두 번 바뀌었다.
+
+| | 이전 | 현재 |
+| --- | --- | --- |
+| 리소스 주소 | `aws_sesv2_email_identity.mail-from-identity` | `aws_sesv2_email_identity.mail-domain-identity` |
+| `email_identity` 값 | `var.mail_from_address` | `var.mail_from_domain` |
+
+주소가 바뀌었으므로 state의 기존 항목은 **삭제 대상**으로, 새 주소는 **생성 대상**으로 잡힌다
+(값도 바뀌었는데 `email_identity`는 ForceNew라, 주소가 같았어도 교체 플랜이 났을 것이다).
+그런데 도메인 Identity는 이미 콘솔에서 DNS 검증을 마쳐 AWS에 실재하므로, 그대로 apply하면
+생성 단계에서 `AlreadyExists`로 실패한다.
+
+그래서 **배포 전에 기존 도메인 Identity를 새 주소로 import해야 한다**:
+
+```bash
+cd infra
+# 1. 먼저 플랜을 눈으로 확인한다 (create/destroy가 잡히는지)
+PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf diff petlog-backend-dev --ignore-missing-stack-dependencies
+
+# 2. 실재하는 도메인 Identity를 새 주소로 가져온다 (import id = 도메인 이름 그 자체)
+PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf import petlog-backend-dev \
+  aws_sesv2_email_identity.mail-domain-identity petlog.quest
+
+# 3. 다시 diff를 떠서 create가 사라졌는지 확인한 뒤에만 deploy한다
+PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf diff petlog-backend-dev --ignore-missing-stack-dependencies
+```
+
+`importFrom()`으로 코드에 선언적으로 박는 방법도 있지만, 이미 state에 들어간 뒤에도 import
+블록을 영구히 남겨두는 것이 안전한지 실제 state 없이는 검증할 수 없어 채택하지 않았다 —
+전환은 1회성이므로 CLI로 처리하고 이 문서에 근거를 남긴다.
+
+> `mail_from_domain`을 비워둔 채 `mail_provider=ses`로 배포하면 Identity가 빈 문자열로
+> 생성되려 하므로 반드시 함께 채운다(`infra/.env.example` 참고). `mail_from_address`가 이
+> 도메인에 속하지 않으면 `mail_from_address`의 `validation`이 plan 단계에서 막는다 — 다른
+> 변수를 참조하는 variable validation이므로 **Terraform 1.9 이상**이 필요하다.
+
 **RDS 마스터 비밀번호는 사람이 정하지 않는다.** `database-stack`이 `manageMasterUserPassword:
 true`로 RDS를 만들면 AWS가 비밀번호를 직접 생성해 Secrets Manager에 저장한다(로테이션도 AWS가
 관리). `backend-stack`은 이 시크릿을 `DataAwsSecretsmanagerSecretVersion`으로 읽어서
