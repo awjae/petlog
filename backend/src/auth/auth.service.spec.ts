@@ -172,6 +172,27 @@ describe('AuthService', () => {
         expect.stringContaining('reset-password?token='),
       );
     });
+
+    // 메일 발송이 실패해도 예외가 전파되면 안 된다. 전파되면 "계정이 존재할 때만 5xx,
+    // 없으면 200"이 되어 상태 코드만으로 가입 여부를 알아낼 수 있고, 위 첫 번째 테스트가
+    // 지키는 enumeration 방지 계약이 무너진다.
+    it('메일 발송이 실패해도 예외를 전파하지 않는다 (enumeration 방지 계약 유지)', async () => {
+      userService.findByEmail.mockResolvedValue({ id: USER_ID, email: AUTH_USER.email });
+      mailSender.send.mockRejectedValue(new Error('SES: Email address is not verified'));
+
+      await expect(service.requestPasswordReset(AUTH_USER.email)).resolves.toBeUndefined();
+    });
+
+    // 발송에 실패하더라도 토큰 발급 자체는 이미 끝난 상태여야 한다 — 사용자가 메일을 못 받아
+    // 재요청했을 때 이전 토큰이 정상적으로 무효화되는 흐름이 유지된다.
+    it('메일 발송이 실패해도 토큰은 이미 발급된 상태로 남는다', async () => {
+      userService.findByEmail.mockResolvedValue({ id: USER_ID, email: AUTH_USER.email });
+      mailSender.send.mockRejectedValue(new Error('SES: Email address is not verified'));
+
+      await service.requestPasswordReset(AUTH_USER.email);
+
+      expect(prisma.passwordResetToken.create).toHaveBeenCalled();
+    });
   });
 
   describe('verifyPasswordResetToken', () => {
