@@ -257,42 +257,46 @@ npm run deploy:all
 `export`해야 한다. `infra/.env`가 아직 없는 새 환경(새 컴퓨터, CI 등)에서도 최초 1회는
 값을 직접 만들어 넣어야 한다.
 
-### SES: 이메일 주소 → 도메인 Identity 전환 (배포 전 1회 필요)
+### SES 도메인 Identity: 환경마다 1회 import가 필요하다
 
-SES Identity를 이메일 주소 단위(`noreply@petlog.quest`)에서 **도메인 단위**(`petlog.quest`)로
-바꿨다. 도메인 Identity를 쓰면 그 도메인의 모든 발신 주소가 개별 검증 없이 허용되므로, 발신
-주소를 바꿀 때마다 콘솔에서 검증할 필요가 없어진다.
+SES Identity는 이메일 주소 단위(`noreply@petlog.quest`)가 아니라 **도메인 단위**(`petlog.quest`)로
+관리한다. 도메인 Identity를 쓰면 그 도메인의 모든 발신 주소가 개별 검증 없이 허용되므로, 발신
+주소를 바꿀 때마다 콘솔에서 검증할 필요가 없다.
 
-**이 전환은 `cdktf deploy`만으로는 끝나지 않는다.** Terraform 입장에서는 리소스가 두 번 바뀌었다.
+**이 Identity는 CDKTF가 만들 수 없다.** 도메인 소유권 검증 = DKIM CNAME 레코드 등록인데, DNS가
+Porkbun에 있고 Route53 Hosted Zone이 없어서 관리할 대상 자체가 없기 때문이다
+(`.claude/docs/decisions/021-custom-domain-petlog-quest.md`). 그래서 절차가 둘로 나뉜다.
 
-| | 이전 | 현재 |
-| --- | --- | --- |
-| 리소스 주소 | `aws_sesv2_email_identity.mail-from-identity` | `aws_sesv2_email_identity.mail-domain-identity` |
-| `email_identity` 값 | `var.mail_from_address` | `var.mail_from_domain` |
+1. 사람이 콘솔에서 도메인 Identity를 만들고 DKIM 레코드를 Porkbun에 등록해 검증을 마친다
+2. 그 실물을 Terraform state에 등록한다 (= import)
 
-주소가 바뀌었으므로 state의 기존 항목은 **삭제 대상**으로, 새 주소는 **생성 대상**으로 잡힌다
-(값도 바뀌었는데 `email_identity`는 ForceNew라, 주소가 같았어도 교체 플랜이 났을 것이다).
-그런데 도메인 Identity는 이미 콘솔에서 DNS 검증을 마쳐 AWS에 실재하므로, 그대로 apply하면
-생성 단계에서 `AlreadyExists`로 실패한다.
-
-그래서 **배포 전에 기존 도메인 Identity를 새 주소로 import해야 한다**:
+2번이 없으면 Terraform은 state와 코드만 비교하므로 Identity가 없는 줄 알고 `create`를 계획하고,
+apply 단계에서 AWS가 `AlreadyExistsException`을 돌려줘 배포가 깨진다.
 
 ```bash
-cd infra
-# 1. 먼저 플랜을 눈으로 확인한다 (create/destroy가 잡히는지)
-PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf diff petlog-backend-dev --ignore-missing-stack-dependencies
-
-# 2. 실재하는 도메인 Identity를 새 주소로 가져온다 (import id = 도메인 이름 그 자체)
-PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf import petlog-backend-dev \
-  aws_sesv2_email_identity.mail-domain-identity petlog.quest
-
-# 3. 다시 diff를 떠서 create가 사라졌는지 확인한 뒤에만 deploy한다
-PETLOG_ENV=dev npx dotenv -e .env -- npx cdktf diff petlog-backend-dev --ignore-missing-stack-dependencies
+npm run ses:import --workspace=infra
 ```
 
-`importFrom()`으로 코드에 선언적으로 박는 방법도 있지만, 이미 state에 들어간 뒤에도 import
-블록을 영구히 남겨두는 것이 안전한지 실제 state 없이는 검증할 수 없어 채택하지 않았다 —
-전환은 1회성이므로 CLI로 처리하고 이 문서에 근거를 남긴다.
+도메인은 인자로 받지 않는다 — `infra/.env`의 `TF_VAR_mail_from_domain`이 단일 정보 소스다
+(`018-deploy-script-consolidation.md`와 동일한 원칙). 스크립트는 **멱등**이라 이미 state에
+있으면 아무 것도 하지 않고 끝나므로, 확신이 없으면 그냥 실행해서 확인해도 된다.
+
+> **dev 환경은 이미 완료된 상태다** (`aws_sesv2_email_identity.mail-domain-identity`가 state에
+> 있고, `npm run diff:all`이 이 리소스에 대해 `0 to add, 0 to destroy`를 낸다). 위 절차는
+> **새 AWS 계정이나 prod 스택을 처음 세울 때** 필요하다.
+
+#### 왜 `importFrom()`으로 코드에 박지 않는가
+
+CDKTF는 `resource.importFrom(id)`로 import를 선언적으로 표현할 수 있고, import 블록은
+멱등이라 state에 이미 있으면 `No changes.`로 조용히 넘어간다(Terraform 1.14로 확인).
+그런데도 쓰지 않는 이유는 **import 블록이 "그 실물이 이미 존재함"을 전제**하기 때문이다.
+실물이 없는 새 계정에서는 import가 실패해 배포 자체가 막힌다 — 재현 가능한 인프라를 만들려는
+목적과 정반대다. 그래서 1회성 절차로 분리해 스크립트에 담는다.
+
+**근본 해결은 Route53이다.** `Sesv2EmailIdentity`는 DKIM 토큰을 출력하므로
+(`dkimSigningAttributes.tokens`), 네임서버를 Route53으로 옮기면 Identity 생성 → DKIM 레코드
+생성 → 자동 검증까지 전부 CDKTF 안에서 닫힌다. 수동 콘솔 작업도 import도 이 문서도 사라진다.
+021이 비용/우선순위를 이유로 미뤄둔 결정이며, prod를 만드는 시점이 재검토 시점이다.
 
 > `mail_from_domain`을 비워둔 채 `mail_provider=ses`로 배포하면 Identity가 빈 문자열로
 > 생성되려 하므로 반드시 함께 채운다(`infra/.env.example` 참고). `mail_from_address`가 이
