@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import {
   CREATE_HEALTH_RECORD_MUTATION,
+  type AppetiteLevel,
   type HealthRecordType,
 } from '../api/health-record.mutations';
 import { mutationFailureMessage } from '@/lib/apollo/mutationFailure';
-
-type AppetiteLevel = 'good' | 'normal' | 'bad';
 
 const APPETITE_LABEL: Record<AppetiteLevel, string> = {
   good: '잘 먹음',

@@ -1,6 +1,9 @@
 import { gql } from '@apollo/client';
 import type { TypedDocumentNode } from '@apollo/client';
 
+// 식사 기록의 선택지. 입력 계약의 일부라 화면이 아니라 여기서 정의한다.
+export type AppetiteLevel = 'good' | 'normal' | 'bad';
+
 export type HealthRecordType =
   | 'weight'
   | 'appetite'
