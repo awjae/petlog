@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import styles from './DatePickerSheet.module.css';
 
 const ITEM_H = 44;
@@ -131,8 +133,9 @@ export function DatePickerSheet({
   max,
   title = '날짜 선택',
 }: DatePickerSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
 
   const initial = value || today();
   const [year, setYear] = useState(initial.slice(0, 4));
@@ -153,30 +156,18 @@ export function DatePickerSheet({
     if (clamped !== day && clamped) setDay(clamped);
   }, [year, month]);
 
+  // 열릴 때마다 현재 값으로 되돌린다(전환 상태는 useSheetTransition이 관리한다).
   useEffect(() => {
-    if (isOpen) {
-      const src = value || today();
-      setYear(src.slice(0, 4));
-      setMonth(src.slice(5, 7));
-      setDay(src.slice(8, 10));
-      setMounted(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
+    if (!isOpen) return;
+    const src = value || today();
+    setYear(src.slice(0, 4));
+    setMonth(src.slice(5, 7));
+    setDay(src.slice(8, 10));
   }, [isOpen, value]);
 
   function handleConfirm() {
     onChange(`${year}-${month}-${day}`);
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
+    handleClose();
   }
 
   if (!mounted) return null;

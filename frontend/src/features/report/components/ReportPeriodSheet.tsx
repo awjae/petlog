@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { Check, ChevronLeft, LoaderCircle, X } from 'lucide-react';
 import { useGenerateReport } from '../hooks/useGenerateReport';
 import { useReportPeriodPreview } from '../hooks/useReportPeriodPreview';
@@ -41,8 +43,10 @@ export function ReportPeriodSheet({
   onGenerated,
   onGenerateError,
 }: ReportPeriodSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
+
   const [view, setView] = useState<SheetView>('summary');
 
   const today = todayDateOnly();
@@ -59,38 +63,23 @@ export function ReportPeriodSheet({
   const dragCurrentY = useRef(0);
   const dragStartTime = useRef(0);
 
-  // 오픈/클로즈 애니메이션 + 진입 시 "최근 30일" 프리셋 기본 선택
+  // 진입 시 "최근 30일" 프리셋을 기본 선택한다(전환 상태는 useSheetTransition이 관리).
   useEffect(() => {
-    if (isOpen) {
-      const openToday = todayDateOnly();
-      const openMinDate = petCreatedAt
-        ? minDateStr(toDateOnlyFromIso(petCreatedAt), openToday)
-        : openToday;
-      const last30 = getPresetRange('last30', openToday);
-      const start = clampDate(last30.start, openMinDate, openToday);
+    if (!isOpen) return;
 
-      setPeriodStart(start);
-      setPeriodEnd(last30.end);
-      setSelectedPreset(start === last30.start ? 'last30' : null);
-      setView('summary');
-      setDebounceNext(false);
+    const openToday = todayDateOnly();
+    const openMinDate = petCreatedAt
+      ? minDateStr(toDateOnlyFromIso(petCreatedAt), openToday)
+      : openToday;
+    const last30 = getPresetRange('last30', openToday);
+    const start = clampDate(last30.start, openMinDate, openToday);
 
-      setMounted(true);
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
+    setPeriodStart(start);
+    setPeriodEnd(last30.end);
+    setSelectedPreset(start === last30.start ? 'last30' : null);
+    setView('summary');
+    setDebounceNext(false);
   }, [isOpen, petCreatedAt]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
 
   // ── 드래그 제스처(드래그 핸들 + 헤더 영역만) ──
   function handleDragStart(e: React.TouchEvent) {

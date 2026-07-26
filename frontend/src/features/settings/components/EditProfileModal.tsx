@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { X } from 'lucide-react';
 import { useUpdateProfile } from '../hooks/useUpdateProfile';
 import styles from './EditProfileModal.module.css';
@@ -12,8 +14,9 @@ interface EditProfileModalProps {
 }
 
 export function EditProfileModal({ isOpen, currentName, onClose }: EditProfileModalProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
   const [name, setName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -26,22 +29,13 @@ export function EditProfileModal({ isOpen, currentName, onClose }: EditProfileMo
     currentNameRef.current = currentName;
   }, [currentName]);
 
+  // 열릴 때 이름을 현재 값으로 되돌리고 입력에 포커스를 준다.
+  // (전환 상태는 useSheetTransition이 관리한다)
   useEffect(() => {
-    if (isOpen) {
-      setName(currentNameRef.current ?? '');
-      setMounted(true);
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setVisible(true);
-          setTimeout(() => inputRef.current?.focus(), 50);
-        });
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
+    if (!isOpen) return;
+    setName(currentNameRef.current ?? '');
+    const t = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(t);
   }, [isOpen]);
 
   // 키보드 팝업 시 시트 위치 조정
@@ -68,11 +62,6 @@ export function EditProfileModal({ isOpen, currentName, onClose }: EditProfileMo
       }
     };
   }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { Copy, Download, ImageIcon, Loader2, X } from 'lucide-react';
 import { useReportShare } from '../hooks/useReportShare';
 import { ConcernsToggleRow } from './ConcernsToggleRow';
@@ -43,32 +45,15 @@ export function ShareReportSheet({
   concerns,
   recommendations,
 }: ShareReportSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
+
   const sheetRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const dragStartY = useRef(0);
   const dragCurrentY = useRef(0);
   const dragStartTime = useRef(0);
-
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
 
   function handleDragStart(e: React.TouchEvent) {
     isDragging.current = true;

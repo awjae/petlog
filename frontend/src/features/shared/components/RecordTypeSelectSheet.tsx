@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { useRouter } from 'next/navigation';
 import { X, ChevronLeft } from 'lucide-react';
 import {
@@ -63,29 +65,20 @@ type Step = 'type' | 'pet';
 
 export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelectSheetProps) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
+
   const [step, setStep] = useState<Step>('type');
   const [pendingItem, setPendingItem] = useState<SheetItem | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  // 열릴 때마다 1단계로 되돌린다(전환 상태는 useSheetTransition이 관리).
   useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      setStep('type');
-      setPendingItem(null);
-      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
+    if (!isOpen) return;
+    setStep('type');
+    setPendingItem(null);
   }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
 
   function handleSelectType(item: SheetItem) {
     if (pets.length === 0) {
