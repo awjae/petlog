@@ -65,6 +65,19 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint --workspace=frontend
 
+  test-frontend-unit:
+    name: Test (Frontend Unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      # 순수 함수만 검증하므로 브라우저도, 백엔드도, prisma/cdktf 생성물도 필요 없다.
+      - run: npm ci --ignore-scripts
+      - run: npm run test:unit --workspace=frontend
+
   test-backend:
     name: Test (Backend)
     runs-on: ubuntu-latest
