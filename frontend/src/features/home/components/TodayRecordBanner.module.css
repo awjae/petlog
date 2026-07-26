@@ -53,7 +53,7 @@
   height: 28px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   font-size: 14px;
   font-weight: 700;
   display: flex;

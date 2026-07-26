@@ -18,7 +18,7 @@
   bottom: 0;
   width: 80px;
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-danger-text);
   border: none;
   cursor: pointer;
   display: flex;
@@ -84,7 +84,7 @@
   font-weight: 700;
   font-size: 10px;
   background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  color: #b36800;
+  color: var(--color-warning);
   flex-shrink: 0;
 }
 

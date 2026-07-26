@@ -76,7 +76,7 @@
 /* 뷰 토글: 알약 형태, 다이어리 탭 느낌 */
 .viewToggle {
   display: flex;
-  background: var(--color-border);
+  background: var(--color-track);
   border-radius: var(--radius-full);
   padding: 3px;
   gap: 2px;
@@ -148,7 +148,7 @@
 /* 선택: 꽉 찬 원 */
 .selected {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   font-weight: 700;
   border: none;
 }

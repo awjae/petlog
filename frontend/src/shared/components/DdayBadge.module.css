@@ -18,12 +18,12 @@
 
 .near {
   background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-  color: #b36800;
+  color: var(--color-warning);
 }
 
 .urgent {
   background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-  color: #b36800;
+  color: var(--color-warning);
 }
 
 .overdue {

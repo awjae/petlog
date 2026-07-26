@@ -93,7 +93,7 @@
 
 .cellSelected {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   font-weight: 700;
 }
 

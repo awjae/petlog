@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Float, InputType, registerEnumType } from '@nestjs/graphql';
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { Pet } from '../pet/pet.types';
 
@@ -26,8 +26,23 @@ export class CalendarEvent {
   @Field()
   title!: string;
 
+  /**
+   * 이미 사람이 읽을 수 있는 형태로 굳어진 값(투약 용량, 예약 사유 등)만 담는다.
+   * 건강 기록처럼 "값 + 단위"로 조립해야 하는 항목은 여기에 넣지 않고
+   * recordType/numValue/textValue 를 그대로 내려보내 표기를 프론트에서 한 곳으로 모은다.
+   */
   @Field({ nullable: true })
   subtitle?: string;
+
+  /** health_record 이벤트에서만 채워진다 (weight | appetite | activity | ...) */
+  @Field({ nullable: true })
+  recordType?: string;
+
+  @Field(() => Float, { nullable: true })
+  numValue?: number;
+
+  @Field({ nullable: true })
+  textValue?: string;
 
   @Field(() => ID)
   petId!: string;

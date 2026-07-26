@@ -20,7 +20,8 @@
     "deploy:ecr-push": "dotenv -e .env.deploy -e .env.local -- bash ../infra/scripts/ecr-push.sh petlog-frontend petlog-frontend",
     "deploy:ecs-force-redeploy": "dotenv -e .env.deploy -e .env.local -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; aws ecs update-service --region \"$REGION\" --cluster \"petlog-cluster-$ENV\" --service \"petlog-frontend-$ENV\" --force-new-deployment >/dev/null'",
     "deploy:image": "npm run deploy:check-version && npm run deploy:ecr-login && npm run deploy:build && npm run deploy:ecr-push && npm run deploy:ecs-force-redeploy",
-    "deploy": "npm run deploy:image"
+    "deploy": "npm run deploy:image",
+    "check:contrast": "node scripts/check-contrast.mjs"
   },
   "dependencies": {
     "@apollo/client": "^4.2.3",

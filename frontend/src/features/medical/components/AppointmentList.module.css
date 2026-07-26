@@ -18,7 +18,7 @@
   bottom: 0;
   width: 80px;
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-danger-text);
   border: none;
   cursor: pointer;
   display: flex;
@@ -93,7 +93,7 @@
 
 .statusCOMPLETED {
   background: color-mix(in srgb, var(--color-success) 12%, transparent);
-  color: #1a7a36;
+  color: var(--color-success);
 }
 
 .statusCANCELLED {

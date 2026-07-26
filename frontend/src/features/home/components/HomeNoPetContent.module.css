@@ -84,7 +84,7 @@
   height: 52px;
   padding: 0 28px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border-radius: var(--radius-full);
   font: var(--font-title-m);
   text-decoration: none;

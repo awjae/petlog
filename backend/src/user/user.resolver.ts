@@ -103,7 +103,11 @@ export class UserResolver {
         date: toDateStr(r.recordedAt),
         type: CalendarEventType.health_record,
         title: HEALTH_RECORD_LABEL[r.type] ?? r.type,
-        subtitle: r.textValue ?? (r.numValue != null ? String(r.numValue) : undefined),
+        // 표기(단위·등급 라벨)는 프론트의 buildSummary 한 곳에서만 조립한다.
+        recordType: r.type,
+        // Prisma Decimal → GraphQL Float
+        numValue: r.numValue != null ? Number(r.numValue) : undefined,
+        textValue: r.textValue ?? undefined,
         petId: r.petId,
       })),
       ...vaccinations.map((v) => ({

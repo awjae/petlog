@@ -1,12 +1,11 @@
 .button {
   width: 100%;
   height: 52px;
-  border-radius: 9999px;
-  background: #4f7cff;
-  color: #ffffff;
-  font:
-    600 17px/1 -apple-system,
-    sans-serif;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font: var(--font-title-m);
+  font-size: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +15,7 @@
 }
 
 .button:active:not(:disabled) {
-  background: #3f68e0;
+  background: color-mix(in srgb, var(--color-primary) 85%, black);
   transform: scale(0.98);
 }
 

@@ -3,10 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, ChevronLeft } from 'lucide-react';
-import {
-  RECORD_ILLUSTRATIONS,
-  type IllustrationKey,
-} from '@/shared/components/RecordTypeIllustrations';
+import { RECORD_TYPE_ICONS, type RecordIconKey } from '@/shared/components/recordTypeIcons';
 import styles from './RecordTypeSelectSheet.module.css';
 
 interface SheetPet {
@@ -22,41 +19,41 @@ interface RecordTypeSelectSheetProps {
 
 interface SheetItem {
   label: string;
-  illustration: IllustrationKey;
+  icon: RecordIconKey;
   href: (petId: string) => string;
 }
 
 const DAILY_ITEMS: SheetItem[] = [
-  { label: '체중', illustration: 'weight', href: (id) => `/records/new?type=weight&petId=${id}` },
+  { label: '체중', icon: 'weight', href: (id) => `/records/new?type=weight&petId=${id}` },
   {
     label: '식사',
-    illustration: 'appetite',
+    icon: 'appetite',
     href: (id) => `/records/new?type=appetite&petId=${id}`,
   },
   {
     label: '산책',
-    illustration: 'activity',
+    icon: 'activity',
     href: (id) => `/records/new?type=activity&petId=${id}`,
   },
-  { label: '메모', illustration: 'mood', href: (id) => `/records/new?type=mood&petId=${id}` },
-  { label: '증상', illustration: 'symptom', href: (id) => `/records/new?type=symptom&petId=${id}` },
-  { label: '배변', illustration: 'stool', href: (id) => `/records/new?type=stool&petId=${id}` },
-  { label: '구토', illustration: 'vomit', href: (id) => `/records/new?type=vomit&petId=${id}` },
+  { label: '메모', icon: 'mood', href: (id) => `/records/new?type=mood&petId=${id}` },
+  { label: '증상', icon: 'symptom', href: (id) => `/records/new?type=symptom&petId=${id}` },
+  { label: '배변', icon: 'stool', href: (id) => `/records/new?type=stool&petId=${id}` },
+  { label: '구토', icon: 'vomit', href: (id) => `/records/new?type=vomit&petId=${id}` },
 ];
 
 const MEDICAL_ITEMS: SheetItem[] = [
-  { label: '병원 방문', illustration: 'hospital', href: (id) => `/pets/${id}/medical/new` },
+  { label: '병원 방문', icon: 'hospital', href: (id) => `/pets/${id}/medical/new` },
   {
     label: '예방접종',
-    illustration: 'vaccination',
+    icon: 'vaccination',
     href: (id) => `/pets/${id}/medical/vaccinations/new`,
   },
   {
     label: '병원 예약',
-    illustration: 'appointment',
+    icon: 'appointment',
     href: (id) => `/pets/${id}/medical/appointments/new`,
   },
-  { label: '투약', illustration: 'medication', href: (id) => `/pets/${id}/medications/new` },
+  { label: '투약', icon: 'medication', href: (id) => `/pets/${id}/medications/new` },
 ];
 
 type Step = 'type' | 'pet';
@@ -156,7 +153,7 @@ export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelec
               <h2 className={styles.sectionLabel}>일상 / 건강 기록</h2>
               <div className={styles.grid}>
                 {DAILY_ITEMS.map((item) => {
-                  const Illust = RECORD_ILLUSTRATIONS[item.illustration];
+                  const Icon = RECORD_TYPE_ICONS[item.icon];
                   return (
                     <button
                       key={item.label}
@@ -165,7 +162,7 @@ export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelec
                       onClick={() => handleSelectType(item)}
                     >
                       <span className={styles.gridIcon} aria-hidden="true">
-                        <Illust size={34} />
+                        <Icon size={24} strokeWidth={1.75} />
                       </span>
                       <span className={styles.gridLabel}>{item.label}</span>
                     </button>
@@ -178,7 +175,7 @@ export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelec
               <h2 className={styles.sectionLabel}>의료 기록</h2>
               <div className={styles.grid}>
                 {MEDICAL_ITEMS.map((item) => {
-                  const Illust = RECORD_ILLUSTRATIONS[item.illustration];
+                  const Icon = RECORD_TYPE_ICONS[item.icon];
                   return (
                     <button
                       key={item.label}
@@ -187,7 +184,7 @@ export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelec
                       onClick={() => handleSelectType(item)}
                     >
                       <span className={styles.gridIcon} aria-hidden="true">
-                        <Illust size={34} />
+                        <Icon size={24} strokeWidth={1.75} />
                       </span>
                       <span className={styles.gridLabel}>{item.label}</span>
                     </button>

@@ -1,9 +1,7 @@
 import type { CalendarEvent, CalendarEventType, PetColorMap } from '../types/calendar.types';
 import { EVENT_TYPE_CONFIG } from '../types/calendar.types';
-import {
-  RECORD_ILLUSTRATIONS,
-  type IllustrationKey,
-} from '@/shared/components/RecordTypeIllustrations';
+import { RECORD_TYPE_ICONS, type RecordIconKey } from '@/shared/components/recordTypeIcons';
+import { buildSummary } from '@/features/health-record/types/health-record.types';
 import styles from './EventCard.module.css';
 
 interface Props {
@@ -14,7 +12,7 @@ interface Props {
   showPetTag: boolean;
 }
 
-const EVENT_ILLUSTRATION: Record<CalendarEventType, IllustrationKey> = {
+const EVENT_ICON: Record<CalendarEventType, RecordIconKey> = {
   health_record: 'healthRecord',
   vaccination: 'vaccination',
   medication: 'medication',
@@ -22,18 +20,28 @@ const EVENT_ILLUSTRATION: Record<CalendarEventType, IllustrationKey> = {
   medical_event: 'hospital',
 };
 
+/**
+ * 건강 기록은 타임라인·홈과 같은 포매터(buildSummary)로 표기를 만든다.
+ * 같은 5.2kg 기록이 화면마다 "5.2 kg" / "5.2"로 갈리던 문제를 막기 위한 것이다.
+ */
+function resolveSubtitle(event: CalendarEvent): string | null {
+  if (event.type !== 'health_record' || event.recordType == null) return event.subtitle;
+  return buildSummary(event.recordType, event.numValue, event.textValue) || null;
+}
+
 export function EventCard({ event, petName, petColor, showPetTag }: Props) {
   const config = EVENT_TYPE_CONFIG[event.type];
-  const Illust = RECORD_ILLUSTRATIONS[EVENT_ILLUSTRATION[event.type]];
+  const Icon = RECORD_TYPE_ICONS[EVENT_ICON[event.type]];
+  const subtitle = resolveSubtitle(event);
 
   return (
     <div className={styles.card} style={{ borderLeftColor: petColor }}>
       <span className={styles.icon} style={{ background: config.bgColor }} aria-hidden="true">
-        <Illust size={26} />
+        <Icon size={20} strokeWidth={1.75} />
       </span>
       <div className={styles.body}>
         <span className={styles.title}>{event.title}</span>
-        {event.subtitle && <span className={styles.subtitle}>{event.subtitle}</span>}
+        {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
       </div>
       {showPetTag && (
         <span className={styles.petTag} style={{ background: petColor }}>

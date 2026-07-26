@@ -265,38 +265,33 @@
   font-weight: 700;
 }
 
-/* 세그먼트 버튼 */
+/* 성별 선택 — 같은 폼의 '종류' 선택(.speciesGrid)과 같은 카드형으로 맞춘다.
+   성격이 같은 선택 컨트롤이 한 화면에서 두 가지 형태로 보이지 않게 하기 위함이다. */
 .segmented {
   display: flex;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1.5px solid var(--color-border);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  gap: 10px;
 }
 
 .segBtn {
   flex: 1;
-  height: 48px;
-  background: none;
-  border: none;
+  height: 52px;
   font: var(--font-body);
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
-  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   transition:
     background 100ms,
     color 100ms;
 }
 
-.segBtn:last-child {
-  border-right: none;
-}
-
 .segBtnActive {
-  background: var(--color-primary);
-  color: #fff;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -386,7 +381,7 @@
   width: 100%;
   height: 52px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-title-m);
@@ -427,7 +422,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-body);

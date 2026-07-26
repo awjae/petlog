@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Syringe, Pill, Stethoscope, PawPrint, type LucideIcon } from 'lucide-react';
+import { PawPrint, type LucideIcon } from 'lucide-react';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import type { UpcomingSchedule } from '../types/home.types';
 import styles from './UpcomingScheduleList.module.css';
 
@@ -9,9 +10,9 @@ type UpcomingScheduleListProps = {
 };
 
 const TYPE_ICON: Record<UpcomingSchedule['type'], LucideIcon> = {
-  vaccination: Syringe,
-  medication: Pill,
-  appointment: Stethoscope,
+  vaccination: RECORD_TYPE_ICONS.vaccination,
+  medication: RECORD_TYPE_ICONS.medication,
+  appointment: RECORD_TYPE_ICONS.appointment,
 };
 
 function getScheduleHref(schedule: UpcomingSchedule): string {

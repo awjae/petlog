@@ -5,13 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   X,
   PawPrint,
-  Scale,
-  Utensils,
-  Footprints,
-  NotebookPen,
-  Thermometer,
-  Droplets,
-  Waves,
   Smile,
   Meh,
   Frown,
@@ -22,6 +15,7 @@ import {
   Check,
   type LucideIcon,
 } from 'lucide-react';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
@@ -31,16 +25,16 @@ type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'sto
 type AppetiteLevel = 'good' | 'normal' | 'bad';
 
 const DAILY_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'weight', Icon: Scale, label: '체중' },
-  { type: 'appetite', Icon: Utensils, label: '식사' },
-  { type: 'activity', Icon: Footprints, label: '산책' },
-  { type: 'mood', Icon: NotebookPen, label: '메모' },
+  { type: 'weight', Icon: RECORD_TYPE_ICONS.weight, label: '체중' },
+  { type: 'appetite', Icon: RECORD_TYPE_ICONS.appetite, label: '식사' },
+  { type: 'activity', Icon: RECORD_TYPE_ICONS.activity, label: '산책' },
+  { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
 ];
 
 const HEALTH_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'symptom', Icon: Thermometer, label: '증상' },
-  { type: 'stool', Icon: Droplets, label: '배변' },
-  { type: 'vomit', Icon: Waves, label: '구토' },
+  { type: 'symptom', Icon: RECORD_TYPE_ICONS.symptom, label: '증상' },
+  { type: 'stool', Icon: RECORD_TYPE_ICONS.stool, label: '배변' },
+  { type: 'vomit', Icon: RECORD_TYPE_ICONS.vomit, label: '구토' },
 ];
 
 const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [

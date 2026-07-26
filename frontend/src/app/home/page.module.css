@@ -74,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(28, 28, 30, 0.48);
+  background: var(--color-scrim);
 }
 
 .onboardingLoadingSpinner {

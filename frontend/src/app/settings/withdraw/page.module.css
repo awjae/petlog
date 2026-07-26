@@ -131,7 +131,7 @@
   height: 52px;
   width: 100%;
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-danger-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-title-m);

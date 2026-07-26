@@ -23,8 +23,11 @@ enum AppointmentStatus {
 type CalendarEvent {
   date: String!
   id: ID!
+  numValue: Float
   petId: ID!
+  recordType: String
   subtitle: String
+  textValue: String
   title: String!
   type: CalendarEventType!
 }
