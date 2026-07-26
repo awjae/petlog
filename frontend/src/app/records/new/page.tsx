@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
-import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import styles from './page.module.css';
 
 type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'stool' | 'vomit';
@@ -100,6 +100,7 @@ function NewRecordContent() {
   const { data } = useHomeData();
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
   const lastSelectedPetId = useSelectedPetStore((s) => s.selectedPetId);
+  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
 
   const petIdFromUrl = params.get('petId');
   const rawType = params.get('type') as RecordType | null;
@@ -259,7 +260,10 @@ function NewRecordContent() {
                   key={pet.id}
                   type="button"
                   className={`${styles.petBtn} ${petId === pet.id ? styles.petBtnActive : ''}`}
-                  onClick={() => setPetId(pet.id)}
+                  onClick={() => {
+                    setPetId(pet.id);
+                    setSelectedPetId(pet.id);
+                  }}
                   aria-pressed={petId === pet.id}
                 >
                   <PawPrint

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { DELETE_PET_MUTATION } from '../api/pet.mutations';
-import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 
 export function useDeletePet() {
   const [error, setError] = useState('');

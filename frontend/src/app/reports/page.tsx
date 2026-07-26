@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useCallback } from 'react';
+import { Suspense, useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ import { useReports } from '@/features/report/hooks/useReports';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
 import type { PetBasic } from '@/features/report/types/report.types';
-import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import styles from './page.module.css';
 
 const MIN_RECORDS = 10;
@@ -83,6 +83,14 @@ function ReportsContent() {
   const homeDefaultPetId = pets.some((p) => p.id === selectedPetId) ? selectedPetId! : '';
   const activePetId = petIdFromUrl || homeDefaultPetId || firstPetId;
   const activePet = pets.find((p) => p.id === activePetId);
+
+  // URL의 petId가 store 값과 다르면(딥링크, 뒤로/앞으로가기, 여러 탭 등) store를
+  // URL 기준으로 맞춰서 home/records-new가 다른 pet을 보여주지 않게 한다.
+  useEffect(() => {
+    if (petIdFromUrl && petIdFromUrl !== selectedPetId && pets.some((p) => p.id === petIdFromUrl)) {
+      setSelectedPetId(petIdFromUrl);
+    }
+  }, [petIdFromUrl, selectedPetId, pets, setSelectedPetId]);
 
   function handleSelectPet(id: string) {
     const params = new URLSearchParams(searchParams.toString());

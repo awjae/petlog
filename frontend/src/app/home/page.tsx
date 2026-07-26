@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
-import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
@@ -60,6 +60,14 @@ export default function HomePage() {
   const activePetIdForStatus =
     data?.pets.find((p) => p.id === selectedPetId)?.id ?? data?.pets[0]?.id ?? '';
   const { status: reportStatus } = useReportStatus(activePetIdForStatus);
+
+  // selectedPetId가 없거나 무효해서 첫 번째 pet으로 폴백한 경우, 그 결과를 스토어에도
+  // 반영해야 store가 "크로스 라우트 단일 소스" 역할을 계속할 수 있다.
+  useEffect(() => {
+    if (activePetIdForStatus && activePetIdForStatus !== selectedPetId) {
+      setSelectedPetId(activePetIdForStatus);
+    }
+  }, [activePetIdForStatus, selectedPetId, setSelectedPetId]);
 
   /* ── 로딩 ── */
   if (loading && !data) {
