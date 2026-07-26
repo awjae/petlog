@@ -2,6 +2,7 @@
 
 import { use, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { ChevronLeft, Share2 } from 'lucide-react';
 import { useQuery } from '@apollo/client/react';
 import { useReport } from '@/features/report/hooks/useReport';
@@ -15,7 +16,6 @@ import { ReportDetailSkeleton } from '@/features/report/components/ReportSkeleto
 import { ReportCover } from '@/features/report/components/ReportCover';
 import { ReportHeadline } from '@/features/report/components/ReportHeadline';
 import { ReportStatusNotice } from '@/features/report/components/ReportStatusNotice';
-import { ShareReportSheet } from '@/features/report/components/ShareReportSheet';
 import {
   PETS_FOR_REPORT_QUERY,
   REPORT_POLL_STATUS_QUERY,
@@ -23,6 +23,16 @@ import {
 import { categorizeFailureReason, formatPeriodRange } from '@/features/report/utils/reportFormat';
 import type { ReportSectionType } from '@/features/report/components/ReportDetailSection';
 import styles from './page.module.css';
+
+// 공유 바텀시트는 "공유하기" 버튼을 눌렀을 때만 의미 있는 순수 클라이언트 인터랙션
+// 컴포넌트다(터치 드래그, 클립보드, 네이티브 공유 시트, 캔버스 이미지 생성). 리포트
+// 상세 진입 시 항상 필요한 코드가 아니므로 초기 번들에서 분리한다.
+const ShareReportSheet = dynamic(
+  () => import('@/features/report/components/ShareReportSheet').then((mod) => mod.ShareReportSheet),
+  // 시트 자체가 isOpen=false일 때 null을 렌더링하므로, 청크 로딩 중에도 별도
+  // 스켈레톤 없이 동일하게 아무것도 보이지 않는 것이 자연스럽다.
+  { ssr: false, loading: () => null },
+);
 
 const DETAIL_SECTION_ORDER: ReportSectionType[] = ['highlights', 'concerns', 'recommendations'];
 
