@@ -22,7 +22,7 @@ import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
 import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
-import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import { version } from '../../../package.json';
 import styles from './page.module.css';
@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
   async function handleLogout() {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
-    removeLastSelectedPetId();
+    useSelectedPetStore.getState().reset();
     await client.clearStore();
     router.push('/login');
   }

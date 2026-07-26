@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
-import {
-  getLastSelectedPetId,
-  setLastSelectedPetId,
-} from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
@@ -38,7 +35,8 @@ function resolveDataPhase(totalRecords: number): DataPhase {
 
 export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
-  const [selectedPetId, setSelectedPetId] = useState<string | null>(() => getLastSelectedPetId());
+  const selectedPetId = useSelectedPetStore((s) => s.selectedPetId);
+  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
   const { toasts, addToast, dismiss } = useToast();
   // 홈 데이터 로딩 완료를 기다리지 않고, 마운트 즉시 온보딩 완료 여부만 판단한다.
   // 서버 렌더링에서는 항상 false(미노출)이므로 hydration mismatch가 없다.
@@ -57,12 +55,19 @@ export default function HomePage() {
 
   function handleSelectPet(petId: string) {
     setSelectedPetId(petId);
-    setLastSelectedPetId(petId);
   }
 
   const activePetIdForStatus =
     data?.pets.find((p) => p.id === selectedPetId)?.id ?? data?.pets[0]?.id ?? '';
   const { status: reportStatus } = useReportStatus(activePetIdForStatus);
+
+  // selectedPetId가 없거나 무효해서 첫 번째 pet으로 폴백한 경우, 그 결과를 스토어에도
+  // 반영해야 store가 "크로스 라우트 단일 소스" 역할을 계속할 수 있다.
+  useEffect(() => {
+    if (activePetIdForStatus && activePetIdForStatus !== selectedPetId) {
+      setSelectedPetId(activePetIdForStatus);
+    }
+  }, [activePetIdForStatus, selectedPetId, setSelectedPetId]);
 
   /* ── 로딩 ── */
   if (loading && !data) {

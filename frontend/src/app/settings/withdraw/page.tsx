@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useApolloClient } from '@apollo/client/react';
 import { ChevronLeft } from 'lucide-react';
 import { useWithdrawAccount } from '@/features/auth/hooks/useWithdrawAccount';
-import { removeLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { setPendingToast } from '@/features/shared/utils/pendingToast';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import styles from './page.module.css';
@@ -28,7 +28,7 @@ export default function WithdrawAccountPage() {
     const result = await withdraw(password);
 
     if (result.ok) {
-      removeLastSelectedPetId();
+      useSelectedPetStore.getState().reset();
       await client.clearStore();
       setPendingToast('탈퇴 처리되었어요. 30일 이내 로그인하면 복구할 수 있어요.');
       router.push('/login');
