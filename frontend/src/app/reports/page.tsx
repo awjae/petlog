@@ -139,7 +139,7 @@ function ReportsContent() {
   const content = () => {
     if (isInitialLoading || !status) {
       return (
-        <div className={styles.lockedState}>
+        <div className={styles.lockedState} data-testid="report-panel" data-report-state="loading">
           <div className={styles.iconWrap}>
             <HeartPulse size={64} strokeWidth={1.25} className={styles.bigIcon} />
             <span className={styles.lockBadge}>
@@ -158,7 +158,7 @@ function ReportsContent() {
 
     if (isPolling) {
       return (
-        <div className={styles.lockedState}>
+        <div className={styles.lockedState} data-testid="report-panel" data-report-state="polling">
           <div className={styles.iconWrap}>
             <LoaderCircle
               size={64}
@@ -181,7 +181,11 @@ function ReportsContent() {
       const nextDate = formatNextAvailable(status?.nextAvailableAt);
       return (
         <>
-          <div className={styles.lockedState}>
+          <div
+            className={styles.lockedState}
+            data-testid="report-panel"
+            data-report-state="limit-reached"
+          >
             <div className={styles.iconWrap}>
               <CheckCircle
                 size={64}
@@ -218,7 +222,11 @@ function ReportsContent() {
       const remaining = Math.max(0, MIN_RECORDS - (status.recordCount ?? 0));
       const remainingDays = Math.max(0, MIN_DAYS - (status.recordDays ?? 0));
       return (
-        <div className={styles.lockedState}>
+        <div
+          className={styles.lockedState}
+          data-testid="report-panel"
+          data-report-state="insufficient"
+        >
           <div className={styles.iconWrap} aria-hidden="true">
             <HeartPulse size={64} strokeWidth={1.25} className={styles.bigIcon} />
             <span className={styles.lockBadge}>
@@ -285,7 +293,7 @@ function ReportsContent() {
 
     return (
       <>
-        <div className={styles.lockedState}>
+        <div className={styles.lockedState} data-testid="report-panel" data-report-state="ready">
           <div className={styles.iconWrap} aria-hidden="true">
             <HeartPulse size={64} strokeWidth={1.25} className={styles.bigIcon} />
             <span className={styles.sparkBadge}>
