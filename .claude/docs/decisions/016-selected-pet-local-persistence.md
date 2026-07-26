@@ -2,6 +2,11 @@
 
 ## Status
 
+`028-selected-pet-zustand-migration.md`로 대체됨 (2026-07-26). 사용처가
+늘어나며 "여러 화면이 값을 공유"해야 한다는 요구가 실제로 있었고,
+localStorage 유틸의 재구현 방식이 그 계약을 강제하지 못해 정합성 버그
+3건으로 이어졌다. 아래 원문은 당시 판단 기록으로 남긴다.
+
 결정됨 (`3f48368`, `96c094e` selected pet local storage 처리)
 
 ---
