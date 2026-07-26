@@ -4,10 +4,7 @@ import { use, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ChevronLeft, LoaderCircle, Share2 } from 'lucide-react';
-import { useQuery } from '@apollo/client/react';
-import { useReport } from '@/features/report/hooks/useReport';
-import { useReportPolling } from '@/features/report/hooks/useReportPolling';
-import { useGenerateReport } from '@/features/report/hooks/useGenerateReport';
+import { useReportDetailPage } from '@/features/report/hooks/useReportDetailPage';
 import {
   ReportDetailSection,
   isSectionVisible,
@@ -16,11 +13,6 @@ import { ReportDetailSkeleton } from '@/features/report/components/ReportSkeleto
 import { ReportCover } from '@/features/report/components/ReportCover';
 import { ReportHeadline } from '@/features/report/components/ReportHeadline';
 import { ReportStatusNotice } from '@/features/report/components/ReportStatusNotice';
-import {
-  PETS_FOR_REPORT_QUERY,
-  REPORT_POLL_STATUS_QUERY,
-} from '@/features/report/api/report.queries';
-import { categorizeFailureReason, formatPeriodRange } from '@/features/report/utils/reportFormat';
 import type { ReportSectionType } from '@/features/report/components/ReportDetailSection';
 import styles from './page.module.css';
 
@@ -56,33 +48,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
   // 공유 설정을 다시 조회해야 해서 불필요한 재요청과 깜빡임이 생긴다.
   const [shareSheetMounted, setShareSheetMounted] = useState(false);
 
-  const { report, loading, error, refetch } = useReport(reportId);
-  const isInFlight = report?.status === 'pending' || report?.status === 'processing';
-
-  useReportPolling(isInFlight ? reportId : null, () => refetch());
-
-  const { data: pollData } = useQuery(REPORT_POLL_STATUS_QUERY, {
-    variables: { id: reportId },
-    skip: report?.status !== 'failed',
-    fetchPolicy: 'cache-first',
-  });
-  const failureNotice = categorizeFailureReason(pollData?.reportPollStatus.failedReason);
-
-  const { generateReport, loading: retrying, error: retryError } = useGenerateReport();
-
-  async function handleRetry() {
-    if (!report?.petId) return;
-    const newReportId = await generateReport(report.petId, report.periodStart, report.periodEnd);
-    if (newReportId) {
-      router.replace(`/reports/${newReportId}`);
-    }
-  }
-
-  const { data: petsData } = useQuery(PETS_FOR_REPORT_QUERY, {
-    fetchPolicy: 'cache-first',
-  });
-  const pets = petsData?.me?.pets ?? [];
-  const petName = pets.find((p) => p.id === report?.petId)?.name ?? '';
+  const result = useReportDetailPage(reportId);
 
   function renderHeader(subtitle?: string): ReactNode {
     return (
@@ -104,7 +70,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
     );
   }
 
-  if (loading) {
+  if (result.status === 'loading') {
     return (
       <main className={styles.main} aria-label="리포트 상세">
         {renderHeader()}
@@ -113,7 +79,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
     );
   }
 
-  if (error || !report) {
+  if (result.status === 'error') {
     return (
       <main className={styles.main} aria-label="리포트 상세">
         {renderHeader()}
@@ -128,34 +94,32 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
     );
   }
 
-  const subtitle = [petName, formatPeriodRange(report.periodStart, report.periodEnd)]
-    .filter(Boolean)
-    .join(' · ');
-
-  if (report.status === 'processing' || report.status === 'pending') {
+  if (result.status === 'processing') {
     return (
       <main className={styles.main} aria-label="리포트 상세">
-        {renderHeader(subtitle)}
+        {renderHeader(result.subtitle)}
         <ReportStatusNotice variant="processing" onBack={() => router.back()} />
       </main>
     );
   }
 
-  if (report.status === 'failed') {
+  if (result.status === 'failed') {
     return (
       <main className={styles.main} aria-label="리포트 상세">
-        {renderHeader(subtitle)}
+        {renderHeader(result.subtitle)}
         <ReportStatusNotice
           variant="failed"
-          heading={failureNotice.heading}
-          desc={retryError || failureNotice.desc}
+          heading={result.failureHeading}
+          desc={result.failureDesc}
           onBack={() => router.back()}
-          onRetry={handleRetry}
-          retrying={retrying}
+          onRetry={result.onRetry}
+          retrying={result.retrying}
         />
       </main>
     );
   }
+
+  const { report, petName, subtitle } = result;
 
   const contentByType: Record<ReportSectionType, string[] | null> = {
     highlights: report.highlights,

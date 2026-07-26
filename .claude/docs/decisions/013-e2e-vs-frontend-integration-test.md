@@ -244,3 +244,27 @@ Integration 프로젝트(`--project=integration`)는 아직 CI에 추가하지 �
   `playwright.config.ts`는 현재 lint 대상이 아니다(CI의 `lint-frontend`도 동일).
 - **Integration 4종 미구현**: `home/pet/health-record/report.spec.ts`는 시나리오 목록만 있는
   스켈레톤이다.
+
+### 정정 (report.spec.ts 구현 중 발견, 2026-07-26)
+
+위 "계획과 달라진 점"의 "인증 가드는 리액티브 구조로 실제 구현돼 있음"과 "남은 미해결
+이슈"의 "가드 우회 가능성"은 더 이상 정확하지 않다. `report.spec.ts`의 happy path를 실제로
+구현하며 `NEXT_PUBLIC_USE_MOCK=true`로 프론트를 띄워 `/reports`에 접근해보니, 클라이언트 JS가
+실행되기도 전에 서버 엣지에서 307 리다이렉트가 걸렸다(`curl`로 직접 확인). 원인은
+`frontend/src/proxy.ts`(Next.js 16의 `middleware.ts` 대응 파일) — 이 문서가 작성된 시점 이후
+추가된 것으로 보이며, `PROTECTED_PREFIXES`(`/home`, `/pets`, `/records`, `/reports`,
+`/settings`)에 대해 `request.cookies.has('access_token')`만으로 인증 여부를 판단해
+리다이렉트하는 정적 라우트 가드다. 즉 "GraphQL 쿼리를 쏘지 않는 페이지는 가드를 우회한다"는
+우려는 이미 해소돼 있었다 — 오히려 지금은 GraphQL과 무관하게 모든 보호 경로가 엣지에서
+막힌다.
+
+다만 이 가드는 쿠키의 "존재 여부"만 검사하고 서명/만료는 검증하지 않는다(실제 검증은 이후
+GraphQL `GqlAuthGuard`가 담당). 그래서 Frontend Integration 테스트에서는 `authenticatedPage`
+픽스처(실제 백엔드 필요) 없이도, `context.addCookies()`로 이름만 같은 더미
+`access_token` 쿠키를 심어 이 가드만 통과시키고, 그 뒤 모든 GraphQL 요청은 그대로 MSW가
+처리하게 했다(`e2e/flows/report.spec.ts`의 `beforeEach` 참고). "integration은 백엔드 없이
+동작해야 한다"는 원래 원칙을 지키면서 실제 가드 구조와도 맞는 방식이다.
+
+남은 일: `home/pet/health-record.spec.ts`를 구현할 때도 동일하게 더미 쿠키 접근이 필요하다.
+가능하면 이 로직을 `e2e/fixtures/` 아래 공용 헬퍼로 뽑아 중복을 줄이는 게 좋다(현재는
+report.spec.ts에만 인라인으로 구현돼 있다).

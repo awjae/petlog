@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
-import { getLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import styles from './page.module.css';
 
 type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'stool' | 'vomit';
@@ -99,6 +99,8 @@ function NewRecordContent() {
   const params = useSearchParams();
   const { data } = useHomeData();
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
+  const lastSelectedPetId = useSelectedPetStore((s) => s.selectedPetId);
+  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
 
   const petIdFromUrl = params.get('petId');
   const rawType = params.get('type') as RecordType | null;
@@ -135,12 +137,11 @@ function NewRecordContent() {
   // pets 목록이 비동기 로딩된 이후 petId가 비어있으면 마지막 선택 반려동물로 동기화
   useEffect(() => {
     if (petId || pets.length === 0) return;
-    const lastSelectedPetId = getLastSelectedPetId();
     const defaultPetId = pets.some((p) => p.id === lastSelectedPetId)
       ? lastSelectedPetId
       : pets[0].id;
     setPetId(defaultPetId ?? '');
-  }, [pets, petId]);
+  }, [pets, petId, lastSelectedPetId]);
 
   function handleTypeChange(type: RecordType) {
     setRecordType(type);
@@ -259,7 +260,10 @@ function NewRecordContent() {
                   key={pet.id}
                   type="button"
                   className={`${styles.petBtn} ${petId === pet.id ? styles.petBtnActive : ''}`}
-                  onClick={() => setPetId(pet.id)}
+                  onClick={() => {
+                    setPetId(pet.id);
+                    setSelectedPetId(pet.id);
+                  }}
                   aria-pressed={petId === pet.id}
                 >
                   <PawPrint

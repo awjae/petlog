@@ -3,10 +3,7 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { DELETE_PET_MUTATION } from '../api/pet.mutations';
-import {
-  getLastSelectedPetId,
-  removeLastSelectedPetId,
-} from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 
 export function useDeletePet() {
   const [error, setError] = useState('');
@@ -22,9 +19,7 @@ export function useDeletePet() {
     const ok = result?.data?.deletePet === true;
 
     if (ok) {
-      if (getLastSelectedPetId() === petId) {
-        removeLastSelectedPetId();
-      }
+      useSelectedPetStore.getState().clearSelectedPetId(petId);
     } else {
       setError('삭제하지 못했어요. 다시 시도해주세요.');
     }

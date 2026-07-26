@@ -4,6 +4,7 @@ import { authHandlers } from './handlers/auth';
 import { calendarHandlers } from './handlers/calendar';
 import { healthRecordHandlers } from './handlers/health-record';
 import { medicalHandlers } from './handlers/medical';
+import { reportHandlers } from './handlers/report';
 
 export const worker = setupWorker(
   ...homeHandlers,
@@ -11,4 +12,5 @@ export const worker = setupWorker(
   ...calendarHandlers,
   ...healthRecordHandlers,
   ...medicalHandlers,
+  ...reportHandlers,
 );
