@@ -6,6 +6,7 @@ import { MSWProvider } from '@/providers/MSWProvider';
 import { NotificationProvider } from '@/providers/NotificationProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/shared/config/site';
+import { THEME_INIT_SCRIPT } from '@/shared/config/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,8 +33,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    // suppressHydrationWarning: 아래 THEME_INIT_SCRIPT가 하이드레이션 전에
+    // <html>에 data-theme을 붙이므로, 서버 HTML(속성 없음)과 클라이언트 DOM이
+    // 이 속성 하나에서 어긋난다. 의도된 차이라 경고만 끈다.
+    <html lang="ko" suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <ThemeProvider>
           <MSWProvider>
             <ApolloProvider>

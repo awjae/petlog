@@ -1,11 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-
-type Theme = 'pastel-sky' | 'pastel-pink';
-
-const STORAGE_KEY = 'petlog-theme';
-const DEFAULT_THEME: Theme = 'pastel-sky';
+import { DEFAULT_THEME, THEME_STORAGE_KEY, isTheme, type Theme } from '@/shared/config/theme';
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -15,19 +11,19 @@ const ThemeContext = createContext<{
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
 
+  // localStorage를 다시 읽지 않는다. 실제 적용된 테마는 layout.tsx의
+  // THEME_INIT_SCRIPT가 이미 <html data-theme>에 확정해 뒀으므로, 여기서는
+  // 그 값을 React 상태로 가져오기만 한다(설정 화면의 선택 표시용).
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    if (stored === 'pastel-sky' || stored === 'pastel-pink') {
-      setThemeState(stored);
-      document.documentElement.dataset.theme = stored;
-    } else {
-      document.documentElement.dataset.theme = DEFAULT_THEME;
+    const applied = document.documentElement.dataset.theme;
+    if (isTheme(applied)) {
+      setThemeState(applied);
     }
   }, []);
 
   function setTheme(t: Theme) {
     setThemeState(t);
-    localStorage.setItem(STORAGE_KEY, t);
+    localStorage.setItem(THEME_STORAGE_KEY, t);
     document.documentElement.dataset.theme = t;
   }
 
