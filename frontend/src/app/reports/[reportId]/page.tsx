@@ -3,7 +3,7 @@
 import { use, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ChevronLeft, Share2 } from 'lucide-react';
+import { ChevronLeft, LoaderCircle, Share2 } from 'lucide-react';
 import { useQuery } from '@apollo/client/react';
 import { useReport } from '@/features/report/hooks/useReport';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
@@ -27,12 +27,22 @@ import styles from './page.module.css';
 // 공유 바텀시트는 "공유하기" 버튼을 눌렀을 때만 의미 있는 순수 클라이언트 인터랙션
 // 컴포넌트다(터치 드래그, 클립보드, 네이티브 공유 시트, 캔버스 이미지 생성). 리포트
 // 상세 진입 시 항상 필요한 코드가 아니므로 초기 번들에서 분리한다.
+//
+// 중요: 이 컴포넌트는 아래에서 `shareSheetMounted`가 true일 때만 JSX에 등장한다.
+// isOpen=false여도 항상 렌더링하면 페이지 마운트 시점에 dynamic loader가 바로
+// 실행돼 "공유 안 하면 청크를 안 받는다"는 목적이 무력화되기 때문이다.
 const ShareReportSheet = dynamic(
   () => import('@/features/report/components/ShareReportSheet').then((mod) => mod.ShareReportSheet),
-  // 시트 자체가 isOpen=false일 때 null을 렌더링하므로, 청크 로딩 중에도 별도
-  // 스켈레톤 없이 동일하게 아무것도 보이지 않는 것이 자연스럽다.
-  { ssr: false, loading: () => null },
+  { ssr: false, loading: () => <ShareSheetLoadingFallback /> },
 );
+
+function ShareSheetLoadingFallback() {
+  return (
+    <div className={styles.shareSheetLoading} role="status" aria-label="공유 화면을 불러오는 중">
+      <LoaderCircle size={22} strokeWidth={2} className={styles.shareSheetLoadingSpinner} />
+    </div>
+  );
+}
 
 const DETAIL_SECTION_ORDER: ReportSectionType[] = ['highlights', 'concerns', 'recommendations'];
 
@@ -40,6 +50,11 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
   const router = useRouter();
   const { reportId } = use(params);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  // 한 번이라도 "공유하기"를 눌렀는지 여부. true가 된 뒤로는 다시 false로
+  // 되돌리지 않는다 — isOpen만으로 여닫으면 매번 청크가 다시 필요하진 않지만,
+  // ShareReportSheet를 언마운트했다가 재마운트하면 내부 useReportShare 훅이
+  // 공유 설정을 다시 조회해야 해서 불필요한 재요청과 깜빡임이 생긴다.
+  const [shareSheetMounted, setShareSheetMounted] = useState(false);
 
   const { report, loading, error, refetch } = useReport(reportId);
   const isInFlight = report?.status === 'pending' || report?.status === 'processing';
@@ -200,24 +215,33 @@ export default function ReportDetailPage({ params }: { params: Promise<{ reportI
       </div>
 
       <footer className={styles.shareFooter}>
-        <button type="button" className={styles.shareBtn} onClick={() => setIsShareOpen(true)}>
+        <button
+          type="button"
+          className={styles.shareBtn}
+          onClick={() => {
+            setShareSheetMounted(true);
+            setIsShareOpen(true);
+          }}
+        >
           <Share2 size={18} strokeWidth={2} aria-hidden="true" />
           공유하기
         </button>
       </footer>
 
-      <ShareReportSheet
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
-        reportId={report.id}
-        petName={petName}
-        periodStart={report.periodStart}
-        periodEnd={report.periodEnd}
-        overview={report.overview}
-        highlights={report.highlights}
-        concerns={report.concerns}
-        recommendations={report.recommendations}
-      />
+      {shareSheetMounted && (
+        <ShareReportSheet
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          reportId={report.id}
+          petName={petName}
+          periodStart={report.periodStart}
+          periodEnd={report.periodEnd}
+          overview={report.overview}
+          highlights={report.highlights}
+          concerns={report.concerns}
+          recommendations={report.recommendations}
+        />
+      )}
     </main>
   );
 }

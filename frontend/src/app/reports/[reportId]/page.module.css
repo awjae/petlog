@@ -138,6 +138,29 @@
   opacity: 0.85;
 }
 
+/* ── 공유 시트 dynamic import 로딩 ── */
+.shareSheetLoading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+  background: rgb(0 0 0 / 25%);
+}
+
+.shareSheetLoadingSpinner {
+  color: #fff;
+  animation: shareSheetSpin 1.2s linear infinite;
+}
+
+@keyframes shareSheetSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* error state */
 .errorState {
   flex: 1;

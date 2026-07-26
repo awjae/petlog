@@ -63,3 +63,27 @@
 .retryButton:active {
   background: var(--color-primary-light);
 }
+
+/* ── 온보딩 오버레이 dynamic import 로딩 ──
+   OnboardingOverlay 본체가 뜨기 전, 청크를 받는 짧은 구간 동안 같은 톤의
+   디밍만 먼저 보여줘서 "화면이 잠깐 멈춘 것처럼" 보이지 않게 한다. */
+.onboardingLoading {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 30, 0.48);
+}
+
+.onboardingLoadingSpinner {
+  color: #fff;
+  animation: onboardingLoadingSpin 1.2s linear infinite;
+}
+
+@keyframes onboardingLoadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

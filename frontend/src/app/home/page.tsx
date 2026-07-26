@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { LoaderCircle } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import {
   getLastSelectedPetId,
@@ -32,8 +33,16 @@ const OnboardingOverlay = dynamic(
     import('@/features/onboarding/components/OnboardingOverlay').then(
       (mod) => mod.OnboardingOverlay,
     ),
-  { ssr: false, loading: () => null },
+  { ssr: false, loading: () => <OnboardingLoadingFallback /> },
 );
+
+function OnboardingLoadingFallback() {
+  return (
+    <div className={styles.onboardingLoading} role="status" aria-label="온보딩을 불러오는 중">
+      <LoaderCircle size={28} strokeWidth={2} className={styles.onboardingLoadingSpinner} />
+    </div>
+  );
+}
 
 // 데모용 페이즈 강제 설정: null = 자동 감지, 1 = 온보딩, 2 = 습관 형성, 3 = AI 해금
 const DEMO_PHASE: null | 1 | 2 | 3 = null;
