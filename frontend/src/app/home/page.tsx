@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { LoaderCircle } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
-import { OnboardingOverlay } from '@/features/onboarding/components/OnboardingOverlay';
 import { PetSelector } from '@/features/home/components/PetSelector';
 import { TodayRecordBanner } from '@/features/home/components/TodayRecordBanner';
 import { QuickRecordButtons } from '@/features/home/components/QuickRecordButtons';
@@ -20,6 +21,25 @@ import { BottomNav } from '@/features/shared/components/BottomNav';
 import { FAB } from '@/features/shared/components/FAB';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
 import styles from './page.module.css';
+
+// 온보딩을 이미 완료한 대다수 사용자에게는 전혀 필요 없는 화면이다(hasCompletedOnboarding
+// 참고). 슬라이드/제스처/포커스 트랩 로직 전체를 초기 홈 번들에서 분리해, 온보딩이
+// 실제로 필요한 신규 사용자에게만 청크를 내려받게 한다.
+const OnboardingOverlay = dynamic(
+  () =>
+    import('@/features/onboarding/components/OnboardingOverlay').then(
+      (mod) => mod.OnboardingOverlay,
+    ),
+  { ssr: false, loading: () => <OnboardingLoadingFallback /> },
+);
+
+function OnboardingLoadingFallback() {
+  return (
+    <div className={styles.onboardingLoading} role="status" aria-label="온보딩을 불러오는 중">
+      <LoaderCircle size={28} strokeWidth={2} className={styles.onboardingLoadingSpinner} />
+    </div>
+  );
+}
 
 // 데모용 페이즈 강제 설정: null = 자동 감지, 1 = 온보딩, 2 = 습관 형성, 3 = AI 해금
 const DEMO_PHASE: null | 1 | 2 | 3 = null;
