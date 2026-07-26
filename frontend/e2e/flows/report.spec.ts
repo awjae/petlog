@@ -42,18 +42,21 @@
 
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
-
 test.describe('AI 리포트 @integration', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     // frontend/src/proxy.ts의 엣지 라우트 가드(access_token 쿠키 존재 여부만 검사)를
     // 통과시키기 위한 더미 쿠키. 실제 백엔드 발급 쿠키가 아니어도, 이후 모든 GraphQL
     // 요청은 MSW가 가로채므로 서명 검증까지 갈 일이 없다.
+    //
+    // 쿠키의 url은 반드시 Playwright가 실제 내비게이션에 쓰는 baseURL과 같아야 한다
+    // (project/CLI에서 override 가능) — 별도 상수로 계산하면 두 값이 어긋날 때 쿠키가
+    // 다른 origin에 심어져 엣지 가드를 통과하지 못한다.
+    const baseURL = testInfo.project.use.baseURL ?? 'http://localhost:3000';
     await page.context().addCookies([
       {
         name: 'access_token',
         value: 'mock-access-token-for-integration-test',
-        url: BASE_URL,
+        url: baseURL,
       },
     ]);
   });
