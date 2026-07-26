@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
-import {
-  getLastSelectedPetId,
-  setLastSelectedPetId,
-} from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
 import { consumePendingToast } from '@/features/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
@@ -38,7 +35,8 @@ function resolveDataPhase(totalRecords: number): DataPhase {
 
 export default function HomePage() {
   const { data, loading, error, refetch } = useHomeData();
-  const [selectedPetId, setSelectedPetId] = useState<string | null>(() => getLastSelectedPetId());
+  const selectedPetId = useSelectedPetStore((s) => s.selectedPetId);
+  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
   const { toasts, addToast, dismiss } = useToast();
   // 홈 데이터 로딩 완료를 기다리지 않고, 마운트 즉시 온보딩 완료 여부만 판단한다.
   // 서버 렌더링에서는 항상 false(미노출)이므로 hydration mismatch가 없다.
@@ -57,7 +55,6 @@ export default function HomePage() {
 
   function handleSelectPet(petId: string) {
     setSelectedPetId(petId);
-    setLastSelectedPetId(petId);
   }
 
   const activePetIdForStatus =

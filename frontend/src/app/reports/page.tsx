@@ -14,7 +14,7 @@ import { useReports } from '@/features/report/hooks/useReports';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
 import type { PetBasic } from '@/features/report/types/report.types';
-import { getLastSelectedPetId } from '@/features/shared/utils/lastSelectedPet';
+import { useSelectedPetStore } from '@/features/shared/stores/selectedPet.store';
 import styles from './page.module.css';
 
 const MIN_RECORDS = 10;
@@ -74,11 +74,13 @@ function ReportsContent() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const selectedPetId = useSelectedPetStore((s) => s.selectedPetId);
+  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
+
   const pets: PetBasic[] = petsData?.me?.pets ?? [];
   const firstPetId = pets[0]?.id ?? '';
   const petIdFromUrl = searchParams.get('petId') ?? '';
-  const lastSelectedPetId = getLastSelectedPetId();
-  const homeDefaultPetId = pets.some((p) => p.id === lastSelectedPetId) ? lastSelectedPetId! : '';
+  const homeDefaultPetId = pets.some((p) => p.id === selectedPetId) ? selectedPetId! : '';
   const activePetId = petIdFromUrl || homeDefaultPetId || firstPetId;
   const activePet = pets.find((p) => p.id === activePetId);
 
@@ -86,6 +88,7 @@ function ReportsContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('petId', id);
     router.replace(`/reports?${params.toString()}`);
+    setSelectedPetId(id);
   }
 
   const { status, loading: statusLoading, refetch: refetchStatus } = useReportStatus(activePetId);
