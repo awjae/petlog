@@ -44,7 +44,7 @@ const MODE_ICON: Record<ThemeMode, LucideIcon> = {
 export default function SettingsPage() {
   const router = useRouter();
   const client = useApolloClient();
-  const { theme, mode, setTheme, setMode } = useTheme();
+  const { theme, mode, resolvedMode, setTheme, setMode } = useTheme();
   const { name, email, loading } = useCurrentUser();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
@@ -151,7 +151,7 @@ export default function SettingsPage() {
               >
                 <span
                   className={styles.themeColor}
-                  style={{ background: t.preview }}
+                  style={{ background: t.preview[resolvedMode] }}
                   aria-hidden="true"
                 />
                 <span className={styles.themeLabel}>{t.label}</span>

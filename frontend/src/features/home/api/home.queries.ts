@@ -23,7 +23,8 @@ export const HOME_QUERY: TypedDocumentNode<HomeQueryQuery, HomeQueryQueryVariabl
           id
           type
           recordedAt
-          summary
+          numValue
+          textValue
         }
       }
       upcomingSchedules(limit: 3) {

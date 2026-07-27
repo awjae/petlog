@@ -126,8 +126,9 @@ type HealthRecord {
 
 type HealthRecordSummary {
   id: ID!
+  numValue: Float
   recordedAt: DateTime!
-  summary: String!
+  textValue: String
   type: HealthRecordType!
 }
 

@@ -37,19 +37,24 @@ export const viewport: Viewport = {
 // 이 스크립트가 번들 밖에서 그대로 실행되기 때문이다).
 const THEME_INIT_SCRIPT = `
 (function () {
+  var d = document.documentElement;
+  var stored = { theme: null, mode: null };
   try {
-    var d = document.documentElement;
-    var theme = localStorage.getItem('petlog-theme');
-    d.dataset.theme = theme === 'pastel-pink' ? 'pastel-pink' : 'pastel-sky';
-
-    var mode = localStorage.getItem('petlog-theme-mode') || 'system';
-    if (mode !== 'light' && mode !== 'dark') {
-      mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    d.dataset.mode = mode;
+    stored.theme = localStorage.getItem('petlog-theme');
+    stored.mode = localStorage.getItem('petlog-theme-mode');
   } catch (e) {
-    document.documentElement.dataset.mode = 'light';
+    // 시크릿 모드/서드파티 iframe 등에서 접근이 막히면 저장값 없이 기본값으로 간다.
   }
+
+  d.dataset.theme = stored.theme === 'pastel-pink' ? 'pastel-pink' : 'pastel-sky';
+
+  var mode = stored.mode;
+  if (mode !== 'light' && mode !== 'dark') {
+    // 기본값은 'system'이다. 저장값을 못 읽었을 때도 라이트로 고정하지 않고
+    // OS 설정을 따라야 일관된다.
+    mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  d.dataset.mode = mode;
 })();
 `;
 

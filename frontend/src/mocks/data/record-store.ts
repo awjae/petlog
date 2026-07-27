@@ -21,7 +21,8 @@ export function getMockRecentRecords(petId: string, limit: number) {
       id: r.id,
       type: r.type,
       recordedAt: r.recordedAt,
-      summary: buildSummary(r),
+      numValue: r.numValue ?? null,
+      textValue: r.textValue ?? null,
     }));
 }
 
@@ -41,22 +42,4 @@ export function getAllMockRecords(petId: string) {
       textValue: r.textValue ?? null,
       note: null,
     }));
-}
-
-function buildSummary(r: StoredRecord): string {
-  switch (r.type) {
-    case 'weight':
-      return r.numValue != null ? `${r.numValue} kg` : '';
-    case 'appetite':
-      return r.textValue ?? '';
-    case 'activity': {
-      const duration = r.numValue != null ? `${r.numValue}분` : '';
-      const distance = r.textValue ? ` · ${r.textValue}km` : '';
-      return duration + distance;
-    }
-    case 'mood':
-      return r.textValue ?? '';
-    default:
-      return r.textValue ?? '';
-  }
 }

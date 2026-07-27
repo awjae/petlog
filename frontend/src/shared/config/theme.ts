@@ -17,12 +17,18 @@ export const THEME_MODE_STORAGE_KEY = 'petlog-theme-mode';
 export const DEFAULT_THEME: Theme = 'pastel-sky';
 export const DEFAULT_THEME_MODE: ThemeMode = 'system';
 
-export const THEMES: { value: Theme; label: string; preview: string }[] = [
-  // preview 는 설정 화면의 미리보기 원. 각 팔레트의 대표색(--color-primary)과 같은 값이라
-  // 실제 적용 결과와 어긋나지 않아야 한다.
-  { value: 'pastel-sky', label: '파스텔 스카이', preview: '#2f7099' },
-  { value: 'pastel-pink', label: '로즈 핑크', preview: '#b34760' },
-];
+/**
+ * 설정 화면의 미리보기 원.
+ *
+ * 지금 고르지 않은 팔레트의 색도 보여줘야 해서 CSS 변수를 쓸 수 없다(변수는 항상
+ * '현재 적용된' 팔레트 값이다). 그래서 값을 여기 적되, globals.css 의 --color-primary 와
+ * 명암별로 짝을 맞춘다. 한쪽만 바꾸면 미리보기가 실제 적용 결과와 어긋난다.
+ */
+export const THEMES: { value: Theme; label: string; preview: Record<'light' | 'dark', string> }[] =
+  [
+    { value: 'pastel-sky', label: '파스텔 스카이', preview: { light: '#2f7099', dark: '#7cbde4' } },
+    { value: 'pastel-pink', label: '로즈 핑크', preview: { light: '#b34760', dark: '#e79ab0' } },
+  ];
 
 export const THEME_MODES: { value: ThemeMode; label: string }[] = [
   { value: 'system', label: '시스템' },

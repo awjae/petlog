@@ -1,7 +1,7 @@
 import type { CalendarEvent, CalendarEventType, PetColorMap } from '../types/calendar.types';
 import { EVENT_TYPE_CONFIG } from '../types/calendar.types';
 import { RECORD_TYPE_ICONS, type RecordIconKey } from '@/shared/components/recordTypeIcons';
-import { buildSummary } from '@/features/health-record/types/health-record.types';
+import { TYPE_LABEL, buildSummary } from '@/features/health-record/types/health-record.types';
 import styles from './EventCard.module.css';
 
 interface Props {
@@ -33,6 +33,11 @@ export function EventCard({ event, petName, petColor, showPetTag }: Props) {
   const config = EVENT_TYPE_CONFIG[event.type];
   const Icon = RECORD_TYPE_ICONS[EVENT_ICON[event.type]];
   const subtitle = resolveSubtitle(event);
+  // 건강 기록의 제목도 프론트 라벨을 쓴다. 백엔드가 따로 들고 있던 라벨과
+  // 문구가 갈려('활동/대변/기분' vs '산책/배변/메모') 같은 기록이 화면마다
+  // 다르게 보였다.
+  const title =
+    event.type === 'health_record' && event.recordType ? TYPE_LABEL[event.recordType] : event.title;
 
   return (
     <div className={styles.card} style={{ borderLeftColor: petColor }}>
@@ -40,7 +45,7 @@ export function EventCard({ event, petName, petColor, showPetTag }: Props) {
         <Icon size={20} strokeWidth={1.75} />
       </span>
       <div className={styles.body}>
-        <span className={styles.title}>{event.title}</span>
+        <span className={styles.title}>{title}</span>
         {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
       </div>
       {showPetTag && (
