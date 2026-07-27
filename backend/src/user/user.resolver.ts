@@ -60,8 +60,10 @@ export class UserResolver {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
+    // 삭제는 전부 소프트 삭제다. 아래 조회들이 deletedAt을 거르지 않으면
+    // 사용자가 지운 반려동물/기록이 캘린더에 계속 보인다.
     const pets = await this.prisma.pet.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, deletedAt: null },
       select: { id: true },
     });
     const petIds = pets.map((p) => p.id);
@@ -69,19 +71,19 @@ export class UserResolver {
     const [healthRecords, vaccinations, medications, appointments, medicalEvents] =
       await Promise.all([
         this.prisma.healthRecord.findMany({
-          where: { petId: { in: petIds }, recordedAt: { gte: start, lte: end } },
+          where: { petId: { in: petIds }, deletedAt: null, recordedAt: { gte: start, lte: end } },
         }),
         this.prisma.vaccination.findMany({
-          where: { petId: { in: petIds }, vaccinatedAt: { gte: start, lte: end } },
+          where: { petId: { in: petIds }, deletedAt: null, vaccinatedAt: { gte: start, lte: end } },
         }),
         this.prisma.medication.findMany({
-          where: { petId: { in: petIds }, startDate: { gte: start, lte: end } },
+          where: { petId: { in: petIds }, deletedAt: null, startDate: { gte: start, lte: end } },
         }),
         this.prisma.appointment.findMany({
-          where: { petId: { in: petIds }, scheduledAt: { gte: start, lte: end } },
+          where: { petId: { in: petIds }, deletedAt: null, scheduledAt: { gte: start, lte: end } },
         }),
         this.prisma.medicalEvent.findMany({
-          where: { petId: { in: petIds }, visitDate: { gte: start, lte: end } },
+          where: { petId: { in: petIds }, deletedAt: null, visitDate: { gte: start, lte: end } },
         }),
       ]);
 
@@ -155,7 +157,7 @@ export class UserResolver {
     const now = new Date();
 
     const pets = await this.prisma.pet.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, deletedAt: null },
       select: { id: true, name: true },
     });
     const petIds = pets.map((p) => p.id);
@@ -163,15 +165,20 @@ export class UserResolver {
 
     const [vaccinations, medications, appointments] = await Promise.all([
       this.prisma.vaccination.findMany({
-        where: { petId: { in: petIds }, nextDueAt: { gte: now } },
+        where: { petId: { in: petIds }, deletedAt: null, nextDueAt: { gte: now } },
         orderBy: { nextDueAt: 'asc' },
       }),
       this.prisma.medication.findMany({
-        where: { petId: { in: petIds }, endDate: { gte: now } },
+        where: { petId: { in: petIds }, deletedAt: null, endDate: { gte: now } },
         orderBy: { endDate: 'asc' },
       }),
       this.prisma.appointment.findMany({
-        where: { petId: { in: petIds }, scheduledAt: { gte: now }, status: 'scheduled' },
+        where: {
+          petId: { in: petIds },
+          deletedAt: null,
+          scheduledAt: { gte: now },
+          status: 'scheduled',
+        },
         orderBy: { scheduledAt: 'asc' },
       }),
     ]);
