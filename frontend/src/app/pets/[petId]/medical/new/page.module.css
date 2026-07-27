@@ -63,7 +63,7 @@
   height: 72px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;

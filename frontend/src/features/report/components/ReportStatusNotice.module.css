@@ -51,7 +51,7 @@
   background: var(--color-primary);
   font: var(--font-body);
   font-weight: 600;
-  color: #fff;
+  color: var(--color-primary-text);
   cursor: pointer;
 }
 

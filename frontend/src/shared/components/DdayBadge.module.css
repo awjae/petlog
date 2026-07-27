@@ -16,17 +16,20 @@
   color: var(--color-primary);
 }
 
+/* D-8 이상: 아직 여유 / D-3~D-7: 곧 다가옴 / D-0~D-2: 임박 / 기한 초과
+   임박도를 색으로 구분한다 — near와 urgent가 같은 색이면 D-7과 D-Day가 구분되지 않는다. */
 .near {
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-  color: #b36800;
+  background: var(--color-warning-light);
+  color: var(--color-warning);
 }
 
 .urgent {
-  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-  color: #b36800;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 .overdue {
-  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  background: var(--color-danger-light);
   color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
 }

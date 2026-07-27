@@ -30,7 +30,8 @@ export const PET_DETAIL_QUERY: TypedDocumentNode<PetDetailQuery, PetDetailQueryV
         id
         type
         recordedAt
-        summary
+        numValue
+        textValue
       }
       createdAt
       updatedAt

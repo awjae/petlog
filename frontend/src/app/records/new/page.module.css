@@ -187,24 +187,36 @@
 }
 
 /* 숫자 입력 */
+/* 단위(kg/분/km)를 입력 필드 바깥에 두면 필드 오른쪽 끝이 다른 입력들과 어긋난다.
+   테두리를 .inputRow가 갖고 단위를 그 안쪽 접미사로 넣어 폭을 맞춘다. */
 .inputRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.numberInput {
-  flex: 1;
-  min-width: 0;
+  gap: 8px;
   height: 52px;
+  padding: 0 14px;
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 0 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.inputRow:focus-within {
+  border-color: var(--color-primary);
+}
+
+/* 단위를 필드 안쪽으로 옮기면서 가운데 정렬을 유지하면 숫자가 필드 중앙에,
+   단위는 오른쪽 끝에 떨어져 "5.2      kg"처럼 읽힌다. 오른쪽 정렬해 숫자와 단위를
+   한 덩어리로 붙인다. */
+.numberInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: none;
+  border: none;
   font: var(--font-title-l);
   color: var(--color-text-primary);
-  text-align: center;
-  box-shadow: var(--shadow-sm);
+  text-align: right;
   -moz-appearance: textfield;
 }
 
@@ -215,13 +227,12 @@
 
 .numberInput:focus {
   outline: none;
-  border-color: var(--color-primary);
 }
 
 .unit {
+  flex-shrink: 0;
   font: var(--font-title-m);
   color: var(--color-text-secondary);
-  min-width: 32px;
 }
 
 .activityRow {
@@ -276,10 +287,19 @@
   border-right: none;
 }
 
+/* 선택 상태는 "틴트 면 + 같은 계열 진한 글씨 + 링"으로 표현한다.
+   심각도만 --seg-tone / --seg-tone-bg 를 인라인으로 받아 상태색(성공/경고/위험)을
+   쓰고(page.tsx), 나머지 세 세그먼트(식사 상태·배변 횟수·구토 횟수)는 기본값인
+   primary 계열을 탄다.
+
+   이전에는 기본값이 solid(진한 면 + 흰 글씨)였다. 심각도를 고치면서 넷을 같은
+   언어로 맞췄다 — 한 화면에 선택 스타일이 두 가지로 보이는 편이 더 어색하다고
+   판단했다. 대신 선택 상태의 시각적 무게는 낮아진다(대비는 4.52:1로 기준 충족). */
 .segBtnActive {
-  background: var(--seg-active-bg, var(--color-primary));
-  color: #fff;
+  background: var(--seg-tone-bg, var(--color-primary-light));
+  color: var(--seg-tone, var(--color-primary));
   font-weight: 700;
+  box-shadow: inset 0 0 0 1.5px var(--seg-tone, var(--color-primary));
 }
 
 /* 텍스트 영역 */
@@ -329,7 +349,7 @@
   width: 100%;
   height: 52px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-title-m);
@@ -362,7 +382,7 @@
   height: 72px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   font-size: 32px;
   font-weight: 700;
   display: flex;
@@ -386,9 +406,11 @@
 }
 
 /* ===== 건강 이상 기록 유형 ===== */
+/* 위 .typeGrid(4열)와 카드 크기를 맞추기 위해 항목이 3개여도 4열 그리드를 유지한다.
+   열 수가 다르면 같은 성격의 버튼인데 화면에서 크기가 달라 보인다. */
 .typeGridHealth {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -445,12 +467,12 @@
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--color-warning, #ff9f0a) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-warning, #ff9f0a) 30%, transparent);
+  background: var(--color-warning-light);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-warning-light));
   border-radius: var(--radius-sm);
   font: var(--font-caption);
   font-size: 12px;
-  color: #b36800;
+  color: var(--color-warning);
   margin-top: 10px;
 }
 

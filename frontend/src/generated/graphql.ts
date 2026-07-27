@@ -101,6 +101,18 @@ export type UpdateProfileInput = {
   name?: string | null | undefined;
 };
 
+export type ConsentStatusQueryVariables = Exact<{ [key: string]: never }>;
+
+export type ConsentStatusQuery = { consentStatus: { marketingNotificationAgreed: boolean } };
+
+export type UpdateMarketingConsentMutationVariables = Exact<{
+  agreed: boolean;
+}>;
+
+export type UpdateMarketingConsentMutation = {
+  updateMarketingConsent: { marketingNotificationAgreed: boolean };
+};
+
 export type CreateHealthRecordMutationVariables = Exact<{
   input: CreateHealthRecordInput;
 }>;
@@ -143,7 +155,8 @@ export type HomeQueryQuery = {
         id: string;
         type: HealthRecordType;
         recordedAt: string;
-        summary: string;
+        numValue: number | null;
+        textValue: string | null;
       }>;
     }>;
     upcomingSchedules: Array<{
@@ -374,7 +387,8 @@ export type PetDetailQuery = {
       id: string;
       type: HealthRecordType;
       recordedAt: string;
-      summary: string;
+      numValue: number | null;
+      textValue: string | null;
     }>;
   };
 };
@@ -540,6 +554,76 @@ export type SettingsMeQueryVariables = Exact<{ [key: string]: never }>;
 
 export type SettingsMeQuery = { me: { name: string | null; email: string } };
 
+export const ConsentStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ConsentStatus' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'consentStatus' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'marketingNotificationAgreed' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ConsentStatusQuery, ConsentStatusQueryVariables>;
+export const UpdateMarketingConsentDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdateMarketingConsent' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'agreed' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'updateMarketingConsent' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'agreed' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'agreed' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'marketingNotificationAgreed' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UpdateMarketingConsentMutation,
+  UpdateMarketingConsentMutationVariables
+>;
 export const CreateHealthRecordDocument = {
   kind: 'Document',
   definitions: [
@@ -699,7 +783,8 @@ export const HomeQueryDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'type' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'recordedAt' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'numValue' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                           ],
                         },
                       },
@@ -1621,7 +1706,8 @@ export const PetDetailDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'type' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'recordedAt' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'summary' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'numValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                     ],
                   },
                 },

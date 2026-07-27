@@ -10,6 +10,8 @@ describe('UserService', () => {
   let service: UserService;
   let prisma: {
     user: { findUnique: jest.Mock };
+    pet: { findMany: jest.Mock };
+    healthRecord: { findMany: jest.Mock };
     $transaction: jest.Mock;
   };
   let consentService: { recordConsents: jest.Mock };
@@ -20,6 +22,8 @@ describe('UserService', () => {
 
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue(null) },
+      pet: { findMany: jest.fn().mockResolvedValue([{ id: 'pet-1' }]) },
+      healthRecord: { findMany: jest.fn().mockResolvedValue([]) },
       // 실제 Prisma의 $transaction처럼 콜백에 tx 클라이언트를 전달해 실행한다.
       $transaction: jest.fn((cb: (tx: unknown) => unknown) =>
         cb({ user: { create: txUserCreate } }),
@@ -91,6 +95,29 @@ describe('UserService', () => {
         { ipAddress: '1.2.3.4', userAgent: 'jest' },
         { user: { create: txUserCreate } },
       );
+    });
+  });
+  /**
+   * 삭제는 전부 소프트 삭제라, 필터를 빠뜨리면 지운 기록의 날짜에 캘린더 점이 남는다.
+   * 타입으로 강제되지 않고 빠뜨려도 아무 데서도 실패하지 않는 종류의 결함이다.
+   */
+  describe('getRecordDates', () => {
+    it('소프트 삭제된 반려동물과 기록을 제외하고 조회한다', async () => {
+      await service.getRecordDates('user-1', 90);
+
+      expect(prisma.pet.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: 'user-1', deletedAt: null } }),
+      );
+      expect(prisma.healthRecord.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { petId: { in: ['pet-1'] }, deletedAt: null } }),
+      );
+    });
+
+    it('반려동물이 없으면 기록을 조회하지 않는다', async () => {
+      prisma.pet.findMany.mockResolvedValue([]);
+
+      await expect(service.getRecordDates('user-1', 90)).resolves.toEqual([]);
+      expect(prisma.healthRecord.findMany).not.toHaveBeenCalled();
     });
   });
 });

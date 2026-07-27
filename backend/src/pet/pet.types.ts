@@ -34,8 +34,15 @@ export class HealthRecordSummary {
   @Field(() => Date)
   recordedAt!: Date;
 
-  @Field()
-  summary!: string;
+  /**
+   * 표기(단위·등급 라벨)는 프론트의 buildSummary 한 곳에서만 조립한다.
+   * 완성된 문구를 여기서 만들면 같은 규칙이 FE/BE 두 곳에 생겨 조용히 어긋난다.
+   */
+  @Field(() => Float, { nullable: true })
+  numValue?: number;
+
+  @Field({ nullable: true })
+  textValue?: string;
 }
 
 @ObjectType()

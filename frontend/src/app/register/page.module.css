@@ -120,7 +120,7 @@
 .submitBtn {
   height: 54px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-title-m);

@@ -1,3 +1,5 @@
+import type { HealthRecordType } from '@/generated/graphql';
+
 export type CalendarPet = {
   id: string;
   name: string;
@@ -16,7 +18,11 @@ export type CalendarEvent = {
   date: string;
   type: CalendarEventType;
   title: string;
+  /** 이미 완성된 문구(투약 용량, 예약 사유 등). 건강 기록은 아래 원본 필드로 조립한다. */
   subtitle: string | null;
+  recordType: HealthRecordType | null;
+  numValue: number | null;
+  textValue: string | null;
   petId: string;
 };
 

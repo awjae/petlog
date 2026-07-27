@@ -28,6 +28,9 @@ export const CALENDAR_QUERY: TypedDocumentNode<CalendarQueryResult, CalendarQuer
         type
         title
         subtitle
+        recordType
+        numValue
+        textValue
         petId
       }
     }

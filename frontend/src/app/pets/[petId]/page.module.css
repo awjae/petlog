@@ -124,7 +124,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border-radius: var(--radius-full);
   font: var(--font-body);
   font-weight: 600;
@@ -152,7 +152,7 @@
   align-items: center;
   justify-content: center;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border-radius: var(--radius-full);
   font: var(--font-title-m);
   text-decoration: none;

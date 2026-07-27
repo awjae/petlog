@@ -95,7 +95,7 @@
   bottom: -4px;
   right: -4px;
   background: var(--color-text-secondary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border-radius: var(--radius-full);
   width: 28px;
   height: 28px;
@@ -109,7 +109,7 @@
   bottom: -4px;
   right: -4px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border-radius: var(--radius-full);
   width: 28px;
   height: 28px;
@@ -197,7 +197,7 @@
   height: 52px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   font: var(--font-title-m);
   font-weight: 700;
   text-decoration: none;

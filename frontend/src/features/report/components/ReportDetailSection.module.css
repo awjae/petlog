@@ -40,17 +40,17 @@
 }
 
 .iconWrap_highlights {
-  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  background: var(--color-success-light);
   color: var(--color-success);
 }
 
 .iconWrap_concerns {
-  background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+  background: var(--color-warning-light);
   color: var(--color-warning);
 }
 
 .iconWrap_recommendations {
-  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  background: var(--color-primary-light);
   color: var(--color-primary);
 }
 
@@ -81,7 +81,7 @@
   width: 20px;
   height: 20px;
   border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  background: var(--color-primary-light);
   color: var(--color-primary);
   font: var(--font-label);
   font-weight: 700;

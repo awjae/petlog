@@ -6,9 +6,9 @@
   width: 100%;
   max-width: 230px;
   aspect-ratio: 4 / 6;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: #f2f2f7;
+  background: var(--color-bg);
 }
 
 .image {
@@ -23,7 +23,12 @@
 .skeleton {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #f2f2f7 25%, #e5e5ea 37%, #f2f2f7 63%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 25%,
+    var(--color-border) 37%,
+    var(--color-bg) 63%
+  );
   background-size: 400% 100%;
   animation: onboardingShimmer 1.5s ease-in-out infinite;
 }
@@ -43,12 +48,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f2f7;
+  background: var(--color-bg);
 }
 
 .errorIcon {
   width: 40px;
   height: 40px;
+  color: var(--color-border);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,9 +4,9 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { MailCheck } from 'lucide-react';
-import Image from 'next/image';
 import { useForgotPassword } from '@/features/auth/hooks/useForgotPassword';
 import styles from './page.module.css';
+import { AppLogo } from '@/shared/components/AppLogo';
 
 type Phase = 'form' | 'sent';
 
@@ -84,7 +84,7 @@ function ForgotPasswordContent() {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <span className={styles.brandIcon} aria-hidden="true">
-            <Image src="/main-logo.png" alt="" width={56} height={56} priority />
+            <AppLogo priority />
           </span>
           <h1 className={styles.brandName}>Petlog</h1>
           <p className={styles.brandDesc}>반려동물 건강 기록 서비스</p>

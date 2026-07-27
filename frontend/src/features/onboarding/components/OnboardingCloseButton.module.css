@@ -17,7 +17,7 @@
   width: 28px;
   height: 28px;
   border-radius: 9999px;
-  background: rgba(28, 28, 30, 0.4);
+  background: rgba(28, 28, 30, 0.45);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;

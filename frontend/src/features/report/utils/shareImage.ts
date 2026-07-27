@@ -1,8 +1,14 @@
 // "이미지로 공유" 액션에서 쓸 리포트 요약 카드 이미지를 생성한다.
 // 별도 이미지 렌더링 라이브러리(html2canvas 등)를 추가하지 않고, Canvas 2D API만으로
 // 직접 그린다 — 콘텐츠가 petName/기간/overview/섹션 불릿 정도로 단순해 라이브러리
-// 도입 비용을 정당화하기 어렵다고 판단했다. 색상은 테마 CSS 변수를 런타임에 읽어와
-// 라이트/다크 테마를 그대로 반영한다.
+// 도입 비용을 정당화하기 어렵다고 판단했다.
+//
+// 색은 테마 CSS 변수를 런타임에 읽되, 명암은 항상 라이트로 고정한다
+// (결정 문서: .claude/docs/decisions/030-design-token-roles-and-theme-mode.md).
+// 이 이미지는 앱 밖으로 나가는 산출물이다 — 수의사에게 보내거나 갤러리에 저장되고,
+// 받는 사람의 화면 설정과는 무관하게 남는다. 보내는 사람이 다크 모드라는 이유로
+// 검은 카드가 나가면 인쇄/전달 상황에서 읽기 어렵고 브랜드도 일관되지 않는다.
+// 팔레트(스카이/핑크)는 사용자가 고른 것을 그대로 따른다.
 
 const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1350;
@@ -18,10 +24,57 @@ export interface ShareImageParams {
   concerns?: string[];
 }
 
-function cssVar(name: string, fallback: string): string {
+/** 이미지에 쓰는 색. 값은 CSS 토큰에서 읽고, 여기 fallback은 라이트 스카이 기준이다. */
+const PALETTE_TOKENS = {
+  bg: ['--color-bg', '#f4f0e6'],
+  surface: ['--color-surface', '#fffef8'],
+  primary: ['--color-primary', '#2f7099'],
+  primaryLight: ['--color-primary-light', '#dceef8'],
+  warning: ['--color-warning', '#8a5208'],
+  textPrimary: ['--color-text-primary', '#2d3c48'],
+  textSecondary: ['--color-text-secondary', '#586e81'],
+  border: ['--color-border', '#ddd8cc'],
+} as const;
+
+type Palette = Record<keyof typeof PALETTE_TOKENS, string>;
+
+/**
+ * 라이트 팔레트를 읽는다.
+ *
+ * data-mode="light"를 단 임시 요소를 body에 붙여 그 요소의 계산된 값을 읽는다.
+ * globals.css의 라이트 블록이 [data-mode='light']도 받도록 되어 있어, 문서가 다크여도
+ * 이 요소만 라이트 토큰을 갖는다. 루트의 data-mode를 잠깐 뒤집었다 되돌리는 방식보다
+ * 안전하고(중간에 다른 코드가 끼어들어도 화면이 깜빡이지 않는다), 색 값을 JS에
+ * 복사해두지 않아도 된다.
+ *
+ * ⚠️ 프로브는 반드시 <html>의 자손이어야 한다. 핑크 팔레트는
+ * `[data-theme='pastel-pink'] [data-mode='light']` 라는 자손 셀렉터로 정의돼 있어,
+ * 문서 트리 밖(예: DocumentFragment)이나 <html> 형제로 붙이면 조건이 안 맞아
+ * 에러 없이 스카이 값이 나온다.
+ */
+function readLightPalette(): Palette {
+  const fallback = Object.fromEntries(
+    Object.entries(PALETTE_TOKENS).map(([key, [, value]]) => [key, value]),
+  ) as Palette;
+
   if (typeof window === 'undefined') return fallback;
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return value || fallback;
+
+  const probe = document.createElement('div');
+  probe.dataset.mode = 'light';
+  probe.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none';
+  document.body.appendChild(probe);
+
+  try {
+    const computed = getComputedStyle(probe);
+    return Object.fromEntries(
+      Object.entries(PALETTE_TOKENS).map(([key, [name, value]]) => [
+        key,
+        computed.getPropertyValue(name).trim() || value,
+      ]),
+    ) as Palette;
+  } finally {
+    probe.remove();
+  }
 }
 
 function roundRect(
@@ -70,14 +123,16 @@ export async function generateShareImageBlob(params: ShareImageParams): Promise<
   if (!context) return null;
   const ctx = context;
 
-  const colorBg = cssVar('--color-bg', '#f4f0e6');
-  const colorSurface = cssVar('--color-surface', '#fffef8');
-  const colorPrimary = cssVar('--color-primary', '#6baed6');
-  const colorPrimaryLight = cssVar('--color-primary-light', '#dceef8');
-  const colorWarning = cssVar('--color-warning', '#e89a30');
-  const colorTextPrimary = cssVar('--color-text-primary', '#2d3c48');
-  const colorTextSecondary = cssVar('--color-text-secondary', '#6a8295');
-  const colorBorder = cssVar('--color-border', '#ddd8cc');
+  const {
+    bg: colorBg,
+    surface: colorSurface,
+    primary: colorPrimary,
+    primaryLight: colorPrimaryLight,
+    warning: colorWarning,
+    textPrimary: colorTextPrimary,
+    textSecondary: colorTextSecondary,
+    border: colorBorder,
+  } = readLightPalette();
 
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = colorBg;

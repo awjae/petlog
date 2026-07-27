@@ -2,20 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  Scale,
-  Utensils,
-  Footprints,
-  NotebookPen,
-  Smile,
-  Meh,
-  Frown,
-  Check,
-  Loader2,
-  ChevronRight,
-  type LucideIcon,
-} from 'lucide-react';
+import { Smile, Meh, Frown, Check, Loader2, ChevronRight, type LucideIcon } from 'lucide-react';
 import { useCreateHealthRecord } from '../hooks/useCreateHealthRecord';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import styles from './RecordForm.module.css';
 
 export type RecordType = 'weight' | 'appetite' | 'activity' | 'mood';
@@ -28,10 +17,10 @@ export interface RecordFormProps {
 }
 
 const RECORD_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'weight', Icon: Scale, label: '체중' },
-  { type: 'appetite', Icon: Utensils, label: '식사' },
-  { type: 'activity', Icon: Footprints, label: '산책' },
-  { type: 'mood', Icon: NotebookPen, label: '메모' },
+  { type: 'weight', Icon: RECORD_TYPE_ICONS.weight, label: '체중' },
+  { type: 'appetite', Icon: RECORD_TYPE_ICONS.appetite, label: '식사' },
+  { type: 'activity', Icon: RECORD_TYPE_ICONS.activity, label: '산책' },
+  { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
 ];
 
 const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [

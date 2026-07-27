@@ -79,7 +79,7 @@
 .resetBanner {
   font: var(--font-caption);
   color: var(--color-text-primary);
-  background: rgba(52, 199, 89, 0.1);
+  background: var(--color-success-light);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   margin: 0;
@@ -120,7 +120,7 @@
 .submitBtn {
   height: 54px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border: none;
   border-radius: var(--radius-full);
   font: var(--font-title-m);

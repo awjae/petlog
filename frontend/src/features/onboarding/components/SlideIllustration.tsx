@@ -51,10 +51,10 @@ function PawIcon({ className }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <ellipse cx="24" cy="30" rx="10" ry="8" fill="#C7C7CC" />
-      <circle cx="12" cy="18" r="5" fill="#C7C7CC" />
-      <circle cx="24" cy="12" r="5.5" fill="#C7C7CC" />
-      <circle cx="36" cy="18" r="5" fill="#C7C7CC" />
+      <ellipse cx="24" cy="30" rx="10" ry="8" fill="currentColor" />
+      <circle cx="12" cy="18" r="5" fill="currentColor" />
+      <circle cx="24" cy="12" r="5.5" fill="currentColor" />
+      <circle cx="36" cy="18" r="5" fill="currentColor" />
     </svg>
   );
 }

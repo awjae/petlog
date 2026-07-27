@@ -22,7 +22,8 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* 이벤트 타입 아이콘: 작은 컬러 배지 */
+/* 이벤트 타입 아이콘: 파스텔 배지 위의 라인 아이콘.
+   배지 색(EVENT_TYPE_CONFIG.bgColor)은 다크에서도 파스텔 고정이므로 글자색도 고정값을 쓴다. */
 .icon {
   flex-shrink: 0;
   width: 38px;
@@ -31,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.06));
+  color: var(--color-on-pastel);
 }
 
 .body {
@@ -61,7 +62,8 @@
   flex-shrink: 0;
   font: var(--font-label);
   font-weight: 700;
-  color: #fff;
+  /* 배경이 파스텔 펫 컬러(inline style)라 흰 글씨는 대비가 나오지 않는다 */
+  color: var(--color-on-pastel);
   padding: 3px 10px;
   border-radius: var(--radius-full);
   white-space: nowrap;

@@ -1,25 +1,12 @@
 import Link from 'next/link';
 import type { PetRecentHealthRecord } from '../types/pet.types';
 import { formatShortDate } from '../utils/petMeta';
+import { TYPE_LABEL, buildSummary } from '@/features/health-record/types/health-record.types';
 import styles from './PetRecentRecords.module.css';
 
 interface PetRecentRecordsProps {
   petId: string;
   records: PetRecentHealthRecord[];
-}
-
-const TYPE_LABEL: Record<string, string> = {
-  weight: '체중',
-  appetite: '식사',
-  activity: '산책',
-  mood: '메모',
-  symptom: '증상',
-  stool: '배변',
-  vomit: '구토',
-};
-
-function getTypeLabel(type: string): string {
-  return TYPE_LABEL[type] ?? type;
 }
 
 export function PetRecentRecords({ petId, records }: PetRecentRecordsProps) {
@@ -41,10 +28,12 @@ export function PetRecentRecords({ petId, records }: PetRecentRecordsProps) {
           {records.map((record) => (
             <li key={record.id} className={styles.item}>
               <div className={styles.topRow}>
-                <span className={styles.type}>{getTypeLabel(record.type)}</span>
+                <span className={styles.type}>{TYPE_LABEL[record.type]}</span>
                 <span className={styles.date}>{formatShortDate(record.recordedAt)}</span>
               </div>
-              <p className={styles.summary}>{record.summary}</p>
+              <p className={styles.summary}>
+                {buildSummary(record.type, record.numValue ?? null, record.textValue ?? null)}
+              </p>
             </li>
           ))}
         </ul>

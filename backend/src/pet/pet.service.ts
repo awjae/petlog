@@ -102,49 +102,10 @@ export class PetService {
       id: r.id,
       type: r.type,
       recordedAt: r.recordedAt,
-      summary: this.buildSummary(
-        r.type,
-        r.numValue != null ? Number(r.numValue) : null,
-        r.textValue,
-      ),
+      // Prisma Decimal → GraphQL Float
+      numValue: r.numValue != null ? Number(r.numValue) : undefined,
+      textValue: r.textValue ?? undefined,
     }));
-  }
-
-  private buildSummary(type: string, numValue: number | null, textValue: string | null): string {
-    const COUNT_LABEL: Record<number, string> = { 1: '1회', 2: '2-3회', 3: '4회 이상' };
-    const SEVERITY_LABEL: Record<number, string> = { 1: '경미함', 2: '보통', 3: '심각함' };
-
-    switch (type) {
-      case 'weight':
-        return numValue != null ? `${numValue} kg` : '';
-      case 'appetite':
-        return textValue ?? '';
-      case 'activity': {
-        const duration = numValue != null ? `${numValue}분` : '';
-        const distance = textValue ? ` · ${textValue}km` : '';
-        return duration + distance;
-      }
-      case 'mood':
-        return textValue ?? '';
-      case 'symptom': {
-        const severity = numValue != null ? SEVERITY_LABEL[numValue] : null;
-        if (textValue && severity) return `${textValue} · ${severity}`;
-        return textValue ?? '';
-      }
-      case 'stool': {
-        const count = numValue != null ? COUNT_LABEL[numValue] : null;
-        if (textValue && count) return `${textValue} · ${count}`;
-        return textValue ?? '';
-      }
-      case 'vomit': {
-        const count = numValue != null ? COUNT_LABEL[numValue] : null;
-        if (textValue && count) return `${textValue} · ${count}`;
-        if (count) return count;
-        return textValue ?? '';
-      }
-      default:
-        return textValue ?? '';
-    }
   }
 
   private serialize(pet: PrismaPet) {

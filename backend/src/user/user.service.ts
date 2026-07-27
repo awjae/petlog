@@ -116,8 +116,10 @@ export class UserService {
   }
 
   async getRecordDates(userId: string, limit: number): Promise<string[]> {
+    // 삭제는 전부 소프트 삭제다(deletedAt에 시각을 찍는다). 필터를 빠뜨리면
+    // 사용자가 지운 기록이 캘린더에 계속 남는다.
     const pets = await this.prisma.pet.findMany({
-      where: { userId },
+      where: { userId, deletedAt: null },
       select: { id: true },
     });
     if (pets.length === 0) return [];
@@ -125,7 +127,7 @@ export class UserService {
     const petIds = pets.map((p) => p.id);
 
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId: { in: petIds } },
+      where: { petId: { in: petIds }, deletedAt: null },
       select: { recordedAt: true },
       orderBy: { recordedAt: 'desc' },
       take: limit,

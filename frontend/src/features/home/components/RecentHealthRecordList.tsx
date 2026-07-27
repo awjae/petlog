@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { HealthRecordSummary } from '../types/home.types';
+import { TYPE_LABEL, buildSummary } from '@/features/health-record/types/health-record.types';
 import styles from './RecentHealthRecordList.module.css';
 
 type RecentHealthRecordListProps = {
@@ -12,20 +13,6 @@ type RecentHealthRecordListProps = {
 function formatDate(iso: string): string {
   const date = new Date(iso);
   return `${date.getMonth() + 1}.${date.getDate()}`;
-}
-
-const TYPE_LABEL: Record<string, string> = {
-  weight: '체중',
-  appetite: '식사',
-  activity: '산책',
-  mood: '메모',
-  symptom: '증상',
-  stool: '배변',
-  vomit: '구토',
-};
-
-function getLabel(type: string): string {
-  return TYPE_LABEL[type] ?? type;
 }
 
 export function RecentHealthRecordList({ petId, records }: RecentHealthRecordListProps) {
@@ -47,10 +34,12 @@ export function RecentHealthRecordList({ petId, records }: RecentHealthRecordLis
           {records.map((record) => (
             <li key={record.id} className={styles.item}>
               <div className={styles.topRow}>
-                <span className={styles.type}>{getLabel(record.type)}</span>
+                <span className={styles.type}>{TYPE_LABEL[record.type]}</span>
                 <span className={styles.date}>{formatDate(record.recordedAt)}</span>
               </div>
-              <p className={styles.summary}>{record.summary}</p>
+              <p className={styles.summary}>
+                {buildSummary(record.type, record.numValue ?? null, record.textValue ?? null)}
+              </p>
             </li>
           ))}
         </ul>

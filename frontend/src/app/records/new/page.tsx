@@ -5,13 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   X,
   PawPrint,
-  Scale,
-  Utensils,
-  Footprints,
-  NotebookPen,
-  Thermometer,
-  Droplets,
-  Waves,
   Smile,
   Meh,
   Frown,
@@ -22,6 +15,7 @@ import {
   Check,
   type LucideIcon,
 } from 'lucide-react';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
@@ -31,16 +25,16 @@ type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'sto
 type AppetiteLevel = 'good' | 'normal' | 'bad';
 
 const DAILY_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'weight', Icon: Scale, label: '체중' },
-  { type: 'appetite', Icon: Utensils, label: '식사' },
-  { type: 'activity', Icon: Footprints, label: '산책' },
-  { type: 'mood', Icon: NotebookPen, label: '메모' },
+  { type: 'weight', Icon: RECORD_TYPE_ICONS.weight, label: '체중' },
+  { type: 'appetite', Icon: RECORD_TYPE_ICONS.appetite, label: '식사' },
+  { type: 'activity', Icon: RECORD_TYPE_ICONS.activity, label: '산책' },
+  { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
 ];
 
 const HEALTH_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'symptom', Icon: Thermometer, label: '증상' },
-  { type: 'stool', Icon: Droplets, label: '배변' },
-  { type: 'vomit', Icon: Waves, label: '구토' },
+  { type: 'symptom', Icon: RECORD_TYPE_ICONS.symptom, label: '증상' },
+  { type: 'stool', Icon: RECORD_TYPE_ICONS.stool, label: '배변' },
+  { type: 'vomit', Icon: RECORD_TYPE_ICONS.vomit, label: '구토' },
 ];
 
 const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [
@@ -61,10 +55,18 @@ const SYMPTOM_OPTIONS = [
   '기타',
 ];
 
-const SEVERITY_OPTIONS: { value: 1 | 2 | 3; label: string; Icon: LucideIcon; color: string }[] = [
-  { value: 1, label: '경미함', Icon: Circle, color: '#34C759' },
-  { value: 2, label: '보통', Icon: CircleAlert, color: '#FF9F0A' },
-  { value: 3, label: '심각함', Icon: CircleX, color: '#FF3B30' },
+// 색은 토큰으로만 지정한다. iOS 기본색을 인라인으로 박아두면 팔레트가 바뀌어도
+// 여기만 남고, 무엇보다 흰 글씨를 얹었을 때 대비가 2:1 대까지 떨어진다.
+// 선택 상태는 "상태색 틴트 면 + 같은 계열 진한 글씨"로 표현한다.
+const SEVERITY_OPTIONS: {
+  value: 1 | 2 | 3;
+  label: string;
+  Icon: LucideIcon;
+  tone: 'success' | 'warning' | 'danger';
+}[] = [
+  { value: 1, label: '경미함', Icon: Circle, tone: 'success' },
+  { value: 2, label: '보통', Icon: CircleAlert, tone: 'warning' },
+  { value: 3, label: '심각함', Icon: CircleX, tone: 'danger' },
 ];
 
 const STOOL_TYPES = ['정상', '무름', '설사', '혈변', '변비'];
@@ -485,14 +487,17 @@ function NewRecordContent() {
             <section className={styles.section}>
               <h2 className={styles.sectionLabel}>심각도</h2>
               <div className={styles.segmented} role="group" aria-label="심각도 선택">
-                {SEVERITY_OPTIONS.map(({ value, label, Icon, color }) => (
+                {SEVERITY_OPTIONS.map(({ value, label, Icon, tone }) => (
                   <button
                     key={value}
                     type="button"
                     className={`${styles.segBtn} ${severity === value ? styles.segBtnActive : ''}`}
                     style={
                       severity === value
-                        ? ({ '--seg-active-bg': color } as React.CSSProperties)
+                        ? ({
+                            '--seg-tone': `var(--color-${tone})`,
+                            '--seg-tone-bg': `var(--color-${tone}-light)`,
+                          } as React.CSSProperties)
                         : undefined
                     }
                     onClick={() => setSeverity(severity === value ? null : value)}

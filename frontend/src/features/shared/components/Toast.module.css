@@ -38,12 +38,12 @@
 
 .toastSuccess {
   background: var(--color-text-primary);
-  color: #fff;
+  color: var(--color-primary-text);
 }
 
 .toastError {
   background: var(--color-danger);
-  color: #fff;
+  color: var(--color-danger-text);
 }
 
 .icon {
@@ -64,9 +64,9 @@
   width: 24px;
   height: 24px;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: color-mix(in srgb, currentColor 15%, transparent);
   border-radius: var(--radius-full);
-  color: #fff;
+  color: inherit;
   cursor: pointer;
   padding: 0;
 }

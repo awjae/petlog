@@ -16,8 +16,13 @@ import {
   Shield,
   FileText,
   Megaphone,
+  Monitor,
+  Sun,
+  Moon,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
+import { THEMES, THEME_MODES, type ThemeMode } from '@/shared/config/theme';
 import { BottomNav } from '@/features/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
 import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
@@ -30,15 +35,16 @@ import { useSendTestPushNotification } from '@/features/notification/hooks/useSe
 import { useNotificationPreference } from '@/features/notification/hooks/useNotificationPreference';
 import { useMarketingConsent } from '@/features/consent/hooks/useMarketingConsent';
 
-const THEMES = [
-  { value: 'pastel-sky' as const, label: '파스텔 스카이', preview: '#6baed6' },
-  { value: 'pastel-pink' as const, label: '파스텔 핑크', preview: '#d4728a' },
-] as const;
+const MODE_ICON: Record<ThemeMode, LucideIcon> = {
+  system: Monitor,
+  light: Sun,
+  dark: Moon,
+};
 
 export default function SettingsPage() {
   const router = useRouter();
   const client = useApolloClient();
-  const { theme, setTheme } = useTheme();
+  const { theme, mode, resolvedMode, setTheme, setMode } = useTheme();
   const { name, email, loading } = useCurrentUser();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isWithdrawSheetOpen, setIsWithdrawSheetOpen] = useState(false);
@@ -108,6 +114,29 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* ── 화면 모드 ── */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>화면 모드</h2>
+          <div className={styles.modeGroup} role="group" aria-label="화면 모드 선택">
+            {THEME_MODES.map((m) => {
+              const Icon = MODE_ICON[m.value];
+              return (
+                <button
+                  key={m.value}
+                  type="button"
+                  className={`${styles.modeBtn} ${mode === m.value ? styles.modeBtnActive : ''}`}
+                  onClick={() => setMode(m.value)}
+                  aria-pressed={mode === m.value}
+                >
+                  <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+                  <span className={styles.modeLabel}>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className={styles.modeHint}>시스템을 고르면 기기의 다크 모드 설정을 따라갑니다.</p>
+        </section>
+
         {/* ── 앱 테마 ── */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>앱 테마</h2>
@@ -122,7 +151,7 @@ export default function SettingsPage() {
               >
                 <span
                   className={styles.themeColor}
-                  style={{ background: t.preview }}
+                  style={{ background: t.preview[resolvedMode] }}
                   aria-hidden="true"
                 />
                 <span className={styles.themeLabel}>{t.label}</span>

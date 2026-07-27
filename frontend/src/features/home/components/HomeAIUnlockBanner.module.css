@@ -96,7 +96,7 @@
   gap: 6px;
   height: 42px;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
   border-radius: var(--radius-full);
   font: var(--font-label);
   font-weight: 700;

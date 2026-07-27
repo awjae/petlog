@@ -43,7 +43,7 @@
 .chipActive {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-primary-text);
 }
 
 /* ── 날짜별 그룹 ── */

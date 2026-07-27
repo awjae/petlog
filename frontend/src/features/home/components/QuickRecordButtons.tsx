@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Scale, Utensils, Footprints, NotebookPen, type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import styles from './QuickRecordButtons.module.css';
 
 type RecordType = 'weight' | 'appetite' | 'activity' | 'mood';
@@ -13,10 +14,10 @@ type QuickItem = {
 };
 
 const ITEMS: QuickItem[] = [
-  { Icon: Scale, label: '체중', type: 'weight' },
-  { Icon: Utensils, label: '식사', type: 'appetite' },
-  { Icon: Footprints, label: '산책', type: 'activity' },
-  { Icon: NotebookPen, label: '메모', type: 'mood' },
+  { Icon: RECORD_TYPE_ICONS.weight, label: '체중', type: 'weight' },
+  { Icon: RECORD_TYPE_ICONS.appetite, label: '식사', type: 'appetite' },
+  { Icon: RECORD_TYPE_ICONS.activity, label: '산책', type: 'activity' },
+  { Icon: RECORD_TYPE_ICONS.mood, label: '메모', type: 'mood' },
 ];
 
 type QuickRecordButtonsProps = {

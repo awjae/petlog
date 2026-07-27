@@ -4,9 +4,9 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Link2Off } from 'lucide-react';
-import Image from 'next/image';
 import { useVerifyResetToken, useResetPassword } from '@/features/auth/hooks/useResetPassword';
 import styles from './page.module.css';
+import { AppLogo } from '@/shared/components/AppLogo';
 
 type Phase = 'checking' | 'valid' | 'invalid';
 
@@ -69,7 +69,7 @@ function ResetPasswordContent() {
         <div className={styles.inner}>
           <div className={styles.brand}>
             <span className={styles.brandIcon} aria-hidden="true">
-              <Image src="/main-logo.png" alt="" width={56} height={56} priority />
+              <AppLogo priority />
             </span>
             <h1 className={styles.brandName}>Petlog</h1>
           </div>
@@ -96,7 +96,7 @@ function ResetPasswordContent() {
         <div className={styles.inner}>
           <div className={styles.brand}>
             <span className={styles.brandIcon} aria-hidden="true">
-              <Image src="/main-logo.png" alt="" width={56} height={56} priority />
+              <AppLogo priority />
             </span>
             <h1 className={styles.brandName}>Petlog</h1>
           </div>
@@ -129,7 +129,7 @@ function ResetPasswordContent() {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <span className={styles.brandIcon} aria-hidden="true">
-            <Image src="/main-logo.png" alt="" width={56} height={56} priority />
+            <AppLogo priority />
           </span>
           <h1 className={styles.brandName}>Petlog</h1>
         </div>
