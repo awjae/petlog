@@ -61,6 +61,11 @@ export async function compressImage(file: File): Promise<File> {
     if (!ctx) return file;
     ctx.drawImage(bitmap, 0, 0, width, height);
 
+    // 그린 뒤엔 원본 비트맵이 필요 없다. 여기서 놓지 않으면 아래 toBlob 인코딩 동안
+    // 원본 RGBA와 캔버스, 인코딩 버퍼가 동시에 메모리에 물린다(저사양 안드로이드에서
+    // 큰 사진일수록 위험하다). finally의 close는 예외 경로용 안전망으로 남긴다.
+    bitmap.close();
+
     const blob = await toBlob(canvas);
     // toBlob은 지원하지 않는 타입을 요청받으면 조용히 image/png로 떨어진다.
     // png는 사진에서 원본보다 커질 수 있으므로 그 경우는 원본을 쓴다.
