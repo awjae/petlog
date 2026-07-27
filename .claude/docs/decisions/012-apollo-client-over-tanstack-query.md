@@ -7,6 +7,7 @@
 
 갱신 이력:
 - 2026-07-27 — Reason 5에 뮤테이션 이후 캐시 갱신 정책(refetchQueries 기본, 낙관적 업데이트 적용 기준)을 실제 운영 결과 기준으로 반영
+- 2026-07-27 — Context/Problem이 겪은 문제처럼 읽히던 서술을 사전 검토였다는 사실로 정정
 
 ---
 
@@ -20,7 +21,13 @@ Petlog 백엔드는 GraphQL Code-first 전용이다.
 ```
 
 초기 설계(`007`)에서 Server State를 TanStack Query로 관리하기로 했으나,
-프론트엔드 구현 진입 시점에 재검토했다.
+프론트엔드 구현에 착수하기 전에 재검토했다.
+
+**시점을 분명히 해 둔다.** TanStack Query는 실제로 사용된 적이 없다.
+`package.json`에 이틀간(2026-06-23 `2f83455` → 06-25 `ba684df`) 의존성으로만 선언돼
+있었고, 그동안 `frontend/src`에는 파일이 3개(`layout.tsx`, `page.tsx`,
+`lib/apiClient.ts`)뿐이었다. 이 문서는 마이그레이션 회고가 아니라 **착수 전 라이브러리
+선택 검토**다.
 
 ---
 
@@ -29,6 +36,9 @@ Petlog 백엔드는 GraphQL Code-first 전용이다.
 TanStack Query는 GraphQL을 위해 만들어진 라이브러리가 아니다.
 
 GraphQL과 함께 쓰려면 직접 transport를 연결해야 한다.
+
+아래 코드는 실제로 작성한 것이 아니라, 검토 과정에서 "이 조합으로 가면 무엇을 직접
+만들어야 하는가"를 그려 본 것이다.
 
 ```typescript
 // gqlRequest wrapper를 직접 만들어야 함
@@ -264,7 +274,8 @@ Petlog는 GraphQL 전용이고 도메인 관계가 복잡하므로 Apollo가 더
 ## 적용 내용
 
 ```
-제거: @tanstack/react-query, axios
+제거: @tanstack/react-query  (사용처 없던 의존성 선언)
+      axios + src/lib/apiClient.ts  (57줄, import한 곳 없음)
 추가: @apollo/client@4, graphql
 
 src/lib/apollo/
