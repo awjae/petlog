@@ -1,6 +1,6 @@
 import { ErrorLink } from '@apollo/client/link/error';
-import { CombinedGraphQLErrors } from '@apollo/client';
 import { Observable } from 'rxjs';
+import { isUnauthenticatedError } from '@/lib/apollo/graphqlError';
 import { authFetch } from '@/lib/auth/authFetch';
 import { AuthRequestError } from '@/lib/auth/authRequestError';
 import { SessionExpiredError } from '@/lib/auth/sessionExpiredError';
@@ -33,34 +33,36 @@ const isSessionRejected = (error: unknown): boolean =>
   AuthRequestError.is(error) && (error.status === 401 || error.status === 403);
 
 export const errorLink = new ErrorLink(({ error, operation, forward }) => {
-  // NestJS GqlAuthGuard 인증 실패: HTTP 200 + errors[].extensions.code UNAUTHENTICATED
-  const isUnauthenticated =
-    CombinedGraphQLErrors.is(error) &&
-    error.errors.some(
-      (err) =>
-        err.extensions?.code === 'UNAUTHENTICATED' ||
-        (err.extensions?.originalError as { statusCode?: number } | undefined)?.statusCode === 401,
-    );
-
-  if (!isUnauthenticated) return;
+  if (!isUnauthenticatedError(error)) return;
 
   return new Observable((observer) => {
     if (isRefreshing) {
-      pendingRequests.push({
+      const pending: PendingRequest = {
         retry: () => forward(operation).subscribe(observer),
         fail: (refreshError) => observer.error(refreshError),
-      });
-      return;
+      };
+      pendingRequests.push(pending);
+
+      // 구독이 해제되면(화면 이탈 등) 대기 목록에서도 빼야 한다. 남겨두면 리프레시
+      // 성공 후 버려진 오퍼레이션이 실제로 재발송되고 그 결과가 캐시에 쓰인다.
+      return () => {
+        pendingRequests = pendingRequests.filter((request) => request !== pending);
+      };
     }
 
     isRefreshing = true;
 
     authFetch('/auth/refresh', { method: 'POST' })
       .then(() => {
+        // 대기 목록을 비우기 전에 플래그를 내린다. finally에 두면 드레인보다 늦게
+        // 실행돼, 그 사이 들어온 요청이 이미 비워진 목록에 쌓여 방치될 수 있다.
+        isRefreshing = false;
         retryPending();
         forward(operation).subscribe(observer);
       })
       .catch((refreshError: unknown) => {
+        isRefreshing = false;
+
         // 연결 실패나 서버 장애는 "세션이 죽었다"가 아니라 "알 수 없다"이다. 여기까지
         // 로그아웃시키면 잠깐 끊긴 사용자가 세션을 잃는다. 원래 에러를 그대로 흘려보내
         // 호출부가 네트워크/서버 오류로 안내하게 둔다.
@@ -76,9 +78,6 @@ export const errorLink = new ErrorLink(({ error, operation, forward }) => {
           window.location.href = '/login';
         }
         observer.error(expired);
-      })
-      .finally(() => {
-        isRefreshing = false;
       });
   });
 });

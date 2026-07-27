@@ -1,4 +1,5 @@
 import { CombinedGraphQLErrors, ServerError, ServerParseError } from '@apollo/client';
+import { isServerFaultError, isUnauthenticatedError } from '@/lib/apollo/graphqlError';
 import { AuthRequestError } from '@/lib/auth/authRequestError';
 import { SessionExpiredError } from '@/lib/auth/sessionExpiredError';
 
@@ -27,11 +28,19 @@ export type MutationFailureKind =
  * 온라인이었다는 뜻이므로, `navigator.onLine`을 먼저 보면 잘못 분류될 수 있다.
  */
 export function classifyMutationFailure(error: unknown): MutationFailureKind {
-  // errorLink가 토큰 리프레시를 서버가 거절했을 때 던진다.
+  // errorLink가 토큰 리프레시를 서버가 거절했을 때 던진다. 리프레시 후 재시도가 또
+  // 인증 실패로 돌아온 경우도 같다 — 재시도가 아니라 재로그인이 필요한 상태다.
   if (SessionExpiredError.is(error)) return 'session-expired';
-  // 리프레시가 5xx·429 등으로 실패한 경우. 401/403은 위에서 걸러졌다.
-  if (AuthRequestError.is(error)) return 'server-unavailable';
+  if (isUnauthenticatedError(error)) return 'session-expired';
 
+  // 리프레시 요청이 실패한 경우. 401/403은 위에서 SessionExpiredError로 걸러졌으므로
+  // 여기 오는 건 서버 장애(5xx)나 레이트 리밋(429), 혹은 예상 못한 4xx다.
+  if (AuthRequestError.is(error)) {
+    return error.status >= 500 || error.status === 429 ? 'server-unavailable' : 'unknown';
+  }
+
+  // 값이 잘못된 것과 서버가 고장난 것은 사용자가 할 일이 다르다.
+  if (isServerFaultError(error)) return 'server-unavailable';
   if (CombinedGraphQLErrors.is(error)) return 'server-rejected';
   if (ServerError.is(error) || ServerParseError.is(error)) return 'server-unavailable';
 
@@ -52,7 +61,9 @@ const FAILURE_MESSAGE: Record<MutationFailureKind, string> = {
   'session-expired': '로그인이 만료됐어요. 다시 로그인해주세요',
   offline: '지금 오프라인이에요. 연결되면 다시 시도해주세요',
   network: '연결이 불안정해요. 잠시 후 다시 시도해주세요',
-  'server-rejected': '저장에 실패했어요. 다시 시도해주세요',
+  // 서버가 값을 거절한 것이라 같은 입력으로 다시 눌러도 결과가 같다. 백엔드 검증
+  // 메시지는 class-validator 기본 영문이라 그대로 보여줄 수 없어 문구로만 안내한다.
+  'server-rejected': '저장하지 못했어요. 입력한 내용을 확인해주세요',
   'server-unavailable': '일시적인 오류예요. 잠시 후 다시 시도해주세요',
   unknown: '저장에 실패했어요. 다시 시도해주세요',
 };
