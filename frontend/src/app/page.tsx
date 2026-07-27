@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { PenLine, LineChart, Sparkles } from 'lucide-react';
 import { JsonLd } from '@/shared/components/JsonLd';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site';
 import styles from './page.module.css';
+import { AppLogo } from '@/shared/components/AppLogo';
 
 export const metadata: Metadata = {
   title: '반려동물 건강 기록 · AI 건강 리포트',
@@ -53,7 +53,7 @@ export default function LandingPage() {
 
       <section className={styles.hero}>
         <span className={styles.landingIcon} aria-hidden="true">
-          <Image src="/main-logo.png" alt="" data-logo width={56} height={56} priority />
+          <AppLogo priority />
         </span>
         <h1 className={styles.landingTitle}>반려동물 건강 기록</h1>
         <p className={styles.landingDesc}>

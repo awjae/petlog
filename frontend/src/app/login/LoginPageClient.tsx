@@ -3,10 +3,10 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { AccountRestoreModal } from '@/features/auth/components/AccountRestoreModal';
 import styles from './page.module.css';
+import { AppLogo } from '@/shared/components/AppLogo';
 
 const SUCCESS_BANNER_DURATION_MS = 3500;
 
@@ -64,7 +64,7 @@ function LoginContent() {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <span className={styles.brandIcon} aria-hidden="true">
-            <Image src="/main-logo.png" alt="" data-logo width={56} height={56} priority />
+            <AppLogo priority />
           </span>
           <h1 className={styles.brandName}>Petlog</h1>
           <p className={styles.brandDesc}>반려동물 건강 기록 서비스</p>

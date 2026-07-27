@@ -2,7 +2,6 @@
 
 import { use } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { AlertCircle, WifiOff } from 'lucide-react';
 import { usePublicSharedReport } from '@/features/report/hooks/usePublicSharedReport';
 import { useShareViewerIdentity } from '@/features/report/hooks/useShareViewerIdentity';
@@ -15,6 +14,7 @@ import {
 } from '@/features/report/components/ReportDetailSection';
 import { ReportDetailSkeleton } from '@/features/report/components/ReportSkeleton';
 import styles from './page.module.css';
+import { AppLogo } from '@/shared/components/AppLogo';
 
 const DETAIL_SECTION_ORDER: ReportSectionType[] = ['highlights', 'concerns', 'recommendations'];
 
@@ -134,7 +134,7 @@ export default function SharedReportPage({ params }: { params: Promise<{ shareTo
     <main className={styles.main} aria-label="공유된 리포트">
       <header className={styles.header}>
         <Link href="/" className={styles.brand}>
-          <Image src="/main-logo.png" alt="" data-logo width={28} height={28} priority />
+          <AppLogo size={28} priority />
           <span className={styles.brandName}>Petlog</span>
         </Link>
         {showCaption && <p className={styles.viewerCaption}>{viewerCaption}</p>}
