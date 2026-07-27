@@ -236,7 +236,7 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
       <div className={styles.sheetFooter}>
         {error && !success && (
           <div className={styles.errorBanner} role="alert">
-            저장에 실패했어요. 다시 시도해주세요.
+            {error}
           </div>
         )}
 

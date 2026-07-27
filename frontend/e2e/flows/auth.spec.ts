@@ -74,7 +74,9 @@ test.describe('인증 흐름 @e2e', () => {
     //      (HTTP 200 + errors[].extensions.code === 'UNAUTHENTICATED', GraphQL 스펙상 정상)
     //   3) frontend/src/lib/apollo/links/errorLink.ts가 이를 감지해 POST /auth/refresh 시도
     //   4) refresh_token 쿠키도 없어 JwtRefreshGuard가 401을 반환
-    //   5) errorLink.ts가 window.location.href = '/login'으로 전체 페이지 리다이렉트
+    //   5) errorLink.ts가 401/403(서버가 세션을 명시적으로 거절)일 때만
+    //      window.location.href = '/login'으로 전체 페이지 리다이렉트
+    //      — 네트워크 실패나 5xx는 세션을 유지하므로 이 경로를 타지 않는다
     // 즉 리다이렉트는 "네비게이션 시점"이 아니라 "첫 인증 필요 API 호출이 실패하는
     // 시점"에 일어난다 — 그래서 즉시가 아니라 waitForURL로 기다린다.
     await page.goto('/home');
