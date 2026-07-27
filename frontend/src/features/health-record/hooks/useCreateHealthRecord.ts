@@ -6,6 +6,8 @@ import {
   CREATE_HEALTH_RECORD_MUTATION,
   type HealthRecordType,
 } from '../api/health-record.mutations';
+import { classifyMutationFailure, mutationFailureMessage } from '@/lib/apollo/mutationFailure';
+import { reportMutationFailure } from '@/lib/monitoring/reportMutationFailure';
 
 type AppetiteLevel = 'good' | 'normal' | 'bad';
 
@@ -92,7 +94,13 @@ export function useCreateHealthRecord() {
 
   const [mutate, { loading }] = useMutation(CREATE_HEALTH_RECORD_MUTATION, {
     refetchQueries: ['HomeQuery', 'HealthRecords', 'CalendarQuery'],
-    onError: () => setError('저장에 실패했어요. 다시 시도해주세요'),
+    onError: (err) => {
+      // 기록은 산책 중·병원처럼 연결이 불안정한 곳에서 저장되는 일이 많다. 실패 이유를
+      // 구분해 안내하고, 동시에 그 분포를 남겨 오프라인 대응의 필요성을 판단할 근거로 쓴다.
+      const kind = classifyMutationFailure(err);
+      setError(mutationFailureMessage(kind));
+      reportMutationFailure('create-health-record', kind, err);
+    },
   });
 
   async function createHealthRecord(input: CreateHealthRecordFormInput): Promise<boolean> {
