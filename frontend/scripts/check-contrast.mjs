@@ -22,22 +22,31 @@ const CSS_PATH = path.join(
   'globals.css',
 );
 
-/** `<selector> { ... }` 블록에서 `--토큰: 값;` 을 뽑아낸다. */
+/**
+ * `<selector> { ... }` 블록에서 `--토큰: 값;` 을 뽑아낸다.
+ *
+ * 셀렉터는 콤마로 나눠 **전부** 키로 등록한다. 한 줄만 보던 이전 구현은
+ * `:root,\n[data-mode='light'] {` 처럼 셀렉터를 두 줄로 쓰는 순간 `:root` 를 놓쳤고,
+ * 그 결과 라이트 조합 전체(46개 검사)가 조용히 건너뛰어졌다. 검사기가 스스로
+ * "검사하지 못했다"를 통과로 처리하면 없느니만 못하다.
+ */
 function parseTokenBlocks(css) {
+  // 주석 안의 텍스트가 셀렉터로 섞이지 않도록 먼저 제거한다.
+  const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const blocks = [];
   const re = /([^{}]+)\{([^{}]*)\}/g;
   let m;
-  while ((m = re.exec(css)) !== null) {
-    const selector = m[1].trim().split('\n').pop().trim();
+  while ((m = re.exec(stripped)) !== null) {
     const vars = {};
     for (const [, name, value] of m[2].matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
       vars[name] = value.trim();
     }
-    if (Object.keys(vars).length > 0) {
-      // 명암은 CSS 미디어 쿼리가 아니라 셀렉터(data-mode)로 갈린다.
-      // "직전 @media가 dark였나"를 추론하던 이전 방식은 다른 미디어 쿼리가
-      // globals.css에 하나만 추가돼도 조용히 오판했다.
-      blocks.push({ selector, vars });
+    if (Object.keys(vars).length === 0) continue;
+
+    // 명암은 CSS 미디어 쿼리가 아니라 셀렉터(data-mode)로 갈린다.
+    for (const selector of m[1].split(',')) {
+      const key = selector.trim().replace(/\s+/g, ' ');
+      if (key) blocks.push({ selector: key, vars });
     }
   }
   return blocks;
@@ -79,6 +88,9 @@ const RULES = [
   ['--color-primary', '--color-surface', 4.5, '카드 위 링크/아이콘'],
   // 선택된 세그먼트/배지 라벨은 15px 일반 텍스트라 4.5를 요구한다.
   ['--color-primary', '--color-primary-light', 4.5, '틴트 면 위 텍스트'],
+
+  // 공유 이미지의 overview 카드(shareImage.ts) — 틴트 면 위 본문 글씨.
+  ['--color-text-primary', '--color-primary-light', 4.5, '틴트 면 위 본문'],
 
   // 상태색 — 배지 면(-light) 위에 같은 계열 글씨가 올라간다.
   ['--color-success', '--color-success-light', 4.5, '성공 배지'],
@@ -135,7 +147,11 @@ for (const theme of THEMES) {
     const fgVal = fg.startsWith('#') ? fg : vars[fg];
     const bgVal = bg.startsWith('#') ? bg : vars[bg];
     if (!fgVal?.startsWith('#') || !bgVal?.startsWith('#')) {
-      console.log(`  ? ${label}: ${fg} 또는 ${bg} 값을 색으로 읽지 못했습니다`);
+      // 값을 못 읽는 것 자체가 결함이다. 규칙은 있는데 검사를 못 했다는 뜻이므로
+      // 조용히 넘기지 않고 실패로 센다 — 파서가 깨졌을 때 "전부 통과"가 나오던
+      // 원인이 여기 있었다.
+      console.log(`  ✘ ${label}: ${fg} 또는 ${bg} 값을 색으로 읽지 못했습니다`);
+      failed += 1;
       continue;
     }
     const ratio = contrast(fgVal, bgVal);
@@ -147,8 +163,30 @@ for (const theme of THEMES) {
   }
 }
 
+/**
+ * 하위 트리 라이트 오버라이드([data-mode='light'])가 성립하려면, 다크 블록이 선언하는
+ * 모든 토큰을 라이트 블록도 선언해야 한다. 다크 전용 토큰이 하나라도 생기면 공유 이미지
+ * 미리보기가 그 토큰만 다크 값을 상속해 반쯤 어두운 카드가 나간다 — 시각으로만 발견되는
+ * 종류의 결함이라 여기서 막는다.
+ * (결정 문서: .claude/docs/decisions/030-design-token-roles-and-theme-mode.md)
+ */
+const lightTokens = new Set(
+  blocks.filter((b) => !b.selector.includes('dark')).flatMap((b) => Object.keys(b.vars)),
+);
+const darkOnly = [
+  ...new Set(blocks.filter((b) => b.selector.includes('dark')).flatMap((b) => Object.keys(b.vars))),
+].filter((token) => !lightTokens.has(token));
+
+console.log('\n▸ 하위 트리 라이트 오버라이드 불변식');
+if (darkOnly.length > 0) {
+  failed += darkOnly.length;
+  console.log(`  ✘ 라이트 블록에 없는 다크 전용 토큰: ${darkOnly.join(', ')}`);
+} else {
+  console.log('  ✔ 다크 블록의 토큰이 모두 라이트 블록에도 선언되어 있습니다');
+}
+
 if (failed > 0) {
-  console.error(`\n${failed}개 조합이 대비 기준에 못 미칩니다.`);
+  console.error(`\n${failed}건이 기준에 못 미칩니다.`);
   process.exit(1);
 }
 console.log('\n모든 테마 조합이 대비 기준을 만족합니다.');

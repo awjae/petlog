@@ -44,6 +44,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [mode, setModeState] = useState<ThemeMode>(DEFAULT_THEME_MODE);
   const [resolvedMode, setResolvedMode] = useState<'light' | 'dark'>('light');
+  // 저장값을 아직 못 읽은 첫 렌더에서는 mode 가 기본값('system')이다. 그 상태로 DOM을
+  // 건드리면 인라인 스크립트가 올바르게 심어둔 값을 OS 값으로 덮어쓴다.
+  const [storageRead, setStorageRead] = useState(false);
 
   /** DOM(data-mode)과 React 상태를 한 번에 맞춘다. 둘이 갈리면 상태 표시줄만 반대로 남는다. */
   function applyResolved(next: 'light' | 'dark') {
@@ -64,18 +67,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
 
     setResolvedMode(document.documentElement.dataset.mode === 'dark' ? 'dark' : 'light');
+    setStorageRead(true);
   }, []);
 
-  // 'system'일 때만 OS 설정 변경을 따라간다.
   useEffect(() => {
-    if (mode !== 'system') return;
+    // 저장값을 읽기 전에는 DOM에 손대지 않는다(위 주석 참고).
+    if (!storageRead) return;
+
+    // 'system'이 아니면 사용자의 선택이 항상 이긴다. 조기 반환만 하면 이전 렌더에서
+    // 심어둔 값이 그대로 남을 수 있어, 여기서 DOM을 명시적으로 다시 맞춘다.
+    if (mode !== 'system') {
+      applyResolved(mode);
+      return;
+    }
 
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => applyResolved(media.matches ? 'dark' : 'light');
     apply();
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
-  }, [mode]);
+  }, [mode, storageRead]);
 
   // 네이티브 앱의 상태 표시줄 아이콘 색을 명암에 맞춘다(웹에서는 no-op).
   useEffect(() => {
