@@ -268,3 +268,30 @@ GraphQL `GqlAuthGuard`가 담당). 그래서 Frontend Integration 테스트에�
 남은 일: `home/pet/health-record.spec.ts`를 구현할 때도 동일하게 더미 쿠키 접근이 필요하다.
 가능하면 이 로직을 `e2e/fixtures/` 아래 공용 헬퍼로 뽑아 중복을 줄이는 게 좋다(현재는
 report.spec.ts에만 인라인으로 구현돼 있다).
+
+---
+
+## 추가: 세 번째 계층 — 단위 테스트 (2026-07-26)
+
+이 문서는 원래 두 계층(e2e / integration)만 다뤘다. 프론트엔드에 테스트 러너 자체가
+없어서 CLAUDE.md의 테스트 우선순위 2번("데이터 변환 로직")이 비어 있었으므로,
+`vitest`를 추가하고 범위를 명시적으로 좁힌다.
+
+| 계층 | 러너 | 대상 | 실행 시점 |
+| --- | --- | --- | --- |
+| unit | vitest | 순수 함수(날짜/집계 변환)만 | PR마다 |
+| integration | Playwright + MSW | 브라우저 내 흐름, 네트워크는 모킹 | PR마다 |
+| e2e | Playwright + 실제 백엔드 | 쿠키 인증 전 구간 | main push |
+
+경계 규칙:
+
+- **jsdom도, 컴포넌트 렌더링 테스트도 넣지 않는다.** 렌더링·상호작용 검증은 이미
+  Playwright가 실제 브라우저에서 하고 있고, 같은 것을 가짜 DOM에서 한 번 더 검증하면
+  유지비만 늘고 신뢰도는 낮아진다. `vitest.config.ts`의 environment를 node 기본값으로
+  두는 것이 이 경계의 표현이다.
+- **훅은 대상이 아니다.** Apollo 캐시/네트워크에 얽힌 훅은 MSW를 띄운 integration에서
+  검증한다. 훅 안에 테스트하고 싶은 계산이 있다면 그건 순수 함수로 분리하라는 신호다
+  (`useHomeData` → `features/home/utils/homeDerive.ts`가 그 사례).
+- **시간에 의존하는 함수는 기준 시각을 인자로 받는다.** 내부에서 `Date.now()`를 부르면
+  경계 케이스를 테스트할 수 없다. 실행은 `TZ=Asia/Seoul`로 고정한다 — 이 로직들의
+  본질이 "UTC 문자열을 로컬 날짜로 접는 것"이라 타임존이 흔들리면 검증이 무의미해진다.

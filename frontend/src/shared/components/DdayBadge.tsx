@@ -1,16 +1,9 @@
+import { calcDaysUntil } from '@/features/home/utils/homeDerive';
 import styles from './DdayBadge.module.css';
 
 interface DdayBadgeProps {
   dueDate: string;
   overdueLabel?: string;
-}
-
-function calcDaysUntil(dueDateStr: string): number {
-  const due = new Date(dueDateStr);
-  const now = new Date();
-  due.setHours(0, 0, 0, 0);
-  now.setHours(0, 0, 0, 0);
-  return Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export function DdayBadge({ dueDate, overdueLabel = '기한 초과' }: DdayBadgeProps) {
