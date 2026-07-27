@@ -37,8 +37,16 @@ export function useSheetTransition(isOpen: boolean, onClose: () => void): SheetT
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-      return;
+      // 대기 중인 rAF는 반드시 취소한다. isOpen이 두 프레임 안에 true→false로 뒤집히면
+      // 뒤늦게 setVisible(true)가 실행돼, 닫힘 애니메이션 없이 310ms 뒤 그냥 사라진다.
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setVisible(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        if (inner) cancelAnimationFrame(inner);
+      };
     }
 
     setVisible(false);

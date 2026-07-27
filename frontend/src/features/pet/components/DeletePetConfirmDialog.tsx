@@ -24,7 +24,11 @@ export function DeletePetConfirmDialog({
   const { deletePet, loading, error } = useDeletePet();
 
   // 삭제 진행 중에는 취소 버튼과 마찬가지로 뒤로 가기/Esc도 막는다.
-  useOverlayDismiss(!loading, onClose);
+  // isOpen=false로 빼면 차단이 아니라 스택에서 제거라, 뒤로 가기가 그대로 통과해
+  // 삭제 요청 중에 화면을 벗어난다. 항상 올려두고 핸들러에서 막는다.
+  useOverlayDismiss(true, () => {
+    if (!loading) onClose();
+  });
 
   async function handleConfirm() {
     const ok = await deletePet(petId);
