@@ -25,9 +25,17 @@ export interface BreedLifeStageInfo {
 export class BreedProfileService {
   private calculateAgeMonths(birthDate: Date): number {
     const now = new Date();
-    return (
-      (now.getFullYear() - birthDate.getFullYear()) * 12 + (now.getMonth() - birthDate.getMonth())
-    );
+    let months =
+      (now.getFullYear() - birthDate.getFullYear()) * 12 + (now.getMonth() - birthDate.getMonth());
+
+    // 연/월 차이만 세면 그 달의 생일이 오기 전에도 한 달을 더 센다. 이 값이 is_senior
+    // 판정과 품종별 주의 질환 선택에 쓰이므로, 최대 한 달 일찍 시니어로 분류될 수 있다.
+    // (프론트의 calcAge도 같은 규칙을 쓴다 — features/pet/utils/petMeta.ts)
+    if (now.getDate() < birthDate.getDate()) {
+      months -= 1;
+    }
+
+    return Math.max(0, months);
   }
 
   /**

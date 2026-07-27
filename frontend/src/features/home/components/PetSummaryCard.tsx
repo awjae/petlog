@@ -2,21 +2,13 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { calcAge } from '@/features/pet/utils/petMeta';
 import type { Pet } from '../types/home.types';
 import styles from './PetSummaryCard.module.css';
 
 type PetSummaryCardProps = {
   pet: Pet;
 };
-
-function calcAge(birthDate: string): string {
-  const birth = new Date(birthDate);
-  const now = new Date();
-  const months =
-    (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
-  if (months < 12) return `${months}개월`;
-  return `${Math.floor(months / 12)}살`;
-}
 
 function formatWeightDate(iso: string): string {
   const date = new Date(iso);

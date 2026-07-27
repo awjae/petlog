@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { calcAge, formatPetMeta, formatRelativeDate } from './petMeta';
 
-// TZ=Asia/Seoul 고정 (package.json의 test:unit).
+// TZ=Asia/Seoul 고정 (vitest.config.ts의 test.env).
+//
+// 알려진 한계: calcAge는 birthDate를 로컬 타임존으로 해석한다. 서버가 birthDate를
+// DateTime(UTC 자정)으로 주므로, UTC 서쪽 타임존(예: America/Los_Angeles)에서는
+// 로컬 날짜가 하루 밀려 생일 하루 전에 나이를 먹는다. 근본 해결은 날짜 전용 표현으로
+// 바꾸는 스키마 결정이라 여기서 다루지 않는다. 현재 사용자는 모두 한국이다.
 
 const NOW = new Date('2026-07-26T12:00:00+09:00');
 
