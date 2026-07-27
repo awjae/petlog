@@ -21,6 +21,11 @@ if (dsn) {
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     integrations: [Sentry.replayIntegration()],
+    // 기본 트랜스포트는 전송에 실패한 이벤트를 그냥 버린다. 그러면 "오프라인이라 저장에
+    // 실패했다"는 신고 자체가 오프라인이라 못 나가고 사라진다 — 정작 알고 싶은 오프라인
+    // 수치만 구조적으로 과소집계된다. 이 트랜스포트는 실패한 이벤트를 IndexedDB에
+    // 쌓아뒀다가 연결이 돌아오면 다시 보낸다(기본 큐 30건, DB명 sentry-offline).
+    transport: Sentry.makeBrowserOfflineTransport(),
   });
 }
 

@@ -5,7 +5,7 @@ import { CombinedGraphQLErrors, ServerError, ServerParseError } from '@apollo/cl
  *
  * 지금까지는 모든 실패가 "저장에 실패했어요" 하나로 뭉뚱그려져 있어서, 사용자에게
  * 다음 행동을 안내할 수도 없고 오프라인 대응이 실제로 필요한지도 알 수 없었다.
- * (`.claude/docs/decisions/033-offline-record-queue.md` 참고)
+ * 오프라인 지원을 검토할 때 걸리는 제약은 `mobile/capacitor.config.ts` 주석 참고.
  */
 export type MutationFailureKind =
   /** 기기가 네트워크에 연결되어 있지 않다. */
