@@ -5,6 +5,7 @@ export function useHealthRecords(petId: string) {
   const { data, loading, error, refetch } = useQuery(HEALTH_RECORDS_QUERY, {
     variables: { petId },
     skip: !petId,
+    fetchPolicy: 'cache-and-network',
   });
 
   return {

@@ -5,6 +5,9 @@
 결정됨 (2026-06-25)
 `007-frontend-state-management.md`의 Server State 결정을 대체한다.
 
+갱신 이력:
+- 2026-07-27 — Reason 5에 뮤테이션 이후 캐시 갱신 정책(refetchQueries 기본, 낙관적 업데이트 적용 기준)을 실제 운영 결과 기준으로 반영
+
 ---
 
 ## Context
@@ -165,24 +168,63 @@ TanStack Query에서는 관련 queryKey를 빠짐없이 무효화해야 하며, 
 
 ### 5. Mutation 후 캐시 업데이트 패턴
 
-```typescript
-// Apollo — refetchQueries 또는 cache.modify
-const [createHealthRecord] = useMutation(CREATE_HEALTH_RECORD, {
-  refetchQueries: [{ query: PET_DETAIL_QUERY, variables: { id: petId } }],
-});
+Apollo는 뮤테이션 이후 갱신 수단을 세 가지 제공한다.
 
-// 또는 optimisticResponse로 즉시 반영
-const [createHealthRecord] = useMutation(CREATE_HEALTH_RECORD, {
-  optimisticResponse: { createHealthRecord: { id: 'temp', ...input } },
-  update(cache, { data }) {
-    cache.modify({ id: `Pet:${petId}`, fields: { healthRecords: ... } });
-  },
-});
-```
+| 수단 | 동작 | TanStack Query 대응 |
+|------|------|-------------------|
+| `refetchQueries` | 서버에서 다시 가져온다 | `invalidateQueries` |
+| `cache.modify` | 요청 없이 캐시를 직접 고친다 | 없음 |
+| `optimisticResponse` | 응답 도착 전에 예상 결과를 화면에 반영한다 | 없음 |
 
-TanStack Query의 `invalidateQueries`도 같은 결과를 낼 수 있다.
-Apollo의 우위는 `optimisticResponse`(낙관적 UI)와 `cache.modify`(리패치 없이 캐시 직접 수정)다.
-모바일 UX에서 즉각적인 피드백이 필요한 화면(체중 기록, 메모 작성)에서 차이가 난다.
+뒤 두 개가 Apollo 고유의 수단이다.
+
+**단, 이 항목은 Apollo 채택의 근거로는 약하다.** 채택 당시에는 "체중 기록·메모 작성 같은
+화면에서 낙관적 UI가 이긴다"고 봤지만, 실제로는 기록 계열 전체를 `refetchQueries`로
+운영하기로 결정했다(아래). Apollo를 고른 실질적 이유는 Reason 4(정규화 캐시)와
+1~3(Operation 연결, 타입 체인, errorLink)이다.
+
+#### 적용 기준 (2026-07-27)
+
+기본은 `refetchQueries`이고, 낙관적 수단은 **클라이언트가 결과를 100% 아는 경우에만** 쓴다.
+
+| 대상 | 방식 | 값의 성격 |
+|------|------|----------|
+| 알림 토글 (`useNotificationPreference`) | `optimisticResponse` | boolean 3개 |
+| 프로필 이름 (`useUpdateProfile`) | `cache.modify` — `me` 필드 | 문자열 하나 |
+| 건강 기록 / 의료 이벤트 / 투약 등 | `refetchQueries` | 서버 파생 값 포함 |
+
+기록 저장을 낙관적으로 처리하지 않는 이유는 **서버가 파생시키는 값**을 클라이언트가
+예측해야 하기 때문이다.
+
+- `Pet.todayRecordCount`, `Pet.totalHealthRecordCount`
+- `Pet.recentWeight` — 직전 값 대비 증감 포함 (정렬·이력이 얽혀 어긋나기 쉽다)
+- `Pet.recentHealthRecords(limit)`
+- `CalendarEvent` — 건강 기록·백신·투약·예약·진료 5개 테이블을 날짜 범위로 병합한 결과
+
+얻는 것은 수백 ms의 체감 단축이고, 잃는 것은 "화면 숫자와 서버 숫자가 다르다"는 종류의
+버그다. 건강 기록 서비스에서 후자가 더 비싸다.
+
+#### refetchQueries의 실제 비용
+
+`refetchQueries`에 쿼리 **이름 문자열**을 넘기면 그 이름을 가진 *현재 마운트된* 쿼리만
+재조회한다(`QueryManager.getObservableQueries()`가 살아 있는 ObservableQuery만 순회한다).
+`useCreateHealthRecord`가 이름 3개를 적은 것은 "3번 재조회"가 아니라 "이 중 화면에 떠 있는
+것만 갱신하라"는 선언이며, 실제 요청은 화면당 1건이다. `awaitRefetchQueries`도 켜지 않아
+사용자가 재조회 완료를 기다리지 않는다.
+
+전제: **목록 조회 훅은 `fetchPolicy: 'cache-and-network'`를 명시한다.** 마운트되지 않아
+재조회를 건너뛴 화면의 정합성은 "이동 시점의 재조회"가 보장하는데, `cache-first`(Apollo
+기본값)로 두면 이 보장이 깨진다. 정규화 캐시에 `HealthRecord` 객체는 들어와 있어도
+`healthRecords(petId)` 루트 필드의 배열에는 새 항목이 추가되지 않기 때문이다.
+
+#### 재검토 조건
+
+다음 중 하나가 관측되면 낙관적 업데이트를 다시 검토한다.
+
+1. 저장 후 목록 갱신까지의 체감 지연이 실제로 보고될 때
+2. 뮤테이션 응답이 파생 값을 함께 반환하도록 스키마가 바뀔 때 — `createHealthRecord`가
+   갱신된 `Pet`을 반환하면 정규화 캐시가 `Pet:<id>`를 자동 갱신하므로 `update` 콜백조차
+   필요 없다. 이쪽이 낙관적 업데이트보다 먼저 검토할 가치가 있다
 
 ---
 
