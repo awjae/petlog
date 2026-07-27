@@ -40,12 +40,12 @@
 }
 
 .iconWrap_highlights {
-  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  background: var(--color-success-light);
   color: var(--color-success);
 }
 
 .iconWrap_concerns {
-  background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+  background: var(--color-warning-light);
   color: var(--color-warning);
 }
 

@@ -54,6 +54,7 @@
 .errorIcon {
   width: 40px;
   height: 40px;
+  color: var(--color-border);
 }
 
 @media (prefers-reduced-motion: reduce) {

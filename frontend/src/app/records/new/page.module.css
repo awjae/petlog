@@ -284,10 +284,13 @@
   border-right: none;
 }
 
+/* 심각도 선택은 --seg-tone / --seg-tone-bg 를 인라인으로 받는다(page.tsx).
+   기본값은 primary 계열이라 다른 세그먼트에서도 그대로 쓸 수 있다. */
 .segBtnActive {
-  background: var(--seg-active-bg, var(--color-primary));
-  color: var(--color-primary-text);
+  background: var(--seg-tone-bg, var(--color-primary-light));
+  color: var(--seg-tone, var(--color-primary));
   font-weight: 700;
+  box-shadow: inset 0 0 0 1.5px var(--seg-tone, var(--color-primary));
 }
 
 /* 텍스트 영역 */
@@ -455,8 +458,8 @@
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+  background: var(--color-warning-light);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-warning-light));
   border-radius: var(--radius-sm);
   font: var(--font-caption);
   font-size: 12px;

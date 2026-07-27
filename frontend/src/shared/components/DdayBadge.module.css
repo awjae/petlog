@@ -17,12 +17,12 @@
 }
 
 .near {
-  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  background: var(--color-warning-light);
   color: var(--color-warning);
 }
 
 .urgent {
-  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  background: var(--color-warning-light);
   color: var(--color-warning);
 }
 

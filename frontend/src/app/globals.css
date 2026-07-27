@@ -3,18 +3,27 @@
    ------------------------------------------------------------
    색 토큰은 "역할"로 나눈다.
 
-   - --color-primary      : 기능색. 버튼 배경 / 링크 / 아이콘처럼 글씨가 얹히거나
-                            사용자가 눌러야 하는 요소. 흰 텍스트와 4.5:1 이상을 보장한다.
-   - --color-primary-light: 틴트 배경. 위에 --color-primary 텍스트가 올라온다.
-   - --color-pet-*        : 장식용 파스텔. 글씨가 얹히지 않는 면에만 쓰고,
-                            그 위에 글씨를 올려야 하면 --color-on-pastel 을 쓴다.
+   - --color-primary       : 기능색. 버튼 배경 / 링크 / 아이콘처럼 글씨가 얹히거나
+                             사용자가 눌러야 하는 요소. 흰 텍스트와 4.5:1 이상을 보장한다.
+   - --color-primary-light : 틴트 배경. 위에 --color-primary 텍스트가 올라온다.
+   - --color-pet-*         : 장식용 파스텔. 글씨가 얹히지 않는 면에만 쓰고,
+                             그 위에 글씨를 올려야 하면 --color-on-pastel 을 쓴다.
 
-   success / warning / danger 도 같은 규칙이다 — 값 자체가 "글씨로 써도 되는" 색이고,
-   면으로 쓸 때는 color-mix 로 옅게 만들어 쓴다.
+   success / warning / danger 도 같은 짝을 갖는다.
+   - --color-success       : 글씨/아이콘용 값
+   - --color-success-light : 그 글씨가 얹히는 배지 면
+   color-mix 로 즉석에서 옅게 만들면 다크에서 배경이 같이 어두워져 대비가 오히려
+   나빠진다(D-day 배지에서 실제로 그랬다). 면은 반드시 -light 토큰을 쓴다.
+
+   명암 모드는 <html data-mode="light|dark"> 로 결정한다. "시스템 설정 따름"은
+   ThemeProvider 가 matchMedia 로 해석해 둘 중 하나로 바꿔 심는다 — CSS 에는
+   prefers-color-scheme 분기를 두지 않는다(사용자 선택이 항상 이기게 하려면
+   미디어 쿼리와 속성 셀렉터가 경쟁하지 않는 편이 단순하다).
+
    대비 검증은 `npm run check:contrast` (scripts/check-contrast.mjs)로 자동화되어 있다.
    ============================================================ */
 
-/* ===== 봄 하늘 다이어리 (기본) ===== */
+/* ===== 봄 하늘 다이어리 · 라이트 (기본) ===== */
 :root {
   color-scheme: light;
 
@@ -23,8 +32,11 @@
   --color-primary-text: #ffffff;
 
   --color-success: #1a7a36;
-  --color-warning: #a8650a;
-  --color-danger: #c73838;
+  --color-success-light: #e6f4ea;
+  --color-warning: #8a5208; /* 배지 면(-light) 위 5.57:1 */
+  --color-warning-light: #faeedd;
+  --color-danger: #bd3030;
+  --color-danger-light: #fbe9e9;
   --color-danger-text: #ffffff;
 
   /* 크림/종이 계열 */
@@ -44,13 +56,18 @@
   --color-pet-4: #f0a96b;
   --color-pet-5: #f7c2c0;
 
-  /* 펫 컬러는 다크에서도 그대로 파스텔이므로, 그 위에 얹는 글씨도 고정값이다. */
-  --color-on-pastel: #22303a;
+  /* 펫 컬러는 모드와 무관하게 같은 파스텔이므로, 그 위에 얹는 글씨도 고정값이다. */
+  --color-on-pastel: #1b262e; /* 가장 어두운 펫 컬러 위에서도 4.8:1 */
 
   /* 따뜻한 다이어리 그림자 */
   --shadow-sm: 0 2px 10px rgba(80, 70, 50, 0.07), 0 1px 3px rgba(80, 70, 50, 0.04);
   --shadow-md: 0 4px 20px rgba(80, 70, 50, 0.09), 0 1px 5px rgba(80, 70, 50, 0.05);
   --shadow-lg: 0 8px 32px rgba(80, 70, 50, 0.12), 0 2px 8px rgba(80, 70, 50, 0.06);
+
+  /* 스위치 ON 트랙처럼 "켜짐"을 색 면으로 알리는 컨트롤.
+     손잡이가 항상 흰색이라, primary 와 달리 다크에서도 진한 값을 유지해야
+     손잡이가 보인다(다크에서 primary 를 그대로 쓰면 흰 손잡이가 2:1로 묻힌다). */
+  --color-control-on: #2f7099;
 
   /* 세그먼트 컨트롤처럼 안으로 들어가 보여야 하는 트랙.
      선택된 알약(--color-surface)이 항상 트랙보다 밝아야 눌린 상태가 읽힌다. */
@@ -72,10 +89,10 @@
   --radius-full: 9999px;
 }
 
-/* ===== 로즈 핑크 다이어리 ===== */
-[data-theme='pastel-pink'] {
+/* ===== 로즈 핑크 다이어리 · 라이트 ===== */
+:root[data-theme='pastel-pink'] {
   --color-primary: #b34760; /* 흰 텍스트 위 5.27:1 */
-  --color-primary-light: #fce4ea;
+  --color-primary-light: #fdedf1; /* 위에 primary 글씨가 올라와 4.66:1 */
   --color-primary-text: #ffffff;
 
   --color-bg: #f8ede9;
@@ -87,6 +104,7 @@
 
   --color-page-margin: #c8aaa0;
   --color-track: #ecdbd5;
+  --color-control-on: #b34760;
 
   --color-pet-1: #d4728a;
   --color-pet-2: #f4a96a;
@@ -102,65 +120,68 @@
 }
 
 /* ============================================================
-   다크 모드 — OS 설정을 그대로 따른다(설정 화면에 별도 토글 없음).
-   테마(스카이/핑크) 선택은 유지되고, 그 위에 명암만 뒤집는 구조다.
+   다크
+   ------------------------------------------------------------
    어두운 면 위에서는 파스텔이 오히려 잘 보이므로 primary 는 밝은 쪽을 쓰고,
-   버튼 위 글씨(--color-primary-text)를 어두운 색으로 뒤집는다.
+   그 위에 얹는 글씨(--color-primary-text)를 어두운 색으로 뒤집는다.
    ============================================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
+:root[data-mode='dark'] {
+  color-scheme: dark;
 
-    --color-primary: #7cbde4; /* 어두운 배경 위 8.65:1 */
-    --color-primary-light: #1e3a4c;
-    --color-primary-text: #06212f; /* primary 면 위 8.1:1 */
+  --color-primary: #7cbde4; /* 어두운 배경 위 8.65:1 */
+  --color-primary-light: #1e3a4c;
+  --color-primary-text: #06212f; /* primary 면 위 8.1:1 */
 
-    --color-success: #4ad06a;
-    --color-warning: #e6a94b;
-    --color-danger: #f0736f;
-    --color-danger-text: #2b0d0c;
+  --color-success: #4ad06a;
+  --color-success-light: #1b2f20;
+  --color-warning: #e6a94b;
+  --color-warning-light: #33281a;
+  --color-danger: #f0736f;
+  --color-danger-light: #33201f;
+  --color-danger-text: #2b0d0c;
 
-    --color-bg: #141210;
-    --color-surface: #26221c;
-    --color-text-primary: #eae4d9;
-    --color-text-secondary: #a49a8c;
-    --color-text-inverse: #141210;
-    --color-border: #3d382f;
+  --color-bg: #141210;
+  --color-surface: #26221c;
+  --color-text-primary: #eae4d9;
+  --color-text-secondary: #a49a8c;
+  --color-text-inverse: #141210;
+  --color-border: #3d382f;
 
-    --color-page-margin: #0c0b09;
-    --color-track: #0e0d0b;
+  --color-page-margin: #0c0b09;
+  --color-track: #0e0d0b;
+  --color-control-on: #3f83ab; /* 흰 손잡이 4.16:1, 다크 배경과 4.49:1 */
 
-    /* 어두운 면에서는 그림자가 보이지 않는다. 카드 구분은 surface/border 로 만든다. */
-    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+  /* 어두운 면에서는 그림자가 보이지 않는다. 카드 구분은 surface/border 로 만든다. */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
 
-    --color-scrim: rgba(0, 0, 0, 0.65);
-  }
+  --color-scrim: rgba(0, 0, 0, 0.65);
+}
 
-  /* 로고 아트워크(main-logo.png)는 짙은 갈색 단색 실루엣이라 어두운 배경에서 묻힌다.
-     에셋을 따로 만들지 않고 실루엣만 밝게 반전해 쓴다. */
-  img[src*='main-logo'] {
-    filter: brightness(0) invert(0.92);
-  }
+:root[data-mode='dark'][data-theme='pastel-pink'] {
+  --color-primary: #e79ab0;
+  --color-primary-light: #402029;
+  --color-primary-text: #2a0c14;
 
-  [data-theme='pastel-pink'] {
-    --color-primary: #e79ab0;
-    --color-primary-light: #402029;
-    --color-primary-text: #2a0c14;
+  --color-bg: #171211;
+  --color-surface: #2a211f;
+  --color-text-primary: #efe2dd;
+  --color-text-secondary: #b09b95;
+  --color-text-inverse: #171211;
+  --color-border: #443733;
 
-    --color-bg: #171211;
-    --color-surface: #2a211f;
-    --color-text-primary: #efe2dd;
-    --color-text-secondary: #b09b95;
-    --color-text-inverse: #171211;
-    --color-border: #443733;
+  --color-page-margin: #0e0a09;
+  --color-track: #100b0a;
+  --color-control-on: #a8455e;
 
-    --color-page-margin: #0e0a09;
-    --color-track: #100b0a;
+  --color-scrim: rgba(0, 0, 0, 0.65);
+}
 
-    --color-scrim: rgba(0, 0, 0, 0.65);
-  }
+/* 로고 아트워크(main-logo.png)는 짙은 갈색 단색 실루엣이라 어두운 배경에서 묻힌다.
+   에셋을 따로 만들지 않고 실루엣만 밝게 반전해 쓴다. */
+:root[data-mode='dark'] img[src*='main-logo'] {
+  filter: brightness(0) invert(0.92);
 }
 
 /* ===== Reset ===== */

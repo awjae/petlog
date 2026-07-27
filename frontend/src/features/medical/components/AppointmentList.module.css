@@ -92,7 +92,7 @@
 }
 
 .statusCOMPLETED {
-  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  background: var(--color-success-light);
   color: var(--color-success);
 }
 

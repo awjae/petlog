@@ -178,7 +178,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(52, 199, 89, 0.14);
+  background: var(--color-success-light);
   display: flex;
   align-items: center;
   justify-content: center;

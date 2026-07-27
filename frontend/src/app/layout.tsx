@@ -30,9 +30,37 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+// 첫 페인트 전에 <html>에 팔레트와 명암을 심는다. 이걸 ThemeProvider의 useEffect에
+// 맡기면 하이드레이션 전까지 기본값(라이트 스카이)으로 한 프레임 그려져 화면이 번쩍인다.
+// 다크 사용자에게는 흰 화면이 번쩍이는 셈이라 체감이 특히 나쁘다.
+// 키/기본값은 shared/config/theme.ts와 같아야 한다(문자열을 여기서 다시 쓰는 이유는
+// 이 스크립트가 번들 밖에서 그대로 실행되기 때문이다).
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var d = document.documentElement;
+    var theme = localStorage.getItem('petlog-theme');
+    d.dataset.theme = theme === 'pastel-pink' ? 'pastel-pink' : 'pastel-sky';
+
+    var mode = localStorage.getItem('petlog-theme-mode') || 'system';
+    if (mode !== 'light' && mode !== 'dark') {
+      mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    d.dataset.mode = mode;
+  } catch (e) {
+    document.documentElement.dataset.mode = 'light';
+  }
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    // 인라인 스크립트가 하이드레이션 전에 <html>의 data-theme/data-mode를 바꾸므로
+    // 서버 마크업과 달라진다. 이 엘리먼트에 한해 불일치 경고를 끈다(next-themes와 같은 방식).
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         <ThemeProvider>
           <MSWProvider>

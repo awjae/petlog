@@ -79,7 +79,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(232, 154, 48, 0.15);
+  background: var(--color-warning-light);
   display: flex;
   align-items: center;
   justify-content: center;
