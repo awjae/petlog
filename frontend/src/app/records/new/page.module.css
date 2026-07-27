@@ -287,8 +287,14 @@
   border-right: none;
 }
 
-/* 심각도 선택은 --seg-tone / --seg-tone-bg 를 인라인으로 받는다(page.tsx).
-   기본값은 primary 계열이라 다른 세그먼트에서도 그대로 쓸 수 있다. */
+/* 선택 상태는 "틴트 면 + 같은 계열 진한 글씨 + 링"으로 표현한다.
+   심각도만 --seg-tone / --seg-tone-bg 를 인라인으로 받아 상태색(성공/경고/위험)을
+   쓰고(page.tsx), 나머지 세 세그먼트(식사 상태·배변 횟수·구토 횟수)는 기본값인
+   primary 계열을 탄다.
+
+   이전에는 기본값이 solid(진한 면 + 흰 글씨)였다. 심각도를 고치면서 넷을 같은
+   언어로 맞췄다 — 한 화면에 선택 스타일이 두 가지로 보이는 편이 더 어색하다고
+   판단했다. 대신 선택 상태의 시각적 무게는 낮아진다(대비는 4.52:1로 기준 충족). */
 .segBtnActive {
   background: var(--seg-tone-bg, var(--color-primary-light));
   color: var(--seg-tone, var(--color-primary));
