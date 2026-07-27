@@ -14,15 +14,40 @@
  *
  * 웹 브라우저에서는 아무 동작도 하지 않는다.
  */
+
+/**
+ * 마지막으로 요청된 모드. 사용자가 설정에서 모드를 빠르게 바꾸면 setStyle 두 번이
+ * 겹치는데, 네이티브 브리지가 호출 순서대로 끝나는 걸 보장하지 않는다. 먼저 보낸
+ * 요청이 나중에 끝나면 상태 표시줄만 반대로 남으므로, 완료 시점에 "내가 아직
+ * 마지막 요청인가"를 확인한다.
+ */
+let latestRequestedMode: 'light' | 'dark' | null = null;
+
 export async function syncNativeStatusBar(mode: 'light' | 'dark'): Promise<void> {
+  latestRequestedMode = mode;
+
+  let StatusBar: typeof import('@capacitor/status-bar').StatusBar;
+  let Style: typeof import('@capacitor/status-bar').Style;
+
   try {
     const { Capacitor } = await import('@capacitor/core');
     if (!Capacitor.isNativePlatform()) return;
 
-    const { StatusBar, Style } = await import('@capacitor/status-bar');
-    await StatusBar.setStyle({ style: mode === 'dark' ? Style.Dark : Style.Light });
+    ({ StatusBar, Style } = await import('@capacitor/status-bar'));
   } catch {
-    // 플러그인이 없는 빌드나 지원하지 않는 플랫폼에서 실패해도
-    // 화면 자체는 정상 동작해야 하므로 조용히 넘어간다.
+    // 플러그인이 빠진 빌드나 지원하지 않는 플랫폼이다. 화면 자체는 정상 동작해야
+    // 하므로 여기서는 조용히 넘어간다 — "쓸 수 없는 환경"이지 오류가 아니다.
+    return;
+  }
+
+  // 모듈을 불러오는 사이에 더 최근 요청이 들어왔으면 이 호출은 버린다.
+  if (latestRequestedMode !== mode) return;
+
+  try {
+    await StatusBar.setStyle({ style: mode === 'dark' ? Style.Dark : Style.Light });
+  } catch (error) {
+    // 여기까지 왔다면 플러그인은 있는데 호출이 실패한 것이다. 삼키면 기기에서
+    // 원인을 찾을 방법이 없으므로 남긴다(화면 동작에는 영향을 주지 않는다).
+    console.warn('[statusBar] 상태 표시줄 스타일 적용 실패', error);
   }
 }

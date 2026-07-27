@@ -64,7 +64,7 @@ function LoginContent() {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <span className={styles.brandIcon} aria-hidden="true">
-            <Image src="/main-logo.png" alt="" width={56} height={56} priority />
+            <Image src="/main-logo.png" alt="" data-logo width={56} height={56} priority />
           </span>
           <h1 className={styles.brandName}>Petlog</h1>
           <p className={styles.brandDesc}>반려동물 건강 기록 서비스</p>

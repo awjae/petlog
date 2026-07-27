@@ -186,9 +186,19 @@
 }
 
 /* 로고 아트워크(main-logo.png)는 짙은 갈색 단색 실루엣이라 어두운 배경에서 묻힌다.
-   에셋을 따로 만들지 않고 실루엣만 밝게 반전해 쓴다. */
-:root[data-mode='dark'] img[src*='main-logo'] {
+   에셋을 따로 만들지 않고 실루엣만 밝게 반전해 쓴다.
+
+   src 대신 data-logo 속성으로 고른다. next/image 가 렌더하는 src 는
+   `/_next/image?url=%2Fmain-logo.png` 형태라, 이미지 로더나 CDN 설정이 바뀌면
+   src 매칭이 조용히 안 먹는다(에러 없이 로고만 다시 묻힌다). */
+:root[data-mode='dark'] img[data-logo] {
   filter: brightness(0) invert(0.92);
+}
+
+/* 라이트로 고정한 하위 트리(공유 이미지/미리보기) 안에서는 반전하지 않는다.
+   밝은 카드 위에 흰 로고가 얹히기 때문이다. */
+:root[data-mode='dark'] [data-mode='light'] img[data-logo] {
+  filter: none;
 }
 
 /* ===== Reset ===== */

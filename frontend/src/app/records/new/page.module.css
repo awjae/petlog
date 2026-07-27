@@ -205,6 +205,9 @@
   border-color: var(--color-primary);
 }
 
+/* 단위를 필드 안쪽으로 옮기면서 가운데 정렬을 유지하면 숫자가 필드 중앙에,
+   단위는 오른쪽 끝에 떨어져 "5.2      kg"처럼 읽힌다. 오른쪽 정렬해 숫자와 단위를
+   한 덩어리로 붙인다. */
 .numberInput {
   flex: 1;
   min-width: 0;
@@ -213,7 +216,7 @@
   border: none;
   font: var(--font-title-l);
   color: var(--color-text-primary);
-  text-align: center;
+  text-align: right;
   -moz-appearance: textfield;
 }
 

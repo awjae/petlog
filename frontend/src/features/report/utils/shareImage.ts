@@ -46,6 +46,11 @@ type Palette = Record<keyof typeof PALETTE_TOKENS, string>;
  * 이 요소만 라이트 토큰을 갖는다. 루트의 data-mode를 잠깐 뒤집었다 되돌리는 방식보다
  * 안전하고(중간에 다른 코드가 끼어들어도 화면이 깜빡이지 않는다), 색 값을 JS에
  * 복사해두지 않아도 된다.
+ *
+ * ⚠️ 프로브는 반드시 <html>의 자손이어야 한다. 핑크 팔레트는
+ * `[data-theme='pastel-pink'] [data-mode='light']` 라는 자손 셀렉터로 정의돼 있어,
+ * 문서 트리 밖(예: DocumentFragment)이나 <html> 형제로 붙이면 조건이 안 맞아
+ * 에러 없이 스카이 값이 나온다.
  */
 function readLightPalette(): Palette {
   const fallback = Object.fromEntries(

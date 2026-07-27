@@ -14,8 +14,11 @@
     transform 120ms ease;
 }
 
+/* 눌림은 "본문 글자색 쪽으로 다가간다"로 표현한다. black 과 섞으면 다크에서
+   primary 가 밝은 하늘색이라 눌렀을 때 오히려 사라지는 느낌이 된다 —
+   text-primary 는 모드에 따라 뒤집히므로 방향도 함께 뒤집힌다. */
 .button:active:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary) 85%, black);
+  background: color-mix(in srgb, var(--color-primary) 85%, var(--color-text-primary));
   transform: scale(0.98);
 }
 

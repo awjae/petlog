@@ -134,7 +134,7 @@ export default function SharedReportPage({ params }: { params: Promise<{ shareTo
     <main className={styles.main} aria-label="공유된 리포트">
       <header className={styles.header}>
         <Link href="/" className={styles.brand}>
-          <Image src="/main-logo.png" alt="" width={28} height={28} priority />
+          <Image src="/main-logo.png" alt="" data-logo width={28} height={28} priority />
           <span className={styles.brandName}>Petlog</span>
         </Link>
         {showCaption && <p className={styles.viewerCaption}>{viewerCaption}</p>}
