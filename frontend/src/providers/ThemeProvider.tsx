@@ -12,6 +12,7 @@ import {
   type Theme,
   type ThemeMode,
 } from '@/shared/config/theme';
+import { syncNativeStatusBar } from '@/shared/native/statusBar';
 
 /**
  * 테마는 두 축이다 — 팔레트(theme)와 명암(mode).
@@ -25,12 +26,16 @@ import {
  */
 const ThemeContext = createContext<{
   theme: Theme;
+  /** 사용자가 고른 값. 'system'일 수 있다. */
   mode: ThemeMode;
+  /** 'system'을 해석한 실제 명암. DOM의 data-mode와 항상 같다. */
+  resolvedMode: 'light' | 'dark';
   setTheme: (t: Theme) => void;
   setMode: (m: ThemeMode) => void;
 }>({
   theme: DEFAULT_THEME,
   mode: DEFAULT_THEME_MODE,
+  resolvedMode: 'light',
   setTheme: () => {},
   setMode: () => {},
 });
@@ -38,6 +43,13 @@ const ThemeContext = createContext<{
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [mode, setModeState] = useState<ThemeMode>(DEFAULT_THEME_MODE);
+  const [resolvedMode, setResolvedMode] = useState<'light' | 'dark'>('light');
+
+  /** DOM(data-mode)과 React 상태를 한 번에 맞춘다. 둘이 갈리면 상태 표시줄만 반대로 남는다. */
+  function applyResolved(next: 'light' | 'dark') {
+    document.documentElement.dataset.mode = next;
+    setResolvedMode(next);
+  }
 
   // 인라인 스크립트가 이미 DOM에 반영해둔 값을 React 상태로 끌어올린다.
   useEffect(() => {
@@ -50,6 +62,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } catch {
       // 시크릿 모드 등으로 localStorage를 못 읽으면 기본값을 쓴다.
     }
+
+    setResolvedMode(document.documentElement.dataset.mode === 'dark' ? 'dark' : 'light');
   }, []);
 
   // 'system'일 때만 OS 설정 변경을 따라간다.
@@ -57,13 +71,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (mode !== 'system') return;
 
     const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const apply = () => {
-      document.documentElement.dataset.mode = media.matches ? 'dark' : 'light';
-    };
+    const apply = () => applyResolved(media.matches ? 'dark' : 'light');
     apply();
     media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
   }, [mode]);
+
+  // 네이티브 앱의 상태 표시줄 아이콘 색을 명암에 맞춘다(웹에서는 no-op).
+  useEffect(() => {
+    syncNativeStatusBar(resolvedMode);
+  }, [resolvedMode]);
 
   function setTheme(next: Theme) {
     setThemeState(next);
@@ -77,7 +94,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   function setMode(next: ThemeMode) {
     setModeState(next);
-    document.documentElement.dataset.mode = resolveMode(next);
+    applyResolved(resolveMode(next));
     try {
       localStorage.setItem(THEME_MODE_STORAGE_KEY, next);
     } catch {
@@ -86,7 +103,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, setTheme, setMode }}>
+    <ThemeContext.Provider value={{ theme, mode, resolvedMode, setTheme, setMode }}>
       {children}
     </ThemeContext.Provider>
   );
