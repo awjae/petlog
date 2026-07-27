@@ -1,4 +1,4 @@
-# Decision: Server State — Apollo Client v4 채택 (TanStack Query 대체)
+# Decision: Server State — Apollo Client v4 채택 (TanStack Query 대신)
 
 ## Status
 
@@ -7,7 +7,9 @@
 
 갱신 이력:
 - 2026-07-27 — Reason의 "Mutation 이후 캐시 갱신" 항목에 운영 기준(refetchQueries 기본, 낙관적 업데이트 적용 조건)을 실제 코드 기준으로 반영
-- 2026-07-27 — Context/Problem이 겪은 문제처럼 읽히던 서술을 사전 검토였다는 사실로 정정
+- 2026-07-27 — Context/Problem이 겪은 문제처럼 읽히던 서술을 사전 검토였다는 사실로 정정.
+  제목의 "TanStack Query 대체"도 "대신"으로 고쳤다 — 쓰던 것을 걷어낸 게 아니라 착수 전에
+  고른 것이다 (007의 Server State 결정을 대체한다는 관계는 아래 Status 문장에 남아 있다)
 
 ---
 
