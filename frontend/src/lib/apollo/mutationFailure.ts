@@ -1,4 +1,5 @@
 import { CombinedGraphQLErrors, ServerError, ServerParseError } from '@apollo/client';
+import { SessionExpiredError } from '@/lib/auth/sessionExpiredError';
 
 /**
  * 뮤테이션 실패의 종류.
@@ -8,6 +9,8 @@ import { CombinedGraphQLErrors, ServerError, ServerParseError } from '@apollo/cl
  * 오프라인 지원을 검토할 때 걸리는 제약은 `mobile/capacitor.config.ts` 주석 참고.
  */
 export type MutationFailureKind =
+  /** 로그인 세션이 만료됐다. 재시도가 아니라 재로그인이 필요하다. */
+  | 'session-expired'
   /** 기기가 네트워크에 연결되어 있지 않다. */
   | 'offline'
   /** 연결은 되어 있지만 요청이 서버에 닿지 못했다 (약한 신호, DNS, 타임아웃). */
@@ -24,6 +27,10 @@ export type MutationFailureKind =
  * 온라인이었다는 뜻이므로, `navigator.onLine`을 먼저 보면 잘못 분류될 수 있다.
  */
 export function classifyMutationFailure(error: unknown): MutationFailureKind {
+  // errorLink가 토큰 리프레시 실패 시 던진다. 흔한 정상 이벤트라 unknown에 섞이면
+  // "분류하지 못한 실패"의 규모를 읽을 수 없게 된다.
+  if (SessionExpiredError.is(error)) return 'session-expired';
+
   if (CombinedGraphQLErrors.is(error)) return 'server-rejected';
   if (ServerError.is(error) || ServerParseError.is(error)) return 'server-unavailable';
 
@@ -39,6 +46,9 @@ export function classifyMutationFailure(error: unknown): MutationFailureKind {
 }
 
 const FAILURE_MESSAGE: Record<MutationFailureKind, string> = {
+  // 이 경우 errorLink가 /login으로 보내므로 문구는 잠깐 보인다. 그래도 "다시
+  // 시도해주세요"라고 잘못 안내하지 않는 편이 낫다.
+  'session-expired': '로그인이 만료됐어요. 다시 로그인해주세요',
   offline: '지금 오프라인이에요. 연결되면 다시 시도해주세요',
   network: '연결이 불안정해요. 잠시 후 다시 시도해주세요',
   'server-rejected': '저장에 실패했어요. 다시 시도해주세요',
