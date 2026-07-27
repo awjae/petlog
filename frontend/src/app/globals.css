@@ -23,8 +23,12 @@
    대비 검증은 `npm run check:contrast` (scripts/check-contrast.mjs)로 자동화되어 있다.
    ============================================================ */
 
-/* ===== 봄 하늘 다이어리 · 라이트 (기본) ===== */
-:root {
+/* ===== 봄 하늘 다이어리 · 라이트 (기본) =====
+   [data-mode='light'] 도 함께 받는다. 다크 모드에서도 "여기만 라이트"가 필요한
+   영역(공유 이미지 미리보기)이 이 셀렉터로 토큰을 되살린다 — 값을 복사하지 않고
+   셀렉터만 늘리는 방식이라 라이트 팔레트의 출처는 계속 한 곳이다. */
+:root,
+[data-mode='light'] {
   color-scheme: light;
 
   --color-primary: #2f7099; /* 흰 텍스트 위 5.39:1, 배경 위 4.73:1 */
@@ -90,7 +94,8 @@
 }
 
 /* ===== 로즈 핑크 다이어리 · 라이트 ===== */
-:root[data-theme='pastel-pink'] {
+:root[data-theme='pastel-pink'],
+[data-theme='pastel-pink'] [data-mode='light'] {
   --color-primary: #b34760; /* 흰 텍스트 위 5.27:1 */
   --color-primary-light: #fdedf1; /* 위에 primary 글씨가 올라와 4.66:1 */
   --color-primary-text: #ffffff;
