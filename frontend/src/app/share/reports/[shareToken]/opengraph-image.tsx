@@ -13,8 +13,16 @@ import { SITE_NAME } from '@/shared/config/site';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default async function ShareOpengraphImage({ params }: { params: { shareToken: string } }) {
-  const report = await getSharedReportForMetadata(params.shareToken);
+// params는 Promise다. 동기로 접근하면 shareToken이 undefined가 되어 백엔드로
+// /report-shares/undefined 요청이 나가고, 카드가 항상 기본값으로 렌더된다.
+// 이 라우트는 page.tsx와 별개 요청이라 페이지의 메타태그만 봐서는 드러나지 않는다.
+export default async function ShareOpengraphImage({
+  params,
+}: {
+  params: Promise<{ shareToken: string }>;
+}) {
+  const { shareToken } = await params;
+  const report = await getSharedReportForMetadata(shareToken);
 
   const logoBuffer = readFileSync(join(process.cwd(), 'public', 'main-logo.png'));
   const logoSrc = `data:image/png;base64,${logoBuffer.toString('base64')}`;
