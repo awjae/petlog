@@ -7,7 +7,8 @@ import styles from './SharePreviewFrame.module.css';
 /**
  * 공유 이미지 미리보기.
  *
- * data-mode="light"로 명암을 고정한다 — 실제로 만들어지는 이미지가 라이트 고정이라
+ * data-mode="light"로 명암을 고정한다(결정 문서: .claude/docs/decisions/030-design-token-roles-and-theme-mode.md).
+ * 실제로 만들어지는 이미지가 라이트 고정이라
  * (features/report/utils/shareImage.ts), 미리보기가 다크면 "보이는 것과 나가는 것"이
  * 달라진다. 팔레트(스카이/핑크)는 사용자가 고른 것을 그대로 따른다.
  */
