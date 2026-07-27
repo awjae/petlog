@@ -26,9 +26,9 @@
 | 캘린더(`calendarEvents`) | `startDate`~`endDate` 범위 | `user.resolver.ts:54` |
 | 리포트 기간 조회 | 사용자가 고른 기간(최대 90일) | `reportPeriod.ts`의 `MAX_PERIOD_DAYS` |
 
-### 경계가 없는 것은 하나다
+### 경계가 없는 것은 둘이다
 
-`HealthRecordService.findAll()`은 `take` 없이 해당 반려동물의 전체 기록을 돌려준다.
+**(1) `HealthRecordService.findAll()`** — `take` 없이 해당 반려동물의 전체 기록을 돌려준다.
 
 ```ts
 const records = await this.prisma.healthRecord.findMany({
@@ -39,11 +39,32 @@ const records = await this.prisma.healthRecord.findMany({
 
 이 결과를 쓰는 화면은 반려동물 상세의 타임라인(`useHealthRecords`)이다.
 
-### DB는 병목이 아니다
+**(2) `ReportService.getReportStatus()`** — 초안에서 빠뜨렸다. 날짜 필터도 `take`도 없이
+전체 기록을 읽는다.
 
-`schema.prisma`에 `@@index([petId, recordedAt(sort: Desc)])`가 있어 정렬 조회가
-인덱스를 탄다. 문제가 생긴다면 쿼리 시간이 아니라 **응답 크기와 클라이언트 렌더링**
-쪽이다.
+```ts
+this.prisma.healthRecord.findMany({
+  where: { petId, deletedAt: null },
+  select: { recordedAt: true },
+})
+```
+
+`select`로 컬럼을 하나만 가져오는 덕에 (1)보다 행당 비용은 훨씬 작지만, 행 수 자체에는
+상한이 없다. 그리고 이 쿼리는 **리포트 화면에 들어갈 때마다** 돈다.
+
+바로 위 줄에서 `currentMonthBounds()`로 이번 달 경계를 이미 구하고 있으므로, 이 조회의
+목적(리포트 생성 가능 여부 판단)에 필요한 범위만 `where`에 거는 것으로 지금 좁힐 수 있다.
+스키마도 프론트도 건드리지 않는 변경이라 아래 "착수 순서"보다 앞선다.
+
+### DB가 병목일 가능성은 낮지만 확인은 안 됐다
+
+`schema.prisma`에 `@@index([petId, recordedAt(sort: Desc)])`가 있다. 다만 실제 쿼리는
+`deletedAt: null` 필터와 2차 정렬 `createdAt`을 포함하는데 **둘 다 이 인덱스에 없다.**
+플래너가 `@@index([petId, deletedAt])`를 고르고 별도 정렬을 붙일 수도 있다. "인덱스를
+탄다"는 EXPLAIN으로 확인하기 전까지는 추정이다.
+
+어느 쪽이든 먼저 문제가 되는 건 쿼리 시간이 아니라 **응답 크기와 클라이언트 렌더링**
+쪽일 가능성이 높다.
 
 ### 지금 규모
 
@@ -71,16 +92,33 @@ E2E가 전부 따라 움직여야 하고, 리포트 생성이 기간 내 **전�
 
 1. **한 반려동물의 기록이 500건을 넘는 사용자가 생긴다.** 응답 약 100KB 지점이고,
    모바일에서 목록 렌더링이 체감되기 시작하는 규모다.
-2. **`healthRecords` 응답의 p95가 300ms를 넘는다.** Sentry 트레이스로 확인한다
-   (샘플링을 1.0으로 올려둔 이유가 이 측정이다).
+2. **`healthRecords` 응답의 p95가 300ms를 넘는다.**
 3. **타임라인 화면의 INP가 200ms를 넘는다.** 렌더링 쪽 병목이면 페이지네이션이 아니라
    가상화가 답일 수 있으므로, 어느 쪽인지 구분해서 본다.
 
+### 트리거는 아직 관측할 수 없다 (선행 작업)
+
+초안은 위 수치를 적어두고 "관측되면 착수한다"고 했는데, **셋 다 현재 측정 수단이 없다.**
+그대로 두면 영원히 발동하지 않는 조건이 된다.
+
+- **1번** — 서버에 기록 수를 보는 장치가 없다. 다만 `HomeQuery`가 이미
+  `Pet.totalHealthRecordCount`를 내려주므로, 이 값을 Sentry 태그/컨텍스트로 붙이면
+  별도 집계 없이 분포를 볼 수 있다. 가장 싸다.
+- **2번** — 오퍼레이션별로 나눌 수가 없다. 모든 GraphQL 요청이 단일 `/api/graphql`
+  엔드포인트로 나가서 트레이스 상에서 하나의 스팬으로 뭉친다. `healthRecords`만의
+  p95를 보려면 오퍼레이션 이름을 스팬에 실어야 한다. 게다가 프로덕션 트레이스
+  샘플링은 아직 0.1이고, 이를 올리는 변경은 별도 PR에 있다.
+- **3번** — INP는 Sentry가 자동 수집하지만(browserTracing) 역시 샘플링에 종속된다.
+
+따라서 **0번 작업은 계측이다.** 위 세 가지를 볼 수 있게 만든 뒤에야 아래 순서가
+의미를 갖는다.
+
 ### 착수 시 순서
 
-1. **먼저 값싼 방법을 쓴다** — `findAll`에 기간/개수 상한 인자를 추가해 타임라인이 최근
+0. **`getReportStatus`의 범위를 좁힌다.** 위에 적은 대로 백엔드 한 파일 안에서 끝난다.
+1. **그다음 값싼 방법을 쓴다** — `findAll`에 기간/개수 상한 인자를 추가해 타임라인이 최근
    N일만 요청한다. 스키마 형태를 바꾸지 않으므로 MSW·E2E가 그대로 산다.
-2. 1번으로 부족할 때만 커서 페이지네이션(Connection + `relayStylePagination`)으로 간다.
+2. 그래도 부족할 때만 커서 페이지네이션(Connection + `relayStylePagination`)으로 간다.
 3. 목록용 조회와 리포트 집계용 조회를 그때 분리한다. 리포트는 기간 내 전체를 읽어야
    하므로 같은 리졸버를 공유하면 안 된다.
 
