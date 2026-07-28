@@ -133,6 +133,15 @@
   margin: 0;
 }
 
+/* 사진 선택 실패 안내. 힌트 문구 자리를 그대로 대체해 레이아웃이 흔들리지 않는다. */
+.avatarError {
+  font: var(--font-caption);
+  color: var(--color-danger);
+  margin: 0;
+  text-align: center;
+  max-width: 260px;
+}
+
 .fileInput {
   position: absolute;
   width: 1px;

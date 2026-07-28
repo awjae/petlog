@@ -8,9 +8,20 @@
 // 아바타는 최대 96px(CSS)로 표시되므로 원본 해상도가 필요 없다. 여유를 크게
 // 두고 긴 변 1024px로 맞춘다.
 
+import { SERVER_ALLOWED_TYPES } from '../types/upload';
+
 const MAX_EDGE = 1024;
 const QUALITY = 0.85;
-const OUTPUT_TYPE = 'image/webp';
+
+// 브라우저와 무관하게 항상 jpeg로 내보낸다. 결정 문서: 032-upload-image-format-jpeg.md
+//
+// webp를 쓰지 않는 이유: Safari는 canvas로 webp를 만들지 못한다("표시"는 Safari 14부터
+// 되므로 지원한다고 착각하기 쉬운데 디코딩과 인코딩은 별개다). 게다가 못 만들 때 예외를
+// 던지지 않고 조용히 png를 돌려주므로 실패를 알아채기도 어렵다. 실제 사진 기준 webp의
+// 이득은 16KB 남짓이고, 저장 포맷은 next/image가 서빙 시점에 다시 인코딩하므로
+// 사용자에게 전달되지도 않는다.
+const OUTPUT_TYPE = 'image/jpeg';
+const OUTPUT_EXTENSION = 'jpg';
 
 /** 긴 변이 maxEdge를 넘을 때만 비율을 유지해 축소한다. 확대하지 않는다. */
 export function calcTargetSize(
@@ -28,8 +39,16 @@ export function calcTargetSize(
   };
 }
 
-function toBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
-  return new Promise((resolve) => canvas.toBlob(resolve, OUTPUT_TYPE, QUALITY));
+/** jpeg 인코딩에 성공한 Blob. 실패하면 null. */
+async function encode(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, OUTPUT_TYPE, QUALITY),
+  );
+
+  // toBlob은 만들지 못하는 타입을 요청받아도 예외를 던지지 않고 조용히 image/png를
+  // 돌려준다. 요청한 타입이 그대로 돌아왔을 때만 성공으로 본다 — jpeg는 사실상 모든
+  // 브라우저가 인코딩하므로 여기 걸릴 일은 없어야 하지만, 조용한 실패라 확인해 둔다.
+  return blob && blob.type === OUTPUT_TYPE ? blob : null;
 }
 
 function replaceExtension(name: string, ext: string): string {
@@ -66,15 +85,18 @@ export async function compressImage(file: File): Promise<File> {
     // 큰 사진일수록 위험하다). finally의 close는 예외 경로용 안전망으로 남긴다.
     bitmap.close();
 
-    const blob = await toBlob(canvas);
-    // toBlob은 지원하지 않는 타입을 요청받으면 조용히 image/png로 떨어진다.
-    // png는 사진에서 원본보다 커질 수 있으므로 그 경우는 원본을 쓴다.
-    if (!blob || blob.type !== OUTPUT_TYPE) return file;
+    const blob = await encode(canvas);
+    if (!blob) return file;
 
     // 이미 충분히 작은 사진을 굳이 재인코딩해서 키우지 않는다.
-    if (blob.size >= file.size) return file;
+    //
+    // 단 원본이 서버가 받지 않는 형식일 때는 예외다. 아이폰 사진(HEIC)이 그런데,
+    // Safari는 HEIC를 디코드할 수 있어 여기까지 오지만 서버는 HEIC를 거부한다.
+    // 이때 "더 크다"는 이유로 원본을 돌려주면 크기와 무관하게 업로드가 막히므로,
+    // 커지더라도 변환 결과를 쓰는 쪽이 낫다.
+    if (blob.size >= file.size && SERVER_ALLOWED_TYPES.includes(file.type)) return file;
 
-    return new File([blob], replaceExtension(file.name, 'webp'), {
+    return new File([blob], replaceExtension(file.name, OUTPUT_EXTENSION), {
       type: OUTPUT_TYPE,
       lastModified: Date.now(),
     });
