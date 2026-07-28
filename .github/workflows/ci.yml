@@ -78,6 +78,52 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run test:unit --workspace=frontend
 
+  test-frontend-integration:
+    name: Test (Frontend Integration)
+    # PR마다 돈다. .claude/docs/decisions/013-e2e-vs-frontend-integration-test.md가
+    # 정한 대로다 — 네트워크를 MSW가 대신하므로 Postgres도 백엔드도 필요 없고, 그래서
+    # test-e2e와 달리 PR 피드백 루프를 느리게 하지 않는다.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # NEXT_PUBLIC_* 는 빌드 시점에 번들로 인라인되므로 start가 아니라 build 단계에
+      # 값이 있어야 한다. 그래서 스텝이 아니라 job 레벨에 둔다.
+      NEXT_PUBLIC_USE_MOCK: 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      # 브라우저 안에서만 도는 검증이라 prisma/cdktf 생성물이 필요 없다.
+      - run: npm ci --ignore-scripts
+      - run: npm run build --workspace=frontend
+      - name: Start frontend
+        working-directory: frontend
+        run: nohup npm start > /tmp/frontend.log 2>&1 &
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && exit 0
+            sleep 2
+          done
+          echo "frontend did not become ready in time"; cat /tmp/frontend.log; exit 1
+      - name: Install Playwright Browsers
+        working-directory: frontend
+        # integration 프로젝트는 Desktop Chrome 하나만 쓴다(playwright.config.ts).
+        run: npx playwright install --with-deps chromium
+      - name: Run integration tests
+        working-directory: frontend
+        run: npm run test:integration
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          # test-e2e 잡의 아티팩트와 이름이 겹치면 업로드가 충돌한다.
+          name: playwright-report-integration
+          path: frontend/playwright-report/
+          retention-days: 7
+
   test-backend:
     name: Test (Backend)
     runs-on: ubuntu-latest
