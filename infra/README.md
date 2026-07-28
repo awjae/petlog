@@ -140,6 +140,68 @@ git에 커밋하지 않는다(`.gitignore` 참고). 이 스택은 거의 변경�
 > 이 프로젝트의 "AWS 리소스는 콘솔/CLI로 수동 생성하지 않고 반드시 CDKTF 코드로 정의한다"는
 > 원칙(`CLAUDE.md`)을 부트스트랩 단계에도 동일하게 적용한 것이다.
 
+## DB 애플리케이션 롤 부트스트랩 (환경마다 1회)
+
+백엔드 런타임은 **RDS 마스터 유저로 접속하지 않는다.** 마스터 비밀번호는
+`manageMasterUserPassword: true` 때문에 AWS가 7일마다 로테이션하는데, SSM의 DATABASE_URL은
+배포 시점에만 갱신되므로 로테이션이 돌면 그 즉시 stale해져 백엔드가 `P1000 Authentication
+failed`로 죽는다. 실제로 2026-07-27 00:09 로테이션 58초 뒤부터 로그인 장애가 발생했다.
+
+그래서 DB 안에 애플리케이션 전용 롤 두 개를 만들어 런타임을 로테이션에서 떼어냈다.
+
+| 롤 | 용도 | 권한 |
+| --- | --- | --- |
+| `petlog_app` | 백엔드 런타임 | DML만 (DDL 없음) |
+| `petlog_migrator` | `prisma migrate deploy` | 스키마 객체 소유 + DDL |
+
+두 롤의 비밀번호는 AWS가 건드리지 않으므로 마스터가 로테이션돼도 런타임은 영향받지 않는다.
+
+### SSM 파라미터 구성
+
+| 파라미터 | 값 | 관리 주체 |
+| --- | --- | --- |
+| `/petlog/{env}/backend/database-url` | 마스터 | terraform (부트스트랩 태스크 전용) |
+| `/petlog/{env}/backend/database-url-app` | `petlog_app` | 부트스트랩 스크립트 |
+| `/petlog/{env}/backend/database-url-migrator` | `petlog_migrator` | 부트스트랩 스크립트 |
+
+뒤의 두 개는 **terraform이 값을 관리하지 않는다.** ARN만 참조하므로 이 비밀번호들은 terraform
+state에 평문으로 남지 않는다.
+
+### 실행 순서
+
+```bash
+# 1. 태스크 정의(부트스트랩/마이그레이션 포함)를 먼저 배포한다
+cd infra && PETLOG_ENV=dev npx cdktf deploy petlog-backend-dev
+
+# 2. VPC 내부 일회성 태스크로 롤을 생성하고 SSM에 자격증명을 저장한다
+npm run db:bootstrap-roles --workspace=infra
+
+# 3. 백엔드를 강제 재배포해 새 자격증명을 주입한다
+npm run deploy:ecs-force-redeploy --workspace=backend
+```
+
+1번과 2번 사이에는 `-app` 파라미터가 아직 없어 backend 서비스의 새 태스크가 뜨지 못한다
+(`ResourceInitializationError`). 정상이며, 2~3번을 마치면 해소된다.
+
+`infra/bootstrap/db-roles.sql`이 실제 SQL이고 멱등하다. 자격증명을 수동으로 로테이션하고
+싶을 때도 2~3번을 다시 실행하면 된다.
+
+### 접속 자격증명 확인
+
+`npm run db:credentials --workspace=infra`가 세 롤을 모두 출력한다. 인자로 클립보드에 복사할
+대상을 고른다 (`db-credentials.sh app` 등, 기본값 `master`).
+
+앱 관점의 권한 문제(예: 새 테이블에 GRANT가 안 걸린 경우)를 재현하려면 **반드시 `petlog_app`으로
+접속한다** — 마스터로는 무엇이든 되기 때문에 드러나지 않는다. 반대로 pgAdmin에서 마스터로
+테이블을 만들면 소유자가 마스터가 되어 `petlog_app`이 접근하지 못하므로, 스키마 변경은 항상
+prisma 마이그레이션으로 한다.
+
+> 왜 terraform postgresql provider를 쓰지 않았는가 — provider는 plan/apply마다 DB에 TCP로
+> 붙어야 해서 bastion 터널이 상시 전제가 되고(CI 불가), provider 인증에 마스터 비밀번호가
+> 필요해 로테이션 결합이 되살아나며, 생성한 비밀번호가 state에 평문으로 남는다. DB 롤은
+> "IaC를 돌리기 전에 있어야 하는 것"이라 배포용 IAM 사용자 정책과 같은 성격의 부트스트랩으로
+> 보고 `infra/bootstrap/`에 뒀다.
+
 ## 사용 방법
 
 스택이 여러 개(`petlog-bootstrap`, `petlog-registry-{env}`, `petlog-storage-{env}`,

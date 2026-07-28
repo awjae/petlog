@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # RDS(private, VPC 내부)에 Prisma 마이그레이션을 적용한다.
 #
-# RDS는 private 서브넷에 있어 로컬에서 직접 접근할 수 없다. 대신 이미 떠 있는
-# backend ECS 태스크와 동일한 네트워크/보안그룹으로 "일회성 태스크"를 띄우고,
-# 컨테이너 커맨드를 `npx prisma migrate deploy`로 오버라이드해서 그 안에서 실행한다.
+# RDS는 private 서브넷에 있어 로컬에서 직접 접근할 수 없다. 대신 backend ECS 태스크와
+# 동일한 네트워크/보안그룹으로 "일회성 태스크"를 띄우고, 컨테이너 커맨드를
+# `npx prisma migrate deploy`로 오버라이드해서 그 안에서 실행한다.
+#
+# 태스크 정의는 backend 서비스의 것이 아니라 마이그레이션 전용
+# `petlog-backend-migrate-{env}`를 쓴다. 런타임은 DML만 가능한 `petlog_app` 롤로 접속하므로
+# 그 정의로는 DDL이 불가능하기 때문이다 — 마이그레이션은 스키마 객체를 소유한
+# `petlog_migrator` 롤로 접속해야 한다 (infra/bootstrap/db-roles.sql 참고).
 # 프로덕션 이미지는 devDependencies(prisma CLI)를 prune해서 가볍게 유지하므로,
 # npx가 그때그때 필요한 버전을 받아온다(이 태스크는 인터넷 접근이 되는 public
 # 서브넷에 있으므로 npm 레지스트리에서 받아올 수 있다).
@@ -35,10 +40,10 @@ echo "==> petlog-backend-${ENV} 태스크 정의로 마이그레이션 태스크
 TASK_ARN=$(aws ecs run-task \
   --region "$REGION" \
   --cluster "petlog-cluster-${ENV}" \
-  --task-definition "petlog-backend-${ENV}" \
+  --task-definition "petlog-backend-migrate-${ENV}" \
   --launch-type FARGATE \
   --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_IDS}],securityGroups=[${SECURITY_GROUP_ID}],assignPublicIp=ENABLED}" \
-  --overrides '{"containerOverrides":[{"name":"backend","command":["sh","-c","apk add --no-cache openssl && npx --yes prisma@6.0.0 migrate deploy --schema=backend/prisma/schema.prisma"]}]}' \
+  --overrides '{"containerOverrides":[{"name":"migrate","command":["sh","-c","apk add --no-cache openssl && npx --yes prisma@6.0.0 migrate deploy --schema=backend/prisma/schema.prisma"]}]}' \
   --query 'tasks[0].taskArn' --output text)
 
 echo "==> 태스크 시작: ${TASK_ARN}"
@@ -49,7 +54,7 @@ EXIT_CODE=$(aws ecs describe-tasks --region "$REGION" --cluster "petlog-cluster-
   --query 'tasks[0].containers[0].exitCode' --output text)
 
 TASK_ID="${TASK_ARN##*/}"
-LOG_STREAM="backend/backend/${TASK_ID}"
+LOG_STREAM="migrate/migrate/${TASK_ID}"
 
 echo "==> 종료 코드: ${EXIT_CODE}"
 echo "==> 로그:"

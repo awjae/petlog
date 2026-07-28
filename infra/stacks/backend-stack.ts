@@ -23,6 +23,7 @@ import { CloudwatchLogGroup } from '../.gen/providers/aws/cloudwatch-log-group';
 import { IamRolePolicy } from '../.gen/providers/aws/iam-role-policy';
 import { DataAwsIamPolicyDocument } from '../.gen/providers/aws/data-aws-iam-policy-document';
 import { DataAwsKmsAlias } from '../.gen/providers/aws/data-aws-kms-alias';
+import { DataAwsCallerIdentity } from '../.gen/providers/aws/data-aws-caller-identity';
 import { Sesv2EmailIdentity } from '../.gen/providers/aws/sesv2-email-identity';
 import { SsmParameter } from '../.gen/providers/aws/ssm-parameter';
 import { DataAwsSecretsmanagerSecretVersion } from '../.gen/providers/aws/data-aws-secretsmanager-secret-version';
@@ -289,11 +290,34 @@ export class BackendStack extends TerraformStack {
       `@${databaseStack.instance.endpoint}/${DB_NAME}`;
 
     // --- SSM Parameter Store (SecureString) ---
+    // 주의: 이 파라미터는 **마스터 자격증명**이며 DB 롤 부트스트랩 태스크만 사용한다.
+    // 백엔드 런타임과 마이그레이션은 각각 아래의 `-app` / `-migrator` 파라미터를 쓴다
+    // (이름만 보고 런타임용이라고 착각하기 쉬워 description에도 같은 내용을 남긴다).
     const databaseUrlParam = new SsmParameter(this, 'database-url-param', {
       name: `/petlog/${environment}/backend/database-url`,
       type: 'SecureString',
       value: databaseUrl,
+      description:
+        'RDS 마스터 자격증명 (7일마다 자동 로테이션). DB 롤 부트스트랩 태스크 전용 — ' +
+        '백엔드 런타임은 database-url-app, 마이그레이션은 database-url-migrator를 사용한다.',
     });
+
+    // --- 애플리케이션 전용 DB 롤 파라미터 (terraform이 값을 관리하지 않는다) ---
+    // `petlog_app` / `petlog_migrator`의 접속 URL은 `infra/scripts/bootstrap-db-roles.sh`가
+    // VPC 내부 일회성 태스크로 생성해 SSM에 직접 저장한다. terraform은 값을 읽지도 쓰지도
+    // 않고 ARN만 참조한다 — 그래서 이 비밀번호들은 terraform state에 평문으로 남지 않는다
+    // (마스터 비밀번호가 state에 들어가는 기존 구조보다 나은 지점이다).
+    //
+    // 값을 읽지 않으므로 DataAwsSsmParameter 대신 ARN을 직접 조립한다. 데이터 소스로 읽으면
+    // 부트스트랩 전에는 plan 자체가 실패해 "배포 → 부트스트랩" 순서를 잡을 수 없다.
+    const callerIdentity = new DataAwsCallerIdentity(this, 'current-caller-identity', {});
+    const ssmParameterArn = (parameterName: string): string =>
+      `arn:aws:ssm:${awsRegion.stringValue}:${callerIdentity.accountId}:parameter${parameterName}`;
+
+    const appDatabaseUrlParamName = `/petlog/${environment}/backend/database-url-app`;
+    const migratorDatabaseUrlParamName = `/petlog/${environment}/backend/database-url-migrator`;
+    const appDatabaseUrlParamArn = ssmParameterArn(appDatabaseUrlParamName);
+    const migratorDatabaseUrlParamArn = ssmParameterArn(migratorDatabaseUrlParamName);
 
     const jwtSecretParam = new SsmParameter(this, 'jwt-secret-param', {
       name: `/petlog/${environment}/backend/jwt-secret`,
@@ -528,7 +552,11 @@ export class BackendStack extends TerraformStack {
             effect: 'Allow',
             actions: ['ssm:GetParameters'],
             resources: [
+              // 마스터 — 부트스트랩 태스크 전용
               databaseUrlParam.arn,
+              // 런타임/마이그레이션이 각각 주입받는 애플리케이션 롤 자격증명
+              appDatabaseUrlParamArn,
+              migratorDatabaseUrlParamArn,
               jwtSecretParam.arn,
               refreshTokenSecretParam.arn,
               openaiApiKeyParam.arn,
@@ -636,7 +664,9 @@ export class BackendStack extends TerraformStack {
             { name: 'SENTRY_DSN', value: sentryDsn.stringValue },
           ],
           secrets: [
-            { name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn },
+            // 런타임은 마스터가 아니라 `petlog_app` 롤로 접속한다. 이 롤의 비밀번호는 AWS가
+            // 로테이션하지 않으므로, 마스터 비밀번호가 7일마다 바뀌어도 영향받지 않는다.
+            { name: 'DATABASE_URL', valueFrom: appDatabaseUrlParamArn },
             { name: 'JWT_SECRET', valueFrom: jwtSecretParam.arn },
             { name: 'REFRESH_TOKEN_SECRET', valueFrom: refreshTokenSecretParam.arn },
             { name: 'OPENAI_API_KEY', valueFrom: openaiApiKeyParam.arn },
@@ -680,6 +710,135 @@ export class BackendStack extends TerraformStack {
       // ECS 서비스가 타겟 그룹에 태스크를 등록하려면 리스너가 먼저 존재해야 한다
       // (AWS 공식 권고 — 그렇지 않으면 "Unable to add target" 류의 경쟁 상태가 생길 수 있다).
       dependsOn: [albListener],
+    });
+
+    // --- 마이그레이션 전용 태스크 정의 ---
+    // 예전에는 `migrate-deploy-ecs.sh`가 backend 서비스의 태스크 정의를 그대로 재사용해
+    // 커맨드만 오버라이드했다. 런타임이 `petlog_app`(DML 전용)으로 바뀌면서 그 방식으로는
+    // DDL 권한이 없어 `prisma migrate deploy`가 실패한다. 마이그레이션은 스키마 객체를
+    // 소유한 `petlog_migrator`로 접속해야 하므로 태스크 정의를 분리한다.
+    //
+    // 정의를 나눈 덕분에 런타임 태스크에는 migrator 자격증명이 아예 실리지 않는다 —
+    // 같은 정의에 두 URL을 다 심고 커맨드에서 갈아끼우는 방식보다 경계가 명확하다.
+    const migrateTaskDefinition = new EcsTaskDefinition(this, 'backend-migrate-task-definition', {
+      family: `petlog-backend-migrate-${environment}`,
+      requiresCompatibilities: ['FARGATE'],
+      networkMode: 'awsvpc',
+      cpu: '256',
+      memory: '512',
+      executionRoleArn: executionRole.arn,
+      runtimePlatform: {
+        cpuArchitecture: 'ARM64',
+        operatingSystemFamily: 'LINUX',
+      },
+      containerDefinitions: JSON.stringify([
+        {
+          name: 'migrate',
+          image: `${registryStack.backendRepository.repositoryUrl}:latest`,
+          essential: true,
+          // 항상 `run-task --overrides`로 커맨드를 지정해 쓴다. 오버라이드를 깜빡하면
+          // 조용히 API 서버가 뜨는 대신 즉시 실패하도록 기본 커맨드를 막아둔다.
+          command: ['sh', '-c', 'echo "command 오버라이드가 필요한 태스크입니다"; exit 1'],
+          secrets: [{ name: 'DATABASE_URL', valueFrom: migratorDatabaseUrlParamArn }],
+          logConfiguration: {
+            logDriver: 'awslogs',
+            options: {
+              'awslogs-group': backendLogGroup.name,
+              'awslogs-region': awsRegion.stringValue,
+              'awslogs-stream-prefix': 'migrate',
+            },
+          },
+        },
+      ]),
+    });
+
+    // --- DB 롤 부트스트랩 전용 태스크 정의 ---
+    // `petlog_app` / `petlog_migrator` 롤을 만들려면 마스터 자격증명이 필요하다. 이 태스크만
+    // 마스터를 주입받고, 생성한 비밀번호를 자기 손으로 SSM에 저장한다
+    // (`infra/scripts/bootstrap-db-roles.sh` 참고 — 비밀번호가 로컬이나 CloudTrail에
+    // 남지 않게 하려는 설계다).
+    const bootstrapLogGroup = new CloudwatchLogGroup(this, 'db-bootstrap-log-group', {
+      name: `/ecs/petlog-db-bootstrap-${environment}`,
+      retentionInDays: 7,
+    });
+
+    const bootstrapTaskRole = createEcsTaskRole(
+      this,
+      'db-bootstrap-task-role',
+      `petlog-db-bootstrap-task-role-${environment}`,
+    );
+
+    const bootstrapTaskPolicyDocument = new DataAwsIamPolicyDocument(
+      this,
+      'db-bootstrap-task-policy-document',
+      {
+        statement: [
+          {
+            sid: 'AllowWriteAppDatabaseUrls',
+            effect: 'Allow',
+            actions: ['ssm:PutParameter'],
+            // 이 태스크가 쓸 수 있는 파라미터를 딱 두 개로 못박는다.
+            resources: [appDatabaseUrlParamArn, migratorDatabaseUrlParamArn],
+          },
+          {
+            sid: 'AllowEncryptSsmSecureString',
+            effect: 'Allow',
+            // SecureString으로 저장하려면 SSM 기본 KMS 키에 대한 암호화 권한이 필요하다.
+            actions: ['kms:Encrypt', 'kms:GenerateDataKey'],
+            resources: [ssmDefaultKey.targetKeyArn],
+          },
+        ],
+      },
+    );
+
+    new IamRolePolicy(this, 'db-bootstrap-task-policy', {
+      name: `petlog-db-bootstrap-ssm-write-${environment}`,
+      role: bootstrapTaskRole.name,
+      policy: bootstrapTaskPolicyDocument.json,
+    });
+
+    const bootstrapTaskDefinition = new EcsTaskDefinition(this, 'db-bootstrap-task-definition', {
+      family: `petlog-db-bootstrap-${environment}`,
+      requiresCompatibilities: ['FARGATE'],
+      networkMode: 'awsvpc',
+      cpu: '256',
+      memory: '512',
+      executionRoleArn: executionRole.arn,
+      taskRoleArn: bootstrapTaskRole.arn,
+      runtimePlatform: {
+        cpuArchitecture: 'ARM64',
+        operatingSystemFamily: 'LINUX',
+      },
+      containerDefinitions: JSON.stringify([
+        {
+          name: 'bootstrap',
+          image: `${registryStack.backendRepository.repositoryUrl}:latest`,
+          essential: true,
+          command: ['sh', '-c', 'echo "command 오버라이드가 필요한 태스크입니다"; exit 1'],
+          environment: [{ name: 'AWS_REGION', value: awsRegion.stringValue }],
+          secrets: [{ name: 'DATABASE_URL', valueFrom: databaseUrlParam.arn }],
+          logConfiguration: {
+            logDriver: 'awslogs',
+            options: {
+              'awslogs-group': bootstrapLogGroup.name,
+              'awslogs-region': awsRegion.stringValue,
+              'awslogs-stream-prefix': 'bootstrap',
+            },
+          },
+        },
+      ]),
+    });
+
+    new TerraformOutput(this, 'migrate_task_definition_family', {
+      value: migrateTaskDefinition.family,
+      description:
+        'prisma migrate deploy 전용 태스크 정의 이름. backend/scripts/migrate-deploy-ecs.sh가 사용한다.',
+    });
+
+    new TerraformOutput(this, 'db_bootstrap_task_definition_family', {
+      value: bootstrapTaskDefinition.family,
+      description:
+        'DB 롤 부트스트랩 전용 태스크 정의 이름. infra/scripts/bootstrap-db-roles.sh가 사용한다.',
     });
 
     new TerraformOutput(this, 'alb_dns_name', {

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
-# RDS 관리형 마스터 비밀번호(manageMasterUserPassword)는 AWS가 7일 주기로 자동
-# 로테이션한다. backend-stack.ts는 배포(cdktf deploy) 시점에 그 비밀번호를 한 번 읽어
-# DATABASE_URL로 조립해 SSM SecureString에 저장하고, ECS는 그 SSM 값만 읽는다. 로테이션이
-# 돌면 SSM 값이 stale해져 백엔드가 "Authentication failed"로 죽는 장애가 있었다
-# (2026-07-13). infra 코드를 바꿔 cdktf deploy를 매번 요구하는 대신, backend를 배포할
-# 때마다(= `npm run deploy`) 이 스크립트가 Secrets Manager에서 현재 비밀번호를 다시 읽어
-# SSM DATABASE_URL을 덮어쓴다 — 배포가 뜸해서 로테이션 주기(7일)보다 오래 배포가 없으면
-# 다시 stale해질 수 있는 완화책이지, 구조적으로 로테이션을 무력화하는 해결책은 아니다.
+# SSM의 **마스터** DATABASE_URL(`/petlog/{env}/backend/database-url`)을 Secrets Manager의
+# 현재 마스터 비밀번호로 덮어쓴다.
+#
+# ## 역할이 바뀌었다 (더 이상 백엔드 배포 경로에 있지 않다)
+# 원래 이 스크립트는 "로테이션 → SSM stale → 백엔드 Authentication failed" 장애의 완화책으로,
+# backend를 배포할 때마다(`npm run deploy`) 실행됐다. 배포가 로테이션 주기(7일)보다 뜸하면
+# 다시 stale해지는 임시방편이었고, 실제로 2026-07-27 로테이션 때 그대로 재발했다.
+#
+# 지금은 백엔드 런타임이 마스터가 아니라 `petlog_app` 롤로 접속한다(infra/bootstrap/db-roles.sql).
+# 그 롤의 비밀번호는 AWS가 로테이션하지 않으므로 런타임은 애초에 stale해질 수 없고, 이 스크립트를
+# 배포마다 돌릴 이유도 사라졌다 — backend의 `deploy:image` 체인에서 제거했다.
+#
+# 마스터 파라미터가 여전히 필요한 곳은 DB 롤 부트스트랩 태스크 하나뿐이며, 거기서 쓸 값은
+# `infra/scripts/bootstrap-db-roles.sh`가 실행 직전에 스스로 동기화한다. 따라서 이 스크립트는
+# 이제 수동 점검/긴급 복구용이다.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
