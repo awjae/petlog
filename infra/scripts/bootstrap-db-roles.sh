@@ -109,7 +109,11 @@ echo "    보안그룹: ${SECURITY_GROUPS}"
 
 # SQL은 비밀번호를 담고 있지 않으므로 환경변수로 넘겨도 안전하다. base64로 인코딩해
 # JSON/셸 인용 문제를 원천 차단한다.
-SQL_B64="$(base64 < "$SQL_FILE" | tr -d '\n')"
+#
+# gzip을 먼저 거치는 이유: RunTask의 컨테이너 오버라이드는 8192바이트가 상한인데, 이 SQL은
+# 한글 주석이 많아(UTF-8에서 한 글자 3바이트) base64만 하면 8584바이트로 상한을 넘겼다.
+# gzip -9를 태우면 3688바이트로 줄어 여유가 생긴다. 컨테이너의 busybox가 gunzip을 제공한다.
+SQL_GZ_B64="$(gzip -9 -c "$SQL_FILE" | base64 | tr -d '\n')"
 
 # 컨테이너 안에서 실행할 명령.
 # - psql: node:22-alpine에는 없으므로 apk로 설치한다. Alpine 버전에 따라 패키지 이름이
@@ -128,7 +132,7 @@ APP_PW="$(node -e 'process.stdout.write(require("crypto").randomBytes(24).toStri
 MIGRATOR_PW="$(node -e 'process.stdout.write(require("crypto").randomBytes(24).toString("hex"))')"
 
 echo "==> SQL 적용"
-echo "$SQL_B64" | base64 -d > /tmp/db-roles.sql
+echo "$SQL_GZ_B64" | base64 -d | gunzip > /tmp/db-roles.sql
 psql "$DATABASE_URL" \
   -v ON_ERROR_STOP=1 \
   -v app_password="$APP_PW" \
@@ -150,7 +154,7 @@ INNER
 
 OVERRIDES="$(jq -cn \
   --arg cmd "$CONTAINER_COMMAND" \
-  --arg sql "$SQL_B64" \
+  --arg sql "$SQL_GZ_B64" \
   --arg appParam "$APP_PARAM" \
   --arg migratorParam "$MIGRATOR_PARAM" \
   '{
@@ -158,14 +162,23 @@ OVERRIDES="$(jq -cn \
        name: "bootstrap",
        command: ["sh", "-c", $cmd],
        environment: [
-         { name: "SQL_B64",         value: $sql },
+         { name: "SQL_GZ_B64",      value: $sql },
          { name: "APP_PARAM",       value: $appParam },
          { name: "MIGRATOR_PARAM",  value: $migratorParam }
        ]
      }]
    }')"
 
-echo "==> 부트스트랩 태스크 실행 (${TASK_DEF})"
+# AWS가 돌려주는 InvalidParameterException은 실제 크기를 알려주지 않아 원인 파악이 느리다.
+# 여기서 미리 재서 몇 바이트인지 함께 알려준다 (SQL 주석이 늘면 다시 걸릴 수 있는 지점이다).
+OVERRIDES_BYTES="$(printf '%s' "$OVERRIDES" | wc -c | tr -d ' ')"
+if [ "$OVERRIDES_BYTES" -gt 8192 ]; then
+  echo "컨테이너 오버라이드가 ${OVERRIDES_BYTES}바이트로 AWS 상한(8192)을 넘습니다." >&2
+  echo "${SQL_FILE}의 주석을 줄이거나, SQL을 S3에 올려 태스크가 내려받는 방식으로 바꾸세요." >&2
+  exit 1
+fi
+
+echo "==> 부트스트랩 태스크 실행 (${TASK_DEF}, 오버라이드 ${OVERRIDES_BYTES}바이트)"
 TASK_ARN="$(aws ecs run-task \
   --region "$REGION" \
   --cluster "$CLUSTER" \
