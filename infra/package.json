@@ -15,6 +15,7 @@
     "deploy:all": "dotenv -e .env -v PETLOG_ENV=dev -- bash scripts/deploy.sh",
     "output:cdn:url": "dotenv -e .env -- terraform -chdir=cdktf.out/stacks/petlog-backend-dev output -raw cloudfront_url",
     "db:tunnel": "bash scripts/db-tunnel.sh",
+    "db:bootstrap-roles": "bash scripts/bootstrap-db-roles.sh",
     "db:credentials": "bash scripts/db-credentials.sh",
     "ses:import": "bash scripts/ses-import.sh"
   },

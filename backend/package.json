@@ -22,7 +22,7 @@
     "deploy:ecr-push": "dotenv -e .env -- bash ../infra/scripts/ecr-push.sh petlog-backend petlog-backend",
     "deploy:refresh-database-url": "dotenv -e .env -- bash ../infra/scripts/refresh-database-url-ssm.sh",
     "deploy:ecs-force-redeploy": "dotenv -e .env -- bash -c 'REGION=\"${AWS_REGION:-ap-northeast-2}\"; ENV=\"${PETLOG_ENV:-dev}\"; aws ecs update-service --region \"$REGION\" --cluster \"petlog-cluster-$ENV\" --service \"petlog-backend-$ENV\" --force-new-deployment >/dev/null'",
-    "deploy:image": "npm run deploy:check-version && npm run deploy:ecr-login && npm run deploy:build && npm run deploy:ecr-push && npm run deploy:refresh-database-url && npm run deploy:ecs-force-redeploy",
+    "deploy:image": "npm run deploy:check-version && npm run deploy:ecr-login && npm run deploy:build && npm run deploy:ecr-push && npm run deploy:ecs-force-redeploy",
     "deploy": "npm run deploy:image",
     "migrate:deploy:ecs": "dotenv -e ../infra/.env -- bash scripts/migrate-deploy-ecs.sh",
     "seed:report-requirements": "ts-node -T scripts/seed-report-requirements.ts",
