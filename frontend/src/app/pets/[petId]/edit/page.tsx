@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { X, Camera, Dog, Cat, type LucideIcon } from 'lucide-react';
 import { usePetEdit, usePetIds } from '@/features/pet/hooks/usePet';
 import { useUpdatePet } from '@/features/pet/hooks/useUpdatePet';
+import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import { DeletePetConfirmDialog } from '@/features/pet/components/DeletePetConfirmDialog';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
@@ -35,10 +36,11 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
   const [birthDate, setBirthDate] = useState('');
   const [gender, setGender] = useState<Gender>(null);
   const [neutered, setNeutered] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [nameError, setNameError] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const { imageFile, previewUrl, imageError, selectFile, showStoredImage, handlePreviewError } =
+    useImageSelection();
 
   useEffect(() => {
     if (!pet || initialized) return;
@@ -48,9 +50,9 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
     setBirthDate(pet.birthDate ? pet.birthDate.slice(0, 10) : '');
     setGender(pet.gender === 'unknown' ? null : pet.gender);
     setNeutered(pet.isNeutered);
-    setPreviewUrl(pet.profileImageUrl ?? null);
+    showStoredImage(pet.profileImageUrl ?? null);
     setInitialized(true);
-  }, [pet, initialized]);
+  }, [pet, initialized, showStoredImage]);
 
   function isValid() {
     return name.trim().length >= 1;
@@ -58,9 +60,7 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    if (file) void selectFile(file);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -146,14 +146,25 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
             aria-label="프로필 사진 선택"
           >
             {previewUrl ? (
-              <img src={previewUrl} alt="미리보기" className={styles.avatarImg} />
+              <img
+                src={previewUrl}
+                alt="미리보기"
+                className={styles.avatarImg}
+                onError={handlePreviewError}
+              />
             ) : (
               <span className={styles.avatarPlaceholder} aria-hidden="true">
                 <Camera size={32} strokeWidth={1.5} />
               </span>
             )}
           </button>
-          <p className={styles.avatarHint}>사진 변경</p>
+          {imageError ? (
+            <p className={styles.avatarError} role="alert">
+              {imageError}
+            </p>
+          ) : (
+            <p className={styles.avatarHint}>사진 변경</p>
+          )}
           <input
             ref={fileRef}
             type="file"

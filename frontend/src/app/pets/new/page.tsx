@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Camera, Dog, Cat, type LucideIcon } from 'lucide-react';
 import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
+import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import styles from './page.module.css';
 
@@ -26,8 +27,7 @@ export default function NewPetPage() {
   const [birthDate, setBirthDate] = useState('');
   const [gender, setGender] = useState<Gender>(null);
   const [neutered, setNeutered] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const { imageFile, previewUrl, imageError, selectFile, handlePreviewError } = useImageSelection();
 
   function isValid() {
     return name.trim().length >= 1;
@@ -35,9 +35,7 @@ export default function NewPetPage() {
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    if (file) void selectFile(file);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -80,14 +78,25 @@ export default function NewPetPage() {
             aria-label="프로필 사진 선택"
           >
             {previewUrl ? (
-              <img src={previewUrl} alt="미리보기" className={styles.avatarImg} />
+              <img
+                src={previewUrl}
+                alt="미리보기"
+                className={styles.avatarImg}
+                onError={handlePreviewError}
+              />
             ) : (
               <span className={styles.avatarPlaceholder} aria-hidden="true">
                 <Camera size={32} strokeWidth={1.5} />
               </span>
             )}
           </button>
-          <p className={styles.avatarHint}>사진 추가 (선택)</p>
+          {imageError ? (
+            <p className={styles.avatarError} role="alert">
+              {imageError}
+            </p>
+          ) : (
+            <p className={styles.avatarHint}>사진 추가 (선택)</p>
+          )}
           <input
             ref={fileRef}
             type="file"
