@@ -1,156 +1,71 @@
-'use client';
+import type { Metadata } from 'next';
+import { getSharedReportForMetadata } from '@/features/report/api/reportSharePublic.server';
+import { formatPeriodRange } from '@/features/report/utils/reportFormat';
+import { SITE_NAME } from '@/shared/config/site';
+import { SharedReportClient } from './SharedReportClient';
 
-import { use } from 'react';
-import Link from 'next/link';
-import { AlertCircle, WifiOff } from 'lucide-react';
-import { usePublicSharedReport } from '@/features/report/hooks/usePublicSharedReport';
-import { useShareViewerIdentity } from '@/features/report/hooks/useShareViewerIdentity';
-import { ReportShareMasthead } from '@/features/report/components/ReportShareMasthead';
-import { ReportHeadline } from '@/features/report/components/ReportHeadline';
-import {
-  ReportDetailSection,
-  isSectionVisible,
-  type ReportSectionType,
-} from '@/features/report/components/ReportDetailSection';
-import { ReportDetailSkeleton } from '@/features/report/components/ReportSkeleton';
-import styles from './page.module.css';
-import { AppLogo } from '@/shared/components/AppLogo';
+// 이 페이지만 서버 컴포넌트로 두는 이유:
+//
+// 카카오톡·슬랙 같은 링크 프리뷰 봇은 JavaScript를 실행하지 않는다. 페이지 전체가
+// 'use client'이면 봇이 받는 HTML에는 리포트도, 리포트별 <head>도 없어서 어떤 링크를
+// 공유해도 미리보기가 루트 레이아웃의 기본값으로 똑같이 나온다. 공유가 이 서비스의
+// 유일한 획득 경로라 이건 제품 문제다.
+//
+// Next.js는 'use client' 파일에서 metadata/generateMetadata export를 금지하므로,
+// login/page.tsx + LoginPageClient.tsx와 같은 방식으로 껍데기만 서버에 남기고 화면은
+// 클라이언트 컴포넌트에 위임한다. 데이터 레이어(Apollo/REST 훅)는 그대로다.
 
-const DETAIL_SECTION_ORDER: ReportSectionType[] = ['highlights', 'concerns', 'recommendations'];
+interface PageProps {
+  params: Promise<{ shareToken: string }>;
+}
 
-export default function SharedReportPage({ params }: { params: Promise<{ shareToken: string }> }) {
-  const { shareToken } = use(params);
-  const { report, loading, errorKind, refetch } = usePublicSharedReport(shareToken);
-  const { isMember, name, loading: viewerLoading } = useShareViewerIdentity();
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { shareToken } = await params;
+  const report = await getSharedReportForMetadata(shareToken);
 
-  const showCaption = !viewerLoading && isMember;
-  const viewerCaption = `${name ? `${name}님` : '회원님'}이 공유한 리포트`;
+  // 색인은 막되 robots.txt로는 막지 않는다. robots.txt에 /share/를 disallow로 넣으면
+  // 카카오톡·슬랙·페이스북 프리뷰 봇도 함께 차단돼 미리보기 자체가 사라진다. 반면
+  // 이 noindex 메타는 검색 엔진만 따르고 프리뷰 봇은 무시하므로, "미리보기는 되고
+  // 검색에는 안 뜨는" 상태가 된다. 공유 링크는 추측 불가능한 토큰으로 보호되는
+  // 준(準)비공개 자원이라 검색 색인은 원하지 않는다.
+  const robots = { index: false, follow: false };
 
-  const ctaReady = !loading && !viewerLoading;
-  const ctaHref = isMember ? '/home' : '/register';
-  const ctaLabel = isMember ? 'Petlog 앱으로 이동' : '나도 반려동물 건강 기록 시작하기';
-
-  function renderContent() {
-    if (loading) {
-      return <ReportDetailSkeleton />;
-    }
-
-    if (errorKind === 'not-found') {
-      return (
-        <div className={styles.errorState} role="alert">
-          <AlertCircle
-            size={40}
-            strokeWidth={1.75}
-            className={styles.errorIconNeutral}
-            aria-hidden="true"
-          />
-          <p className={styles.errorHeading}>공유가 중단되었거나 존재하지 않는 링크예요</p>
-          <Link href="/" className={styles.errorCta}>
-            Petlog 알아보기
-          </Link>
-        </div>
-      );
-    }
-
-    if (errorKind === 'network') {
-      return (
-        <div className={styles.errorState} role="alert">
-          <WifiOff
-            size={40}
-            strokeWidth={1.75}
-            className={styles.errorIconDanger}
-            aria-hidden="true"
-          />
-          <p className={styles.errorHeading}>리포트를 불러오지 못했어요</p>
-          <button type="button" className={styles.retryBtn} onClick={refetch}>
-            다시 시도
-          </button>
-        </div>
-      );
-    }
-
-    if (!report) return null;
-
-    const hasConcernsField = report.concerns !== undefined;
-    const contentByType: Record<ReportSectionType, string[] | null> = {
-      highlights: report.highlights,
-      concerns: report.concerns ?? null,
-      recommendations: report.recommendations,
+  if (!report) {
+    return {
+      title: '공유된 건강 리포트',
+      description: `${SITE_NAME}에서 공유된 반려동물 건강 리포트입니다.`,
+      robots,
     };
-
-    const sectionOrders = {} as Record<ReportSectionType, number>;
-    let orderCounter = 0;
-    DETAIL_SECTION_ORDER.forEach((type) => {
-      if (type === 'concerns' && !hasConcernsField) return;
-      if (isSectionVisible(type, contentByType[type])) {
-        orderCounter += 1;
-        sectionOrders[type] = orderCounter;
-      }
-    });
-
-    const hasAnyDetail =
-      report.highlights.length > 0 ||
-      report.recommendations.length > 0 ||
-      (hasConcernsField && (report.concerns?.length ?? 0) > 0);
-
-    return (
-      <div className={styles.content}>
-        <ReportShareMasthead
-          petName={report.petName}
-          periodStart={report.periodStart}
-          periodEnd={report.periodEnd}
-        />
-
-        <div className={styles.headlineWrap}>
-          <ReportHeadline overview={report.overview} hasOtherContent={hasAnyDetail} />
-        </div>
-
-        <div className={styles.sections}>
-          {DETAIL_SECTION_ORDER.map((type) => {
-            if (type === 'concerns' && !hasConcernsField) return null;
-            return (
-              <ReportDetailSection
-                key={type}
-                type={type}
-                content={contentByType[type]}
-                order={sectionOrders[type]}
-              />
-            );
-          })}
-        </div>
-
-        <div className={styles.disclaimer}>
-          <p className={styles.disclaimerEyebrow}>안내</p>
-          <p className={styles.disclaimerText}>
-            이 리포트는 건강 기록을 바탕으로 한 참고 정보입니다. 의료적 진단이나 치료를 대체하지
-            않습니다. 건강 이상이 의심되면 수의사와 상담하세요.
-          </p>
-        </div>
-      </div>
-    );
   }
 
-  return (
-    <main className={styles.main} aria-label="공유된 리포트">
-      <header className={styles.header}>
-        <Link href="/" className={styles.brand}>
-          <AppLogo size={28} priority />
-          <span className={styles.brandName}>Petlog</span>
-        </Link>
-        {showCaption && <p className={styles.viewerCaption}>{viewerCaption}</p>}
-      </header>
+  const period = formatPeriodRange(report.periodStart, report.periodEnd);
+  const title = `${report.petName}의 건강 리포트`;
+  const description = report.overview?.trim()
+    ? `${period} · ${report.overview.trim()}`
+    : `${period} 기록을 바탕으로 만든 ${SITE_NAME} AI 건강 리포트입니다.`;
 
-      {renderContent()}
+  return {
+    title,
+    description,
+    robots,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      siteName: SITE_NAME,
+      // images는 지정하지 않는다 — 같은 라우트의 opengraph-image.tsx를 Next가
+      // 자동으로 og:image로 붙인다.
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
+}
 
-      <footer className={styles.ctaFooter}>
-        {ctaReady ? (
-          <Link href={ctaHref} className={styles.ctaBtn}>
-            {ctaLabel}
-          </Link>
-        ) : (
-          <span className={styles.ctaPlaceholder} aria-hidden="true" />
-        )}
-      </footer>
-    </main>
-  );
+export default async function SharedReportPage({ params }: PageProps) {
+  const { shareToken } = await params;
+
+  return <SharedReportClient shareToken={shareToken} />;
 }
