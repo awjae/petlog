@@ -9,7 +9,7 @@ import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import { DeletePetConfirmDialog } from '@/features/pet/components/DeletePetConfirmDialog';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
-import { localToday } from '@/shared/utils/date';
+import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import styles from './page.module.css';
 
 type Species = 'dog' | 'cat';
@@ -35,6 +35,8 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
   const [species, setSpecies] = useState<Species>('dog');
   const [breed, setBreed] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  // max는 렌더 중에 계산하면 하이드레이션에서 서버 값이 굳는다 (useLocalToday 주석 참고).
+  const maxDate = useLocalToday();
   const [gender, setGender] = useState<Gender>(null);
   const [neutered, setNeutered] = useState(false);
   const [nameError, setNameError] = useState('');
@@ -264,7 +266,7 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
             className={styles.input}
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
-            max={localToday()}
+            max={maxDate}
             disabled={isLoadingFields}
           />
         </div>
