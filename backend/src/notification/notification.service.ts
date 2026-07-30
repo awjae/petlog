@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
 import { AppointmentStatus, NotificationReferenceType, NotificationType } from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { kstDayRange } from '../common/utils/date';
 import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
 
 // 알림 설정 행이 없는 사용자(설정 화면을 아직 안 연 경우)는 전부 활성화된 것으로 간주한다.
@@ -91,7 +92,7 @@ export class NotificationService {
   // 단 하루뿐이므로, "이 접종에 대해 한 번이라도 보냈는지"만 확인하면 당일 중복 스캔과
   // 매일 재스캔에 의한 중복 발송을 동시에 막을 수 있다.
   async scanAndSendVaccinationDue(): Promise<void> {
-    const { start, end } = dayRange(new Date());
+    const { start, end } = kstDayRange();
 
     const dueVaccinations = await this.prisma.vaccination.findMany({
       where: {
@@ -134,7 +135,7 @@ export class NotificationService {
   // referenceId 기준 발송 이력 체크로 중복 발송을 방지한다. 취소/완료된
   // 예약(status !== scheduled)은 대상에서 제외한다.
   async scanAndSendAppointmentReminder(): Promise<void> {
-    const { start, end } = dayRange(new Date());
+    const { start, end } = kstDayRange();
 
     const dueAppointments = await this.prisma.appointment.findMany({
       where: {
@@ -254,12 +255,4 @@ export class NotificationService {
       tokens.map((pushToken) => this.pushSender.send(pushToken.token, params.title, params.body)),
     );
   }
-}
-
-function dayRange(date: Date): { start: Date; end: Date } {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { start, end };
 }
