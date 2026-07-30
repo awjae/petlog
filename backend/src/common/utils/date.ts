@@ -1,4 +1,6 @@
 // 서비스 기준 시간대는 Asia/Seoul이다.
+// 결정 문서: .claude/docs/decisions/033-service-timezone.md
+//   — 단일 타임존을 택한 이유, 같은 가정을 공유하는 8곳, 다국가 전환 시 필요한 4단계.
 //
 // 컨테이너 TZ는 UTC다(어디에도 TZ를 지정하지 않았고, ECS Fargate 기본값이 UTC다).
 // 그래서 `new Date()` 후 `setHours(0,0,0,0)`으로 "오늘 0시"를 구하면 UTC 자정이
