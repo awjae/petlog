@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { AccountRestoreModal } from '@/features/auth/components/AccountRestoreModal';
 import styles from './page.module.css';
@@ -120,8 +121,20 @@ function LoginContent() {
             </p>
           )}
 
-          <button type="submit" className={styles.submitBtn} disabled={!isValid() || loading}>
-            {loading ? '로그인 중...' : '로그인'}
+          <button
+            type="submit"
+            className={styles.submitBtn}
+            disabled={!isValid() || loading}
+            aria-disabled={!isValid() || loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
+                로그인 중...
+              </>
+            ) : (
+              '로그인'
+            )}
           </button>
         </form>
 
