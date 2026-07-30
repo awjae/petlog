@@ -3,14 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import { localToday } from '@/shared/utils/date';
 import styles from './DatePickerSheet.module.css';
 
 const ITEM_H = 44;
 const PAD_H = ITEM_H * 2; // 2 invisible rows above and below
-
-function today(): string {
-  return new Date().toISOString().split('T')[0];
-}
 
 function getYears(min?: string, max?: string): string[] {
   const now = new Date().getFullYear();
@@ -137,7 +134,7 @@ export function DatePickerSheet({
 
   useOverlayDismiss(isOpen, handleClose);
 
-  const initial = value || today();
+  const initial = value || localToday();
   const [year, setYear] = useState(initial.slice(0, 4));
   const [month, setMonth] = useState(initial.slice(5, 7));
   const [day, setDay] = useState(initial.slice(8, 10));
@@ -159,7 +156,7 @@ export function DatePickerSheet({
   // 열릴 때마다 현재 값으로 되돌린다(전환 상태는 useSheetTransition이 관리한다).
   useEffect(() => {
     if (!isOpen) return;
-    const src = value || today();
+    const src = value || localToday();
     setYear(src.slice(0, 4));
     setMonth(src.slice(5, 7));
     setDay(src.slice(8, 10));

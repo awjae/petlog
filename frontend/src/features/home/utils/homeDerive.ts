@@ -4,15 +4,9 @@
 // 기준 시각을 인자로 받는다. Date.now()를 내부에서 부르면 "오늘"이 호출 시점에
 // 따라 달라져 경계 케이스를 테스트할 수 없다.
 
-const DAY_MS = 86_400_000;
+import { toLocalDateString } from '@/shared/utils/date';
 
-// 브라우저 로컬 타임존 기준 YYYY-MM-DD 반환
-export function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
+const DAY_MS = 86_400_000;
 
 export function calcDaysUntil(dueDate: string, now: Date = new Date()): number {
   const due = new Date(dueDate);

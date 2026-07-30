@@ -6,6 +6,7 @@ import { X, Camera, Dog, Cat, type LucideIcon } from 'lucide-react';
 import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
 import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
+import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import styles from './page.module.css';
 
 type Species = 'dog' | 'cat';
@@ -25,6 +26,8 @@ export default function NewPetPage() {
   const [species, setSpecies] = useState<Species>('dog');
   const [breed, setBreed] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  // max는 렌더 중에 계산하면 하이드레이션에서 서버 값이 굳는다 (useLocalToday 주석 참고).
+  const maxDate = useLocalToday();
   const [gender, setGender] = useState<Gender>(null);
   const [neutered, setNeutered] = useState(false);
   const { imageFile, previewUrl, imageError, selectFile, handlePreviewError } = useImageSelection();
@@ -183,7 +186,7 @@ export default function NewPetPage() {
             className={styles.input}
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={maxDate}
           />
         </div>
 

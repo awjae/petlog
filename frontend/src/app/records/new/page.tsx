@@ -19,6 +19,8 @@ import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
+import { useLocalToday } from '@/shared/hooks/useLocalToday';
+import { localToday } from '@/shared/utils/date';
 import styles from './page.module.css';
 
 type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'stool' | 'vomit';
@@ -110,7 +112,9 @@ function NewRecordContent() {
 
   const [petId, setPetId] = useState(petIdFromUrl ?? '');
   const [recordType, setRecordType] = useState<RecordType>(defaultType);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(localToday);
+  // max는 렌더 중에 계산하면 하이드레이션에서 서버 값이 굳는다 (useLocalToday 주석 참고).
+  const maxDate = useLocalToday();
 
   // weight
   const [weight, setWeight] = useState('');
@@ -335,7 +339,7 @@ function NewRecordContent() {
             className={styles.dateInput}
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={maxDate}
             aria-label="기록 날짜"
           />
         </section>

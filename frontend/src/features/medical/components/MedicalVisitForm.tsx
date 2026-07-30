@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CalendarDays, Loader2, Check } from 'lucide-react';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
+import { localToday } from '@/shared/utils/date';
 import type { CreateMedicalEventFormInput } from '../types/medical.types';
 import styles from './MedicalVisitForm.module.css';
 
@@ -13,13 +14,9 @@ interface MedicalVisitFormProps {
   error: string;
 }
 
-function today(): string {
-  return new Date().toISOString().split('T')[0];
-}
-
 export function MedicalVisitForm({ petId, onSubmit, loading, error }: MedicalVisitFormProps) {
   const [hospitalName, setHospitalName] = useState('');
-  const [visitDate, setVisitDate] = useState(today);
+  const [visitDate, setVisitDate] = useState(localToday);
   const [description, setDescription] = useState('');
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
@@ -112,7 +109,7 @@ export function MedicalVisitForm({ petId, onSubmit, loading, error }: MedicalVis
         onClose={() => setDatePickerOpen(false)}
         value={visitDate}
         onChange={setVisitDate}
-        max={today()}
+        max={localToday()}
         title="방문 날짜 선택"
       />
     </>

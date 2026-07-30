@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Smile, Meh, Frown, Check, Loader2, ChevronRight, type LucideIcon } from 'lucide-react';
+import { localToday } from '@/shared/utils/date';
 import { useCreateHealthRecord } from '../hooks/useCreateHealthRecord';
 import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import styles from './RecordForm.module.css';
@@ -33,7 +34,7 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
   const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
 
   const [recordType, setRecordType] = useState<RecordType>(defaultType);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(localToday);
   const [weight, setWeight] = useState('');
   const [appetite, setAppetite] = useState<AppetiteLevel>('good');
   const [duration, setDuration] = useState('');
@@ -111,7 +112,7 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
             className={styles.dateInput}
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={localToday()}
             aria-label="기록 날짜"
           />
         </section>
