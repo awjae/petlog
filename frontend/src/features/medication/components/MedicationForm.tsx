@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CalendarDays, ChevronDown, Loader2, Check } from 'lucide-react';
 import { SelectBottomSheet } from '@/shared/components/SelectBottomSheet';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
+import { localToday } from '@/shared/utils/date';
 import { FREQUENCY_OPTIONS } from '../types/medication.types';
 import type { CreateMedicationFormInput } from '../types/medication.types';
 import styles from './MedicationForm.module.css';
@@ -15,13 +16,9 @@ interface MedicationFormProps {
   error: string;
 }
 
-function today(): string {
-  return new Date().toISOString().split('T')[0];
-}
-
 export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFormProps) {
   const [name, setName] = useState('');
-  const [startDate, setStartDate] = useState(today);
+  const [startDate, setStartDate] = useState(localToday);
   const [endDate, setEndDate] = useState('');
   const [frequency, setFrequency] = useState('');
   const [freqSheetOpen, setFreqSheetOpen] = useState(false);
@@ -151,7 +148,7 @@ export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFo
         onClose={() => setDatePicker(null)}
         value={startDate}
         onChange={setStartDate}
-        max={today()}
+        max={localToday()}
         title="시작일 선택"
       />
 

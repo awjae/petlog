@@ -1,3 +1,5 @@
+import { localToday } from '@/shared/utils/date';
+
 type StoredRecord = {
   id: string;
   petId: string;
@@ -27,7 +29,7 @@ export function getMockRecentRecords(petId: string, limit: number) {
 }
 
 export function getMockTodayCount(petId: string): number {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localToday();
   return records.filter((r) => r.petId === petId && r.recordedAt.startsWith(todayStr)).length;
 }
 

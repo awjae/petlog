@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CalendarDays, Loader2, Check } from 'lucide-react';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
+import { localToday, toLocalDateString } from '@/shared/utils/date';
 import type { CreateAppointmentFormInput } from '../types/medical.types';
 import styles from './AppointmentForm.module.css';
 
@@ -13,14 +14,10 @@ interface AppointmentFormProps {
   error: string;
 }
 
-function today(): string {
-  return new Date().toISOString().split('T')[0];
-}
-
 function tomorrow(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
+  return toLocalDateString(d);
 }
 
 export function AppointmentForm({ petId, onSubmit, loading, error }: AppointmentFormProps) {
@@ -140,7 +137,7 @@ export function AppointmentForm({ petId, onSubmit, loading, error }: Appointment
         onClose={() => setDatePickerOpen(false)}
         value={scheduledAt}
         onChange={setScheduledAt}
-        min={today()}
+        min={localToday()}
         title="예약 날짜 선택"
       />
     </>

@@ -9,6 +9,7 @@ import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import { DeletePetConfirmDialog } from '@/features/pet/components/DeletePetConfirmDialog';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
+import { localToday } from '@/shared/utils/date';
 import styles from './page.module.css';
 
 type Species = 'dog' | 'cat';
@@ -263,7 +264,7 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
             className={styles.input}
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
-            max={new Date().toISOString().split('T')[0]}
+            max={localToday()}
             disabled={isLoadingFields}
           />
         </div>

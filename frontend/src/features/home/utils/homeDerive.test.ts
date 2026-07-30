@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcDaysUntil, calcStreak, toLocalDateString } from './homeDerive';
+import { calcDaysUntil, calcStreak } from './homeDerive';
 
 // 모든 테스트는 TZ=Asia/Seoul 고정으로 실행된다 (package.json의 test:unit).
 // 이 로직은 "UTC ISO 문자열을 로컬 날짜로 접는" 변환이 핵심이라, 타임존이 흔들리면
@@ -11,17 +11,6 @@ const SEOUL_NOON_2026_07_26 = new Date('2026-07-26T12:00:00+09:00').getTime();
 function seoulDate(day: string): string {
   return new Date(`${day}T09:00:00+09:00`).toISOString();
 }
-
-describe('toLocalDateString', () => {
-  it('UTC 자정 직전 시각을 서울 날짜로 접는다', () => {
-    // 2026-07-25T15:30:00Z = 서울 2026-07-26 00:30
-    expect(toLocalDateString(new Date('2026-07-25T15:30:00Z'))).toBe('2026-07-26');
-  });
-
-  it('월/일을 두 자리로 채운다', () => {
-    expect(toLocalDateString(new Date('2026-01-05T00:00:00+09:00'))).toBe('2026-01-05');
-  });
-});
 
 describe('calcStreak', () => {
   it('기록이 없으면 0', () => {

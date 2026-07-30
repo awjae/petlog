@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CalendarDays, ChevronDown, Loader2, Check } from 'lucide-react';
 import { SelectBottomSheet } from '@/shared/components/SelectBottomSheet';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
+import { localToday } from '@/shared/utils/date';
 import { VACCINE_OPTIONS } from '../types/medical.types';
 import type { CreateVaccinationFormInput } from '../types/medical.types';
 import styles from './VaccinationForm.module.css';
@@ -15,12 +16,8 @@ interface VaccinationFormProps {
   error: string;
 }
 
-function today(): string {
-  return new Date().toISOString().split('T')[0];
-}
-
 export function VaccinationForm({ petId, onSubmit, loading, error }: VaccinationFormProps) {
-  const [vaccinatedAt, setVaccinatedAt] = useState(today);
+  const [vaccinatedAt, setVaccinatedAt] = useState(localToday);
   const [selectedPreset, setSelectedPreset] = useState('');
   const [customName, setCustomName] = useState('');
   const [nextDueAt, setNextDueAt] = useState('');
@@ -174,7 +171,7 @@ export function VaccinationForm({ petId, onSubmit, loading, error }: Vaccination
         onClose={() => setDatePicker(null)}
         value={vaccinatedAt}
         onChange={setVaccinatedAt}
-        max={today()}
+        max={localToday()}
         title="접종일 선택"
       />
 
