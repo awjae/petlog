@@ -16,6 +16,9 @@ description: GitHub PR의 코드 변경사항을 diff 기준으로 코드 리뷰
 
 ## Petlog 리뷰 기준
 
+아래는 **내부 점검용 체크리스트**다. 항목별로 "확인했다 / 문제없다"를 출력하지 않는다.
+문제를 발견한 항목만 출력에 등장한다.
+
 ### 1. 도메인 경계
 - HealthRecord / MedicalEvent / Medication / Report가 petId를 통해 Pet에 연결되는가 (User 직접 참조는 위반)
 - 새 엔티티/API가 기존 도메인 모델(`User → Pet → HealthRecord/MedicalEvent/Medication/Report`)과 충돌하지 않는가
@@ -57,17 +60,4 @@ description: GitHub PR의 코드 변경사항을 diff 기준으로 코드 리뷰
 
 ## 출력 형식
 
-**PR 요약:**
-- 변경 목적, 영향받는 도메인/파일 범위
-
-**Critical (머지 전 반드시 수정):**
-- 파일경로:라인번호 → 문제 → 수정 방향
-
-**Warning (수정 권장):**
-- 파일경로:라인번호 → 이유
-
-**Suggestion (선택적 개선):**
-- 파일경로:라인번호 → 제안
-
-**이상 없음:**
-- 확인된 항목 요약
+`.claude/docs/review-output-style.md`를 따른다. 대상 표기는 PR 제목 또는 브랜치명을 쓴다.
