@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ONBOARDING_SLIDES } from '../types/onboarding.types';
 import { useOnboardingSlides } from '../hooks/useOnboardingSlides';
 import { useOnboardingExit } from '../hooks/useOnboardingExit';
-import { useAndroidBackButton } from '../hooks/useAndroidBackButton';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { OnboardingSlide } from './OnboardingSlide';
@@ -86,11 +86,9 @@ export function OnboardingOverlay() {
     });
   }, [isTransitioning, isLastSlide, next, completeAndRoute, dismiss]);
 
-  useAndroidBackButton({
-    hasPrevious: currentIndex > 0,
-    onBack: prev,
-    onExit: handleClose,
-  });
+  // 백 버튼/Esc: 이전 슬라이드가 있으면 뒤로, 첫 슬라이드면 오버레이를 닫는다.
+  // 시트류와 같은 스택을 쓰므로, 온보딩 위에 다른 오버레이가 떠도 위의 것부터 닫힌다.
+  useOverlayDismiss(!dismissed, currentIndex > 0 ? prev : handleClose);
 
   if (dismissed) return null;
 

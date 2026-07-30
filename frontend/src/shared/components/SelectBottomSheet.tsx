@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Check, X } from 'lucide-react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import styles from './SelectBottomSheet.module.css';
 
 export interface SelectOption {
@@ -26,25 +28,10 @@ export function SelectBottomSheet({
   value,
   onChange,
 }: SelectBottomSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
 
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
+  useOverlayDismiss(isOpen, handleClose);
 
   function handleSelect(optionValue: string) {
     onChange(optionValue);

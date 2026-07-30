@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useDeletePet } from '../hooks/useDeletePet';
 import { setPendingToast } from '@/features/shared/utils/pendingToast';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import styles from './DeletePetConfirmDialog.module.css';
 
 interface DeletePetConfirmDialogProps {
@@ -21,6 +22,13 @@ export function DeletePetConfirmDialog({
 }: DeletePetConfirmDialogProps) {
   const router = useRouter();
   const { deletePet, loading, error } = useDeletePet();
+
+  // 삭제 진행 중에는 취소 버튼과 마찬가지로 뒤로 가기/Esc도 막는다.
+  // isOpen=false로 빼면 차단이 아니라 스택에서 제거라, 뒤로 가기가 그대로 통과해
+  // 삭제 요청 중에 화면을 벗어난다. 항상 올려두고 핸들러에서 막는다.
+  useOverlayDismiss(true, () => {
+    if (!loading) onClose();
+  });
 
   async function handleConfirm() {
     const ok = await deletePet(petId);

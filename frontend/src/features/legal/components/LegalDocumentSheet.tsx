@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { X } from 'lucide-react';
 import { PrivacyPolicyContent } from './PrivacyPolicyContent';
 import { TermsContent } from './TermsContent';
@@ -25,29 +26,9 @@ const TITLES: Record<LegalDocumentType, string> = {
  * mount→rAF×2→visible 트리거, 300ms cubic-bezier 애니메이션 패턴을 그대로 재사용한다.
  */
 export function LegalDocumentSheet({ isOpen, doc, onClose }: LegalDocumentSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
 
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setVisible(true);
-        });
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
+  useOverlayDismiss(isOpen, handleClose);
 
   if (!mounted) return null;
 

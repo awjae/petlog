@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { X, PawPrint, Activity, Stethoscope, Pill, Sparkles, RotateCcw } from 'lucide-react';
 import styles from './WithdrawInfoSheet.module.css';
 
@@ -19,33 +20,12 @@ const DELETED_ITEMS = [
 ];
 
 export function WithdrawInfoSheet({ isOpen, onClose, onProceed }: WithdrawInfoSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose, closeWith } = useSheetTransition(isOpen, onClose);
 
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setVisible(true);
-        });
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
+  useOverlayDismiss(isOpen, handleClose);
 
   function handleProceed() {
-    setVisible(false);
-    setTimeout(onProceed, 310);
+    closeWith(onProceed);
   }
 
   if (!mounted) return null;

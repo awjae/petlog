@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import { X } from 'lucide-react';
 import { RecordForm, type RecordType } from './RecordForm';
 import styles from './RecordBottomSheet.module.css';
@@ -18,8 +20,10 @@ export function RecordBottomSheet({
   petId,
   defaultType = 'weight',
 }: RecordBottomSheetProps) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, handleClose);
+
   // 시트가 열릴 때마다 폼을 초기화하기 위한 키
   const [sessionId, setSessionId] = useState(0);
 
@@ -29,21 +33,10 @@ export function RecordBottomSheet({
   const dragCurrentY = useRef(0);
   const dragStartTime = useRef(0);
 
-  // 마운트/언마운트 + 열림/닫힘 애니메이션
+  // 열릴 때마다 폼을 새 세션으로 초기화한다(전환 상태는 useSheetTransition이 관리).
   useEffect(() => {
-    if (isOpen) {
-      setSessionId((id) => id + 1);
-      setMounted(true);
-      // 두 번의 rAF로 CSS 트랜지션이 올바르게 동작하도록 보장
-      const rAF1 = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
-      });
-      return () => cancelAnimationFrame(rAF1);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 310);
-      return () => clearTimeout(t);
-    }
+    if (!isOpen) return;
+    setSessionId((id) => id + 1);
   }, [isOpen]);
 
   // 키보드 팝업 시 시트 위치 조정 (visualViewport API)
@@ -71,12 +64,6 @@ export function RecordBottomSheet({
       }
     };
   }, [isOpen]);
-
-  // 닫힘 애니메이션 후 부모의 onClose 호출
-  function handleClose() {
-    setVisible(false);
-    setTimeout(onClose, 310);
-  }
 
   // ── 드래그 제스처 (드래그 핸들 + 헤더 영역만) ──
 

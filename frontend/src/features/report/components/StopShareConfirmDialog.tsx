@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import styles from './StopShareConfirmDialog.module.css';
 
 interface StopShareConfirmDialogProps {
@@ -14,6 +15,14 @@ export function StopShareConfirmDialog({
   onConfirm,
   onClose,
 }: StopShareConfirmDialogProps) {
+  // 중단 처리 중에는 취소 버튼과 마찬가지로 뒤로 가기/Esc도 막는다.
+  // isOpen을 false로 주면 "차단"이 아니라 "스택에서 제거"가 되어, 뒤로 가기가 한 단계
+  // 아래(부모 ShareReportSheet)로 흘러가 요청 중에 부모 시트가 닫힌다. 항상 스택에
+  // 올려두고 핸들러에서 막아야 한다.
+  useOverlayDismiss(true, () => {
+    if (!loading) onClose();
+  });
+
   return (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
       <div
