@@ -42,6 +42,13 @@ import { RegistryStack } from './registry-stack';
 import { NetworkStack } from './network-stack';
 import { DatabaseStack, DB_MASTER_USERNAME, DB_NAME } from './database-stack';
 
+/**
+ * SES 콘솔에서 자동 생성된 기본 설정 세트 이름. Identity에 붙은 값과 IAM 정책의 리소스
+ * ARN 두 곳에서 같은 값을 써야 하므로(불일치 시 발송이 AccessDenied로 실패) 상수로 둔다.
+ * 콘솔에 이미 붙어있던 값과 달라지면 다음 apply에서 되돌려버리므로 실제 값을 그대로 맞춘다.
+ */
+const MAIL_CONFIGURATION_SET_NAME = 'my-first-configuration-set';
+
 export interface BackendStackProps {
   /** 배포 대상 환경. 서비스/역할/SSM 파라미터 네이밍에 사용한다. */
   readonly environment: Environment;
@@ -605,8 +612,13 @@ export class BackendStack extends TerraformStack {
     // 붙어있던 값과 다르면 다음 apply에서 되돌려버리므로 실제 값을 그대로 맞춘다.
     const mailIdentity = new Sesv2EmailIdentity(this, 'mail-domain-identity', {
       emailIdentity: mailFromDomain.stringValue,
-      configurationSetName: 'my-first-configuration-set',
+      configurationSetName: MAIL_CONFIGURATION_SET_NAME,
     });
+
+    // 설정 세트는 Identity와 마찬가지로 콘솔에서 만들어진 실물이라 여기서 리소스로 관리하지
+    // 않는다(이벤트 대상 없이 ReputationMetricsEnabled만 켜진 상태). 그래서 ARN도 데이터
+    // 소스가 아니라 계정/리전/이름으로 직접 조립한다.
+    const mailConfigurationSetArn = `arn:aws:ses:${awsRegion.stringValue}:${callerIdentity.accountId}:configuration-set/${MAIL_CONFIGURATION_SET_NAME}`;
 
     // SES 발송 권한: Identity 자체는 위에서 가져왔으니, 그 Identity로 보낼 수 있는 IAM
     // 권한을 taskRole에 부착해야 실제 배포 환경(ECS)에서 발송이 동작한다.
@@ -614,6 +626,7 @@ export class BackendStack extends TerraformStack {
       this,
       'backend-task-ses-policy-document',
       mailIdentity.arn,
+      mailConfigurationSetArn,
     );
 
     new IamRolePolicy(this, 'backend-task-ses-policy', {
