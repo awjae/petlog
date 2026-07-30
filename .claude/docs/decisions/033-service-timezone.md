@@ -100,8 +100,32 @@ per-user 타임존을 지금 도입하지 않는다. 이유:
 
 ---
 
+---
+
+## 테스트는 TZ=UTC로 고정한다
+
+`jest.config.ts`에서 `process.env.TZ = 'UTC'`로 배포 환경과 맞춘다.
+
+고정하지 않으면 **일자 경계 버그가 개발 머신에서 잡히지 않는다.** `setHours(0,0,0,0)`은
+프로세스 TZ를 따르므로 Asia/Seoul 머신에서는 "서울 기준 오늘"이 우연히 맞게 나온다.
+`countTodayRecords` 버그가 오래 살아남은 이유가 정확히 이것이다 — 로컬에서는 정상이고
+UTC 컨테이너에서만 틀렸다.
+
+실제로 확인한 결과다. 버그 버전을 `pet.service.spec.ts`로 돌리면:
+
+| 실행 TZ | 결과 |
+| --- | --- |
+| `Asia/Seoul` (개발 머신) | 4개 모두 통과 — 버그를 놓친다 |
+| `UTC` (배포 환경) | 3개 실패 — 버그를 잡는다 |
+
+`kstDayRange` 자체는 고정 오프셋 산술이라 어느 TZ에서도 같은 값을 낸다. 다만 그 성질을
+"TZ 고정 없이 통과함"으로 증명하는 것보다, **호출부에 프로세스 TZ 의존이 새로 들어오는
+것을 막는 쪽이 실익이 크다.** 반복된 실패 형태가 후자였다.
+
+---
+
 ## 참고
 
-- 프론트엔드의 같은 계열 버그 수정: `shared/utils/date.ts`
-- `kstDayRange`가 프로세스 TZ에 의존하지 않는 이유는 `common/utils/date.ts` 주석에 있다.
-  스펙이 TZ 고정 없이 통과하는 것 자체가 그 성질의 회귀 신호다.
+- 프론트엔드의 같은 계열 버그 수정: `frontend/src/shared/utils/date.ts`
+- 재현 테스트: `pet.service.spec.ts`(홈 집계), `notification.service.spec.ts`(당일 스캔 구간),
+  `common/utils/date.spec.ts`(경계 계산)
