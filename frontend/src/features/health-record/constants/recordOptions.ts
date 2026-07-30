@@ -5,7 +5,7 @@
 // wire 타입이라(스키마의 enum HealthRecordType) 화면이 임의 값을 만들면 서버가 거부한다.
 import { Smile, Meh, Frown, Circle, CircleAlert, CircleX, type LucideIcon } from 'lucide-react';
 import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
-import type { HealthRecordType } from '../api/health-record.mutations';
+import type { HealthRecordType } from '@/generated/graphql';
 import { TYPE_LABEL, type AppetiteChoice } from '../types/health-record.types';
 
 // 유형이 어느 묶음에 들어가는지만 여기서 정한다. 아이콘은 RECORD_TYPE_ICONS,

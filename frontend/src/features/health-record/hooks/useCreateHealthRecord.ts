@@ -2,10 +2,8 @@
 
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import {
-  CREATE_HEALTH_RECORD_MUTATION,
-  type HealthRecordType,
-} from '../api/health-record.mutations';
+import type { HealthRecordType } from '@/generated/graphql';
+import { CREATE_HEALTH_RECORD_MUTATION } from '../api/health-record.mutations';
 import type { AppetiteChoice } from '../types/health-record.types';
 import { mutationFailureMessage } from '@/lib/apollo/mutationFailure';
 

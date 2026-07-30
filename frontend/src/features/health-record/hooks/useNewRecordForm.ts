@@ -6,7 +6,7 @@ import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import { localToday } from '@/shared/utils/date';
-import type { HealthRecordType } from '../api/health-record.mutations';
+import type { HealthRecordType } from '@/generated/graphql';
 import { isHealthRecordType, type AppetiteChoice } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
 
