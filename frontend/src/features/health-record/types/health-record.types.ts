@@ -12,6 +12,17 @@ export const TYPE_LABEL: Record<HealthRecordType, string> = {
   vomit: '구토',
 };
 
+/**
+ * 외부에서 들어온 문자열(URL 쿼리 등)이 기록 유형인지 판정한다.
+ *
+ * 유형 목록을 따로 배열로 두면 유형이 추가돼도 컴파일러가 안 잡는다.
+ * `TYPE_LABEL`은 `Record<HealthRecordType, string>`이라 누락되면 컴파일이 깨지므로
+ * 여기서 파생시킨다.
+ */
+export function isHealthRecordType(value: string | null): value is HealthRecordType {
+  return value !== null && value in TYPE_LABEL;
+}
+
 export function buildSummary(
   type: HealthRecordType,
   numValue: number | null,

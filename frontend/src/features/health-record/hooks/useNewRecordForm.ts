@@ -7,7 +7,7 @@ import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import { localToday } from '@/shared/utils/date';
 import type { AppetiteLevel, HealthRecordType } from '../api/health-record.mutations';
-import { VALID_TYPES } from '../constants/recordOptions';
+import { isHealthRecordType } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
 
 // 기록 추가 화면(app/records/new)의 폼 상태와 저장 흐름.
@@ -29,9 +29,8 @@ export function useNewRecordForm() {
   const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
 
   const petIdFromUrl = params.get('petId');
-  const rawType = params.get('type') as HealthRecordType | null;
-  const defaultType: HealthRecordType =
-    rawType && VALID_TYPES.includes(rawType) ? rawType : 'weight';
+  const rawType = params.get('type');
+  const defaultType: HealthRecordType = isHealthRecordType(rawType) ? rawType : 'weight';
 
   const [petId, setPetId] = useState(petIdFromUrl ?? '');
   const [recordType, setRecordType] = useState<HealthRecordType>(defaultType);

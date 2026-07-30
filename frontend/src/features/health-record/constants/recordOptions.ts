@@ -6,19 +6,32 @@
 import { Smile, Meh, Frown, Circle, CircleAlert, CircleX, type LucideIcon } from 'lucide-react';
 import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import type { HealthRecordType, AppetiteLevel } from '../api/health-record.mutations';
+import { TYPE_LABEL } from '../types/health-record.types';
 
-export const DAILY_TYPES: { type: HealthRecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'weight', Icon: RECORD_TYPE_ICONS.weight, label: '체중' },
-  { type: 'appetite', Icon: RECORD_TYPE_ICONS.appetite, label: '식사' },
-  { type: 'activity', Icon: RECORD_TYPE_ICONS.activity, label: '산책' },
-  { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
-];
+// 유형이 어느 묶음에 들어가는지만 여기서 정한다. 아이콘은 RECORD_TYPE_ICONS,
+// 이름은 TYPE_LABEL이 단일 출처다.
+//
+// 목록을 배열로 직접 나열하면 유형이 추가돼도 컴파일러가 안 잡아서 화면에서만 조용히
+// 빠진다. Record로 두면 누락 시 컴파일이 깨진다.
+const TYPE_GROUP: Record<HealthRecordType, 'daily' | 'health'> = {
+  weight: 'daily',
+  appetite: 'daily',
+  activity: 'daily',
+  mood: 'daily',
+  symptom: 'health',
+  stool: 'health',
+  vomit: 'health',
+};
 
-export const HEALTH_TYPES: { type: HealthRecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'symptom', Icon: RECORD_TYPE_ICONS.symptom, label: '증상' },
-  { type: 'stool', Icon: RECORD_TYPE_ICONS.stool, label: '배변' },
-  { type: 'vomit', Icon: RECORD_TYPE_ICONS.vomit, label: '구토' },
-];
+function typesInGroup(group: 'daily' | 'health') {
+  return (Object.keys(TYPE_GROUP) as HealthRecordType[])
+    .filter((type) => TYPE_GROUP[type] === group)
+    .map((type) => ({ type, Icon: RECORD_TYPE_ICONS[type], label: TYPE_LABEL[type] }));
+}
+
+export const DAILY_TYPES = typesInGroup('daily');
+
+export const HEALTH_TYPES = typesInGroup('health');
 
 export const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [
   { value: 'good', Icon: Smile, label: '잘 먹음' },
@@ -67,14 +80,4 @@ export const COUNT_OPTIONS: { value: 1 | 2 | 3; label: string }[] = [
   { value: 1, label: '1회' },
   { value: 2, label: '2-3회' },
   { value: 3, label: '4회 이상' },
-];
-
-export const VALID_TYPES: HealthRecordType[] = [
-  'weight',
-  'appetite',
-  'activity',
-  'mood',
-  'symptom',
-  'stool',
-  'vomit',
 ];
