@@ -5,11 +5,11 @@ import Link from 'next/link';
 import { Smile, Meh, Frown, Check, Loader2, ChevronRight, type LucideIcon } from 'lucide-react';
 import { localToday } from '@/shared/utils/date';
 import { useCreateHealthRecord } from '../hooks/useCreateHealthRecord';
+import type { AppetiteChoice } from '../types/health-record.types';
 import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
 import styles from './RecordForm.module.css';
 
 export type RecordType = 'weight' | 'appetite' | 'activity' | 'mood';
-type AppetiteLevel = 'good' | 'normal' | 'bad';
 
 export interface RecordFormProps {
   petId: string;
@@ -24,7 +24,7 @@ const RECORD_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
   { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
 ];
 
-const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [
+const APPETITE_OPTIONS: { value: AppetiteChoice; Icon: LucideIcon; label: string }[] = [
   { value: 'good', Icon: Smile, label: '잘 먹음' },
   { value: 'normal', Icon: Meh, label: '보통' },
   { value: 'bad', Icon: Frown, label: '안 먹음' },
@@ -36,7 +36,7 @@ export function RecordForm({ petId, defaultType = 'weight', onSuccess }: RecordF
   const [recordType, setRecordType] = useState<RecordType>(defaultType);
   const [date, setDate] = useState(localToday);
   const [weight, setWeight] = useState('');
-  const [appetite, setAppetite] = useState<AppetiteLevel>('good');
+  const [appetite, setAppetite] = useState<AppetiteChoice>('good');
   const [duration, setDuration] = useState('');
   const [distance, setDistance] = useState('');
   const [memo, setMemo] = useState('');

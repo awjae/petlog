@@ -6,8 +6,8 @@ import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import { localToday } from '@/shared/utils/date';
-import type { AppetiteLevel, HealthRecordType } from '../api/health-record.mutations';
-import { isHealthRecordType } from '../types/health-record.types';
+import type { HealthRecordType } from '../api/health-record.mutations';
+import { isHealthRecordType, type AppetiteChoice } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
 
 // 기록 추가 화면(app/records/new)의 폼 상태와 저장 흐름.
@@ -39,7 +39,7 @@ export function useNewRecordForm() {
   const maxDate = useLocalToday();
 
   const [weight, setWeight] = useState('');
-  const [appetite, setAppetite] = useState<AppetiteLevel>('good');
+  const [appetite, setAppetite] = useState<AppetiteChoice>('good');
   const [duration, setDuration] = useState('');
   const [distance, setDistance] = useState('');
   const [memo, setMemo] = useState('');

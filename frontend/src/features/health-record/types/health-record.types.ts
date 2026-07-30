@@ -2,6 +2,19 @@ import type { HealthRecordsQuery, HealthRecordType } from '@/generated/graphql';
 
 export type HealthRecord = HealthRecordsQuery['healthRecords'][number];
 
+/**
+ * 식사 기록의 화면 선택지.
+ *
+ * 서버는 이 값을 모른다 — GraphQL 스키마에 대응하는 enum이 없고, 저장될 때는
+ * APPETITE_LABEL(useCreateHealthRecord)을 거쳐 한국어 문자열이 textValue로 나간다.
+ * 즉 wire 타입이 아니라 UI 타입이라 api가 아니라 여기에 둔다.
+ *
+ * 이름을 Level이 아니라 Choice로 둔 이유: libs/types와 libs/ai에 값이 다른
+ * AppetiteLevel이 이미 있어서(none|low|normal|high, good|normal|poor) 같은 이름을
+ * 쓰면 어느 쪽인지 구분되지 않는다.
+ */
+export type AppetiteChoice = 'good' | 'normal' | 'bad';
+
 export const TYPE_LABEL: Record<HealthRecordType, string> = {
   weight: '체중',
   appetite: '식사',

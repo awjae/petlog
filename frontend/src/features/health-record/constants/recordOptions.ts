@@ -1,12 +1,12 @@
 // 기록 추가 화면의 선택지 목록. 화면(app/records/new/page.tsx)에 인라인으로 있던 것을 옮겼다.
 // 기록 유형이 늘어날 때 화면 파일이 아니라 이 파일만 보면 되도록 한다.
 //
-// 타입은 새로 만들지 않고 API 계약의 HealthRecordType을 그대로 쓴다 —
-// 화면에서만 쓰는 별도 union을 두면 서버가 받지 못하는 값을 만들 수 있다.
+// 유형은 화면용 union을 새로 만들지 않고 HealthRecordType을 그대로 쓴다 — 이건 실제로
+// wire 타입이라(스키마의 enum HealthRecordType) 화면이 임의 값을 만들면 서버가 거부한다.
 import { Smile, Meh, Frown, Circle, CircleAlert, CircleX, type LucideIcon } from 'lucide-react';
 import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
-import type { HealthRecordType, AppetiteLevel } from '../api/health-record.mutations';
-import { TYPE_LABEL } from '../types/health-record.types';
+import type { HealthRecordType } from '../api/health-record.mutations';
+import { TYPE_LABEL, type AppetiteChoice } from '../types/health-record.types';
 
 // 유형이 어느 묶음에 들어가는지만 여기서 정한다. 아이콘은 RECORD_TYPE_ICONS,
 // 이름은 TYPE_LABEL이 단일 출처다.
@@ -33,7 +33,7 @@ export const DAILY_TYPES = typesInGroup('daily');
 
 export const HEALTH_TYPES = typesInGroup('health');
 
-export const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [
+export const APPETITE_OPTIONS: { value: AppetiteChoice; Icon: LucideIcon; label: string }[] = [
   { value: 'good', Icon: Smile, label: '잘 먹음' },
   { value: 'normal', Icon: Meh, label: '보통' },
   { value: 'bad', Icon: Frown, label: '안 먹음' },
