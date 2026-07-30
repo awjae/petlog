@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { kstDayRange } from '../common/utils/date';
 import type { Pet as PrismaPet } from '@prisma/client';
 import { HealthRecordType } from '@prisma/client';
 import { CreatePetInput, UpdatePetInput, RecentWeight, HealthRecordSummary } from './pet.types';
@@ -79,12 +80,9 @@ export class PetService {
   }
 
   async countTodayRecords(petId: string): Promise<number> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const { start, end } = kstDayRange();
     return this.prisma.healthRecord.count({
-      where: { petId, deletedAt: null, recordedAt: { gte: today, lt: tomorrow } },
+      where: { petId, deletedAt: null, recordedAt: { gte: start, lt: end } },
     });
   }
 
