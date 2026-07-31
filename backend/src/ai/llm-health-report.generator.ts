@@ -4,6 +4,7 @@ import { ChatGptHealthReportClient } from '@petlog/ai';
 import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { BreedProfileService } from './breed-profile.service';
+import { toAppetiteLevel, toActivityLevel } from './record-value.mapper';
 import {
   CHATGPT_CLIENT,
   type HealthReportGenerationParams,
@@ -117,12 +118,14 @@ export class LlmHealthReportGenerator implements HealthReportGenerator {
       .map((r) => Number(r.numValue));
 
     const appetites = records
-      .filter((r) => r.type === HealthRecordType.appetite && r.textValue)
-      .map((r) => this.mapAppetite(r.textValue!));
+      .filter((r) => r.type === HealthRecordType.appetite)
+      .map((r) => toAppetiteLevel(r.textValue))
+      .filter((level): level is AppetiteLevel => level !== null);
 
     const activities = records
-      .filter((r) => r.type === HealthRecordType.activity && r.textValue)
-      .map((r) => r.textValue as ActivityLevel);
+      .filter((r) => r.type === HealthRecordType.activity)
+      .map((r) => toActivityLevel(r.textValue))
+      .filter((level): level is ActivityLevel => level !== null);
 
     const symptoms = records
       .filter((r) => r.type === HealthRecordType.symptom || r.type === HealthRecordType.vomit)
@@ -145,13 +148,6 @@ export class LlmHealthReportGenerator implements HealthReportGenerator {
       medications: medications.filter((m) => m.name).map((m) => m.name!),
       last_vet_visit: lastVisit ? lastVisit.visitDate.toISOString().slice(0, 10) : null,
     };
-  }
-
-  // DB 식욕 값(none|low|normal|high) → ChatGPT 형식(poor|normal|good)
-  private mapAppetite(value: string): AppetiteLevel {
-    if (value === 'high') return 'good';
-    if (value === 'normal') return 'normal';
-    return 'poor';
   }
 
   private calcAgeMonths(birthDate: Date, referenceDate: Date): number {
