@@ -15,16 +15,20 @@ import type { AppetiteLevel, ActivityLevel } from '@petlog/ai';
 /**
  * 식사 기록은 textValue에 화면 표시 문자열이 그대로 저장된다
  * (프론트 APPETITE_LABEL: good→'잘 먹음', normal→'보통', bad→'안 먹음').
+ *
+ * Map을 쓰는 이유: textValue는 createHealthRecord로 임의 문자열이 들어올 수 있는데,
+ * 객체 리터럴로 조회하면 'constructor'나 'toString' 같은 프로토타입 키가 값처럼 잡혀
+ * AppetiteLevel이 아닌 함수가 반환된다. Map에는 그런 키가 없다.
  */
-const APPETITE_TEXT: Record<string, AppetiteLevel> = {
-  '잘 먹음': 'good',
-  보통: 'normal',
-  '안 먹음': 'poor',
-};
+const APPETITE_TEXT = new Map<string, AppetiteLevel>([
+  ['잘 먹음', 'good'],
+  ['보통', 'normal'],
+  ['안 먹음', 'poor'],
+]);
 
 export function toAppetiteLevel(textValue: string | null): AppetiteLevel | null {
   if (textValue === null) return null;
-  return APPETITE_TEXT[textValue] ?? null;
+  return APPETITE_TEXT.get(textValue) ?? null;
 }
 
 const ACTIVITY_LEVELS: ActivityLevel[] = ['high', 'normal', 'low'];

@@ -28,6 +28,15 @@ describe('toAppetiteLevel', () => {
     expect(toAppetiteLevel(null)).toBeNull();
     expect(toAppetiteLevel('')).toBeNull();
   });
+
+  it('프로토타입 키를 값으로 잡지 않는다', () => {
+    // textValue는 createHealthRecord로 임의 문자열이 들어올 수 있다. 객체 리터럴로
+    // 조회하던 시절에는 'constructor'가 Object 함수를 반환했고, null이 아니라서
+    // 그대로 AppetiteLevel[]에 실려 프롬프트에 null로 직렬화됐다.
+    for (const key of ['constructor', 'toString', 'valueOf', 'hasOwnProperty', '__proto__']) {
+      expect(toAppetiteLevel(key)).toBeNull();
+    }
+  });
 });
 
 describe('toActivityLevel', () => {
