@@ -1,31 +1,13 @@
 import { gql } from '@apollo/client';
 import type { TypedDocumentNode } from '@apollo/client';
-
-export type HealthRecordType =
-  | 'weight'
-  | 'appetite'
-  | 'activity'
-  | 'mood'
-  | 'stool'
-  | 'symptom'
-  | 'vomit';
-
-interface CreateHealthRecordInput {
-  petId: string;
-  type: HealthRecordType;
-  recordedAt: string;
-  numValue?: number;
-  textValue?: string;
-  note?: string;
-}
-
-interface CreateHealthRecordData {
-  createHealthRecord: { id: string; type: HealthRecordType; recordedAt: string };
-}
+import type {
+  CreateHealthRecordMutation,
+  CreateHealthRecordMutationVariables,
+} from '@/generated/graphql';
 
 export const CREATE_HEALTH_RECORD_MUTATION: TypedDocumentNode<
-  CreateHealthRecordData,
-  { input: CreateHealthRecordInput }
+  CreateHealthRecordMutation,
+  CreateHealthRecordMutationVariables
 > = gql`
   mutation CreateHealthRecord($input: CreateHealthRecordInput!) {
     createHealthRecord(input: $input) {

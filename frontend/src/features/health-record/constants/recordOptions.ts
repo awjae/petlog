@@ -1,0 +1,83 @@
+// 기록 추가 화면의 선택지 목록. 화면(app/records/new/page.tsx)에 인라인으로 있던 것을 옮겼다.
+// 기록 유형이 늘어날 때 화면 파일이 아니라 이 파일만 보면 되도록 한다.
+//
+// 유형은 화면용 union을 새로 만들지 않고 HealthRecordType을 그대로 쓴다 — 이건 실제로
+// wire 타입이라(스키마의 enum HealthRecordType) 화면이 임의 값을 만들면 서버가 거부한다.
+import { Smile, Meh, Frown, Circle, CircleAlert, CircleX, type LucideIcon } from 'lucide-react';
+import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
+import type { HealthRecordType } from '@/generated/graphql';
+import { TYPE_LABEL, type AppetiteChoice } from '../types/health-record.types';
+
+// 유형이 어느 묶음에 들어가는지만 여기서 정한다. 아이콘은 RECORD_TYPE_ICONS,
+// 이름은 TYPE_LABEL이 단일 출처다.
+//
+// 목록을 배열로 직접 나열하면 유형이 추가돼도 컴파일러가 안 잡아서 화면에서만 조용히
+// 빠진다. Record로 두면 누락 시 컴파일이 깨진다.
+const TYPE_GROUP: Record<HealthRecordType, 'daily' | 'health'> = {
+  weight: 'daily',
+  appetite: 'daily',
+  activity: 'daily',
+  mood: 'daily',
+  symptom: 'health',
+  stool: 'health',
+  vomit: 'health',
+};
+
+function typesInGroup(group: 'daily' | 'health') {
+  return (Object.keys(TYPE_GROUP) as HealthRecordType[])
+    .filter((type) => TYPE_GROUP[type] === group)
+    .map((type) => ({ type, Icon: RECORD_TYPE_ICONS[type], label: TYPE_LABEL[type] }));
+}
+
+export const DAILY_TYPES = typesInGroup('daily');
+
+export const HEALTH_TYPES = typesInGroup('health');
+
+export const APPETITE_OPTIONS: { value: AppetiteChoice; Icon: LucideIcon; label: string }[] = [
+  { value: 'good', Icon: Smile, label: '잘 먹음' },
+  { value: 'normal', Icon: Meh, label: '보통' },
+  { value: 'bad', Icon: Frown, label: '안 먹음' },
+];
+
+export const SYMPTOM_OPTIONS = [
+  '기침/재채기',
+  '구토',
+  '설사',
+  '콧물/눈곱',
+  '다리를 저는 행동',
+  '무기력/처짐',
+  '과도한 긁음',
+  '배가 부어 보임',
+  '기타',
+];
+
+// 색은 토큰으로만 지정한다. iOS 기본색을 인라인으로 박아두면 팔레트가 바뀌어도
+// 여기만 남고, 무엇보다 흰 글씨를 얹었을 때 대비가 2:1 대까지 떨어진다.
+// 선택 상태는 "상태색 틴트 면 + 같은 계열 진한 글씨"로 표현한다.
+export const SEVERITY_OPTIONS: {
+  value: 1 | 2 | 3;
+  label: string;
+  Icon: LucideIcon;
+  tone: 'success' | 'warning' | 'danger';
+}[] = [
+  { value: 1, label: '경미함', Icon: Circle, tone: 'success' },
+  { value: 2, label: '보통', Icon: CircleAlert, tone: 'warning' },
+  { value: 3, label: '심각함', Icon: CircleX, tone: 'danger' },
+];
+
+export const STOOL_TYPES = ['정상', '무름', '설사', '혈변', '변비'];
+
+export const VOMIT_CONTENTS = [
+  '사료 / 음식',
+  '풀 / 이물질',
+  '노란 액체',
+  '흰 거품',
+  '피가 섞임',
+  '모르겠음',
+];
+
+export const COUNT_OPTIONS: { value: 1 | 2 | 3; label: string }[] = [
+  { value: 1, label: '1회' },
+  { value: 2, label: '2-3회' },
+  { value: 3, label: '4회 이상' },
+];

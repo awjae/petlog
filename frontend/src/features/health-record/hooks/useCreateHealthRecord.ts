@@ -2,15 +2,12 @@
 
 import { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
-import {
-  CREATE_HEALTH_RECORD_MUTATION,
-  type HealthRecordType,
-} from '../api/health-record.mutations';
+import type { HealthRecordType } from '@/generated/graphql';
+import { CREATE_HEALTH_RECORD_MUTATION } from '../api/health-record.mutations';
+import type { AppetiteChoice } from '../types/health-record.types';
 import { mutationFailureMessage } from '@/lib/apollo/mutationFailure';
 
-type AppetiteLevel = 'good' | 'normal' | 'bad';
-
-const APPETITE_LABEL: Record<AppetiteLevel, string> = {
+const APPETITE_LABEL: Record<AppetiteChoice, string> = {
   good: '잘 먹음',
   normal: '보통',
   bad: '안 먹음',
@@ -23,7 +20,7 @@ export interface CreateHealthRecordFormInput {
   // weight
   weight?: string;
   // appetite
-  appetite?: AppetiteLevel;
+  appetite?: AppetiteChoice;
   // activity
   duration?: string;
   distance?: string;

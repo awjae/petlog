@@ -1,221 +1,63 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { X, PawPrint, AlertTriangle, Check } from 'lucide-react';
 import {
-  X,
-  PawPrint,
-  Smile,
-  Meh,
-  Frown,
-  Circle,
-  CircleAlert,
-  CircleX,
-  AlertTriangle,
-  Check,
-  type LucideIcon,
-} from 'lucide-react';
-import { RECORD_TYPE_ICONS } from '@/shared/components/recordTypeIcons';
-import { useHomeData } from '@/features/home/hooks/useHomeData';
-import { useCreateHealthRecord } from '@/features/health-record/hooks/useCreateHealthRecord';
-import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
-import { useLocalToday } from '@/shared/hooks/useLocalToday';
-import { localToday } from '@/shared/utils/date';
+  APPETITE_OPTIONS,
+  COUNT_OPTIONS,
+  DAILY_TYPES,
+  HEALTH_TYPES,
+  SEVERITY_OPTIONS,
+  STOOL_TYPES,
+  SYMPTOM_OPTIONS,
+  VOMIT_CONTENTS,
+} from '@/features/health-record/constants/recordOptions';
+import { useNewRecordForm } from '@/features/health-record/hooks/useNewRecordForm';
 import styles from './page.module.css';
-
-type RecordType = 'weight' | 'appetite' | 'activity' | 'mood' | 'symptom' | 'stool' | 'vomit';
-type AppetiteLevel = 'good' | 'normal' | 'bad';
-
-const DAILY_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'weight', Icon: RECORD_TYPE_ICONS.weight, label: '체중' },
-  { type: 'appetite', Icon: RECORD_TYPE_ICONS.appetite, label: '식사' },
-  { type: 'activity', Icon: RECORD_TYPE_ICONS.activity, label: '산책' },
-  { type: 'mood', Icon: RECORD_TYPE_ICONS.mood, label: '메모' },
-];
-
-const HEALTH_TYPES: { type: RecordType; Icon: LucideIcon; label: string }[] = [
-  { type: 'symptom', Icon: RECORD_TYPE_ICONS.symptom, label: '증상' },
-  { type: 'stool', Icon: RECORD_TYPE_ICONS.stool, label: '배변' },
-  { type: 'vomit', Icon: RECORD_TYPE_ICONS.vomit, label: '구토' },
-];
-
-const APPETITE_OPTIONS: { value: AppetiteLevel; Icon: LucideIcon; label: string }[] = [
-  { value: 'good', Icon: Smile, label: '잘 먹음' },
-  { value: 'normal', Icon: Meh, label: '보통' },
-  { value: 'bad', Icon: Frown, label: '안 먹음' },
-];
-
-const SYMPTOM_OPTIONS = [
-  '기침/재채기',
-  '구토',
-  '설사',
-  '콧물/눈곱',
-  '다리를 저는 행동',
-  '무기력/처짐',
-  '과도한 긁음',
-  '배가 부어 보임',
-  '기타',
-];
-
-// 색은 토큰으로만 지정한다. iOS 기본색을 인라인으로 박아두면 팔레트가 바뀌어도
-// 여기만 남고, 무엇보다 흰 글씨를 얹었을 때 대비가 2:1 대까지 떨어진다.
-// 선택 상태는 "상태색 틴트 면 + 같은 계열 진한 글씨"로 표현한다.
-const SEVERITY_OPTIONS: {
-  value: 1 | 2 | 3;
-  label: string;
-  Icon: LucideIcon;
-  tone: 'success' | 'warning' | 'danger';
-}[] = [
-  { value: 1, label: '경미함', Icon: Circle, tone: 'success' },
-  { value: 2, label: '보통', Icon: CircleAlert, tone: 'warning' },
-  { value: 3, label: '심각함', Icon: CircleX, tone: 'danger' },
-];
-
-const STOOL_TYPES = ['정상', '무름', '설사', '혈변', '변비'];
-
-const VOMIT_CONTENTS = [
-  '사료 / 음식',
-  '풀 / 이물질',
-  '노란 액체',
-  '흰 거품',
-  '피가 섞임',
-  '모르겠음',
-];
-
-const COUNT_OPTIONS: { value: 1 | 2 | 3; label: string }[] = [
-  { value: 1, label: '1회' },
-  { value: 2, label: '2-3회' },
-  { value: 3, label: '4회 이상' },
-];
-
-const VALID_TYPES: RecordType[] = [
-  'weight',
-  'appetite',
-  'activity',
-  'mood',
-  'symptom',
-  'stool',
-  'vomit',
-];
 
 function NewRecordContent() {
   const router = useRouter();
-  const params = useSearchParams();
-  const { data } = useHomeData();
-  const { createHealthRecord, loading: submitting, error } = useCreateHealthRecord();
-  const lastSelectedPetId = useSelectedPetStore((s) => s.selectedPetId);
-  const setSelectedPetId = useSelectedPetStore((s) => s.setSelectedPetId);
-
-  const petIdFromUrl = params.get('petId');
-  const rawType = params.get('type') as RecordType | null;
-  const defaultType: RecordType = rawType && VALID_TYPES.includes(rawType) ? rawType : 'weight';
-
-  const [petId, setPetId] = useState(petIdFromUrl ?? '');
-  const [recordType, setRecordType] = useState<RecordType>(defaultType);
-  const [date, setDate] = useState(localToday);
-  // max는 렌더 중에 계산하면 하이드레이션에서 서버 값이 굳는다 (useLocalToday 주석 참고).
-  const maxDate = useLocalToday();
-
-  // weight
-  const [weight, setWeight] = useState('');
-  // appetite
-  const [appetite, setAppetite] = useState<AppetiteLevel>('good');
-  // activity
-  const [duration, setDuration] = useState('');
-  const [distance, setDistance] = useState('');
-  // mood / 공통 메모
-  const [memo, setMemo] = useState('');
-  // symptom
-  const [symptoms, setSymptoms] = useState<string[]>([]);
-  const [severity, setSeverity] = useState<1 | 2 | 3 | null>(null);
-  // stool
-  const [stoolType, setStoolType] = useState<string | null>(null);
-  const [stoolCount, setStoolCount] = useState<1 | 2 | 3 | null>(null);
-  // vomit
-  const [vomitContent, setVomitContent] = useState<string | null>(null);
-  const [vomitCount, setVomitCount] = useState<1 | 2 | 3 | null>(null);
-  // 토스트
-  const [showToast, setShowToast] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const pets = data?.pets ?? [];
-
-  // pets 목록이 비동기 로딩된 이후 petId가 비어있으면 마지막 선택 반려동물로 동기화
-  useEffect(() => {
-    if (petId || pets.length === 0) return;
-    const defaultPetId = pets.some((p) => p.id === lastSelectedPetId)
-      ? lastSelectedPetId
-      : pets[0].id;
-    setPetId(defaultPetId ?? '');
-  }, [pets, petId, lastSelectedPetId]);
-
-  function handleTypeChange(type: RecordType) {
-    setRecordType(type);
-    setMemo('');
-    setSymptoms([]);
-    setSeverity(null);
-    setStoolType(null);
-    setStoolCount(null);
-    setVomitContent(null);
-    setVomitCount(null);
-  }
-
-  function handleSymptomToggle(symptom: string) {
-    setSymptoms((prev) => {
-      if (prev.includes(symptom)) return prev.filter((s) => s !== symptom);
-      if (prev.length >= 5) {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
-        return prev;
-      }
-      return [...prev, symptom];
-    });
-  }
-
-  function isValid(): boolean {
-    if (!petId) return false;
-    switch (recordType) {
-      case 'weight':
-        return weight.trim() !== '';
-      case 'activity':
-        return duration.trim() !== '';
-      case 'mood':
-        return memo.trim() !== '';
-      case 'symptom':
-        return symptoms.length > 0 && severity !== null;
-      case 'stool':
-        return stoolType !== null;
-      case 'vomit':
-        return vomitCount !== null;
-      default:
-        return true;
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid()) return;
-    const ok = await createHealthRecord({
-      petId,
-      type: recordType,
-      date,
-      weight,
-      appetite,
-      duration,
-      distance,
-      memo,
-      symptoms,
-      severity: severity ?? undefined,
-      stoolType: stoolType ?? undefined,
-      stoolCount: stoolCount ?? undefined,
-      vomitContent: vomitContent ?? undefined,
-      vomitCount: vomitCount ?? undefined,
-    });
-    if (ok) {
-      setSuccess(true);
-      setTimeout(() => router.back(), 800);
-    }
-  }
+  const {
+    pets,
+    petId,
+    handlePetChange,
+    recordType,
+    handleTypeChange,
+    date,
+    setDate,
+    maxDate,
+    weight,
+    setWeight,
+    appetite,
+    setAppetite,
+    duration,
+    setDuration,
+    distance,
+    setDistance,
+    memo,
+    setMemo,
+    symptoms,
+    handleSymptomToggle,
+    severity,
+    setSeverity,
+    stoolType,
+    setStoolType,
+    stoolCount,
+    setStoolCount,
+    vomitContent,
+    setVomitContent,
+    vomitCount,
+    setVomitCount,
+    isValid,
+    handleSubmit,
+    submitting,
+    error,
+    success,
+    showToast,
+    showWarning,
+    warningText,
+  } = useNewRecordForm();
 
   if (success) {
     return (
@@ -227,18 +69,6 @@ function NewRecordContent() {
       </div>
     );
   }
-
-  const showWarning =
-    (recordType === 'symptom' && (symptoms.includes('구토') || symptoms.includes('설사'))) ||
-    (recordType === 'stool' && stoolType === '혈변') ||
-    (recordType === 'vomit' && vomitContent === '피가 섞임');
-
-  const warningText =
-    recordType === 'stool'
-      ? '혈변이 보일 경우 수의사 상담을 권장해요.'
-      : recordType === 'vomit'
-        ? '피가 섞인 구토가 보일 경우 수의사 상담을 권장해요.'
-        : '해당 증상이 심각하다면 수의사 상담을 권장해요.';
 
   return (
     <div className={styles.inner}>
@@ -266,10 +96,7 @@ function NewRecordContent() {
                   key={pet.id}
                   type="button"
                   className={`${styles.petBtn} ${petId === pet.id ? styles.petBtnActive : ''}`}
-                  onClick={() => {
-                    setPetId(pet.id);
-                    setSelectedPetId(pet.id);
-                  }}
+                  onClick={() => handlePetChange(pet.id)}
                   aria-pressed={petId === pet.id}
                 >
                   <PawPrint
