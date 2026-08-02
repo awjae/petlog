@@ -18,7 +18,7 @@ type Documents = {
   '\n  mutation UpdateMarketingConsent($agreed: Boolean!) {\n    updateMarketingConsent(agreed: $agreed) {\n      marketingNotificationAgreed\n    }\n  }\n': typeof types.UpdateMarketingConsentDocument;
   '\n  mutation CreateHealthRecord($input: CreateHealthRecordInput!) {\n    createHealthRecord(input: $input) {\n      id\n      type\n      recordedAt\n    }\n  }\n': typeof types.CreateHealthRecordDocument;
   '\n  query HealthRecords($petId: ID!) {\n    healthRecords(petId: $petId) {\n      id\n      type\n      recordedAt\n      numValue\n      textValue\n      note\n    }\n  }\n': typeof types.HealthRecordsDocument;
-  '\n  query HomeQuery {\n    me {\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n': typeof types.HomeQueryDocument;
+  '\n  query HomeQuery {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n': typeof types.HomeQueryDocument;
   '\n  mutation CreateMedicalEvent($input: CreateMedicalEventInput!) {\n    createMedicalEvent(input: $input) {\n      id\n      visitDate\n      hospitalName\n    }\n  }\n': typeof types.CreateMedicalEventDocument;
   '\n  mutation DeleteMedicalEvent($id: ID!) {\n    deleteMedicalEvent(id: $id)\n  }\n': typeof types.DeleteMedicalEventDocument;
   '\n  mutation CreateVaccination($input: CreateVaccinationInput!) {\n    createVaccination(input: $input) {\n      id\n      name\n      vaccinatedAt\n    }\n  }\n': typeof types.CreateVaccinationDocument;
@@ -46,16 +46,16 @@ type Documents = {
   '\n  mutation StopReportShare($reportId: ID!) {\n    stopReportShare(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.StopReportShareDocument;
   '\n  mutation SetReportShareIncludeConcerns($reportId: ID!, $includeConcerns: Boolean!) {\n    setReportShareIncludeConcerns(reportId: $reportId, includeConcerns: $includeConcerns) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.SetReportShareIncludeConcernsDocument;
   '\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n': typeof types.ReportShareSettingsDocument;
-  '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n': typeof types.ShareViewerDocument;
+  '\n  query ShareViewer {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      name\n    }\n  }\n': typeof types.ShareViewerDocument;
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n': typeof types.GenerateReportDocument;
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n': typeof types.ReportStatusDocument;
   '\n  query Reports($petId: ID!) {\n    reports(petId: $petId) {\n      id\n      status\n      overview\n      highlights\n      concerns\n      recommendations\n      generatedBy\n      periodStart\n      periodEnd\n      createdAt\n    }\n  }\n': typeof types.ReportsDocument;
   '\n  query Report($id: ID!) {\n    report(id: $id) {\n      id\n      petId\n      status\n      overview\n      highlights\n      concerns\n      recommendations\n      generatedBy\n      periodStart\n      periodEnd\n      createdAt\n    }\n  }\n': typeof types.ReportDocument;
   '\n  query ReportPollStatus($id: ID!) {\n    reportPollStatus(id: $id) {\n      id\n      status\n      failedReason\n    }\n  }\n': typeof types.ReportPollStatusDocument;
-  '\n  query PetsForReport {\n    me {\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n': typeof types.PetsForReportDocument;
+  '\n  query PetsForReport {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n': typeof types.PetsForReportDocument;
   '\n  query ReportPeriodPreview($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    reportPeriodPreview(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      recordCount\n      recordDays\n      hasEnoughRecords\n    }\n  }\n': typeof types.ReportPeriodPreviewDocument;
   '\n  mutation UpdateProfile($input: UpdateProfileInput!) {\n    updateProfile(input: $input) {\n      id\n      name\n      email\n    }\n  }\n': typeof types.UpdateProfileDocument;
-  '\n  query SettingsMe {\n    me {\n      name\n      email\n    }\n  }\n': typeof types.SettingsMeDocument;
+  '\n  query SettingsMe {\n    me {\n      id\n      name\n      email\n    }\n  }\n': typeof types.SettingsMeDocument;
 };
 const documents: Documents = {
   '\n  query ConsentStatus {\n    consentStatus {\n      marketingNotificationAgreed\n    }\n  }\n':
@@ -66,7 +66,7 @@ const documents: Documents = {
     types.CreateHealthRecordDocument,
   '\n  query HealthRecords($petId: ID!) {\n    healthRecords(petId: $petId) {\n      id\n      type\n      recordedAt\n      numValue\n      textValue\n      note\n    }\n  }\n':
     types.HealthRecordsDocument,
-  '\n  query HomeQuery {\n    me {\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n':
+  '\n  query HomeQuery {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n':
     types.HomeQueryDocument,
   '\n  mutation CreateMedicalEvent($input: CreateMedicalEventInput!) {\n    createMedicalEvent(input: $input) {\n      id\n      visitDate\n      hospitalName\n    }\n  }\n':
     types.CreateMedicalEventDocument,
@@ -121,7 +121,8 @@ const documents: Documents = {
     types.SetReportShareIncludeConcernsDocument,
   '\n  query ReportShareSettings($reportId: ID!) {\n    reportShareSettings(reportId: $reportId) {\n      isActive\n      includeConcerns\n      shareToken\n    }\n  }\n':
     types.ReportShareSettingsDocument,
-  '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n': types.ShareViewerDocument,
+  '\n  query ShareViewer {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      name\n    }\n  }\n':
+    types.ShareViewerDocument,
   '\n  mutation GenerateReport($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    generateReport(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      reportId\n      status\n    }\n  }\n':
     types.GenerateReportDocument,
   '\n  query ReportStatus($petId: ID!) {\n    reportStatus(petId: $petId) {\n      canGenerateThisMonth\n      hasEnoughRecords\n      recordCount\n      recordDays\n      nextAvailableAt\n      processingReport {\n        id\n        status\n      }\n    }\n  }\n':
@@ -132,13 +133,13 @@ const documents: Documents = {
     types.ReportDocument,
   '\n  query ReportPollStatus($id: ID!) {\n    reportPollStatus(id: $id) {\n      id\n      status\n      failedReason\n    }\n  }\n':
     types.ReportPollStatusDocument,
-  '\n  query PetsForReport {\n    me {\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n':
+  '\n  query PetsForReport {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n':
     types.PetsForReportDocument,
   '\n  query ReportPeriodPreview($petId: ID!, $periodStart: DateTime!, $periodEnd: DateTime!) {\n    reportPeriodPreview(petId: $petId, periodStart: $periodStart, periodEnd: $periodEnd) {\n      recordCount\n      recordDays\n      hasEnoughRecords\n    }\n  }\n':
     types.ReportPeriodPreviewDocument,
   '\n  mutation UpdateProfile($input: UpdateProfileInput!) {\n    updateProfile(input: $input) {\n      id\n      name\n      email\n    }\n  }\n':
     types.UpdateProfileDocument,
-  '\n  query SettingsMe {\n    me {\n      name\n      email\n    }\n  }\n':
+  '\n  query SettingsMe {\n    me {\n      id\n      name\n      email\n    }\n  }\n':
     types.SettingsMeDocument,
 };
 
@@ -184,8 +185,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  query HomeQuery {\n    me {\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n',
-): (typeof documents)['\n  query HomeQuery {\n    me {\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n'];
+  source: '\n  query HomeQuery {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query HomeQuery {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      recordDates(limit: 90)\n      pets {\n        id\n        name\n        species\n        breed\n        birthDate\n        profileImageUrl\n        recentWeight {\n          value\n          recordedAt\n        }\n        todayRecordCount\n        totalHealthRecordCount\n        recentHealthRecords(limit: 5) {\n          id\n          type\n          recordedAt\n          numValue\n          textValue\n        }\n      }\n      upcomingSchedules(limit: 3) {\n        id\n        petId\n        petName\n        petProfileImageUrl\n        type\n        title\n        dueDate\n      }\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -352,8 +353,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n',
-): (typeof documents)['\n  query ShareViewer {\n    me {\n      name\n    }\n  }\n'];
+  source: '\n  query ShareViewer {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      name\n    }\n  }\n',
+): (typeof documents)['\n  query ShareViewer {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      name\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -388,8 +389,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  query PetsForReport {\n    me {\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n',
-): (typeof documents)['\n  query PetsForReport {\n    me {\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n'];
+  source: '\n  query PetsForReport {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query PetsForReport {\n    me {\n      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다\n      # (settings.queries.ts의 주석 참고).\n      id\n      pets {\n        id\n        name\n        createdAt\n      }\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -406,8 +407,8 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  query SettingsMe {\n    me {\n      name\n      email\n    }\n  }\n',
-): (typeof documents)['\n  query SettingsMe {\n    me {\n      name\n      email\n    }\n  }\n'];
+  source: '\n  query SettingsMe {\n    me {\n      id\n      name\n      email\n    }\n  }\n',
+): (typeof documents)['\n  query SettingsMe {\n    me {\n      id\n      name\n      email\n    }\n  }\n'];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

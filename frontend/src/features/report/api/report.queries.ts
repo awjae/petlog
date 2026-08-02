@@ -104,7 +104,7 @@ export const REPORT_POLL_STATUS_QUERY: TypedDocumentNode<
 `;
 
 interface PetsForReportQueryData {
-  me: { pets: PetBasic[] } | null;
+  me: { id: string; pets: PetBasic[] } | null;
 }
 
 export const PETS_FOR_REPORT_QUERY: TypedDocumentNode<
@@ -113,6 +113,9 @@ export const PETS_FOR_REPORT_QUERY: TypedDocumentNode<
 > = gql`
   query PetsForReport {
     me {
+      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다
+      # (settings.queries.ts의 주석 참고).
+      id
       pets {
         id
         name
