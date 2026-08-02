@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
+import { version } from './package.json';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -15,6 +16,13 @@ const nextConfig: NextConfig = {
   // AWS ECS Fargate 컨테이너 배포를 위한 standalone 빌드.
   // .next/standalone 에 실행에 필요한 최소 node_modules와 server.js가 생성된다.
   output: 'standalone',
+  // 앱 버전의 단일 소스는 package.json이지만, 화면에서 직접 import하면 번들러가
+  // package.json 전체를 클라이언트 청크에 인라인한다 — scripts의 배포 명령(AWS 리전,
+  // ECS 클러스터/서비스 이름)과 전체 의존성 버전까지 함께 나간다. 여기서 읽어
+  // 버전 문자열만 빌드 타임에 주입하면 단일 소스는 유지하면서 그 노출이 사라진다.
+  env: {
+    NEXT_PUBLIC_APP_VERSION: version,
+  },
   images: {
     remotePatterns: cloudfrontDomain
       ? [

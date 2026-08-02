@@ -29,7 +29,6 @@ import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSh
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useToast, ToastContainer } from '@/features/shared/components/Toast';
-import { version } from '../../../package.json';
 import styles from './page.module.css';
 import { useSendTestPushNotification } from '@/features/notification/hooks/useSendTestPushNotification';
 import { useNotificationPreference } from '@/features/notification/hooks/useNotificationPreference';
@@ -346,7 +345,7 @@ export default function SettingsPage() {
         </button>
 
         <p className={styles.contact}>문의: aw.js.share@gmail.com</p>
-        <p className={styles.version}>Petlog v{version}</p>
+        <p className={styles.version}>Petlog v{process.env.NEXT_PUBLIC_APP_VERSION}</p>
       </div>
 
       <BottomNav />
