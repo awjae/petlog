@@ -1,9 +1,14 @@
 import type { HomeQueryQuery } from '@/generated/graphql';
 
+// me 쿼리는 전부 id를 함께 조회한다(features/settings/api/settings.queries.ts 주석 참고).
+// 목업도 같은 사용자를 가리켜야 Apollo 캐시가 실제 환경과 같은 방식으로 정규화된다.
+export const MOCK_USER_ID = 'user-1';
+
 // Phase 1 — 온보딩: 기록이 전혀 없는 신규 사용자
 // 사용법: homeHandlers에서 mockHomeData → mockHomeDataPhase1 으로 교체
 export const mockHomeDataPhase1: HomeQueryQuery = {
   me: {
+    id: MOCK_USER_ID,
     recordDates: [],
     pets: [
       {
@@ -44,6 +49,7 @@ function pastDays(n: number): string[] {
 
 export const mockHomeData: HomeQueryQuery = {
   me: {
+    id: MOCK_USER_ID,
     recordDates: pastDays(7),
     pets: [
       {

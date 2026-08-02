@@ -1,5 +1,6 @@
 import { graphql, HttpResponse } from 'msw';
 import type { Report } from '@/features/report/types/report.types';
+import { MOCK_USER_ID } from '../data/home';
 
 // AI 리포트(frontend/src/features/report) 관련 MSW 핸들러.
 //
@@ -51,7 +52,9 @@ const pollCallCountByReportId = new Map<string, number>();
 export const reportHandlers = [
   graphql.query('PetsForReport', () => {
     return HttpResponse.json({
-      data: { me: { pets: [{ id: PET_ID, name: PET_NAME, createdAt: PET_CREATED_AT }] } },
+      data: {
+        me: { id: MOCK_USER_ID, pets: [{ id: PET_ID, name: PET_NAME, createdAt: PET_CREATED_AT }] },
+      },
     });
   }),
 

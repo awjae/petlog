@@ -104,15 +104,17 @@ export const REPORT_POLL_STATUS_QUERY: TypedDocumentNode<
 `;
 
 interface PetsForReportQueryData {
-  me: { pets: PetBasic[] } | null;
+  me: { id: string; pets: PetBasic[] } | null;
 }
 
+// me의 id는 캐시 정규화에 필요하다(이유는 settings.queries.ts 주석 참고).
 export const PETS_FOR_REPORT_QUERY: TypedDocumentNode<
   PetsForReportQueryData,
   Record<string, never>
 > = gql`
   query PetsForReport {
     me {
+      id
       pets {
         id
         name

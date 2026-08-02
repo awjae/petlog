@@ -27,15 +27,17 @@ export const REPORT_SHARE_SETTINGS_QUERY: TypedDocumentNode<
 // (에러 시 강제 리다이렉트가 일어나지 않도록 이 쿼리를 쏘는 라우트는
 // shared/config/publicRoutes.ts의 공개 경로 목록에 포함돼 있어야 한다).
 interface ShareViewerQueryData {
-  me: { name: string | null } | null;
+  me: { id: string; name: string | null } | null;
 }
 
+// me의 id는 캐시 정규화에 필요하다(이유는 settings.queries.ts 주석 참고).
 export const SHARE_VIEWER_QUERY: TypedDocumentNode<
   ShareViewerQueryData,
   Record<string, never>
 > = gql`
   query ShareViewer {
     me {
+      id
       name
     }
   }

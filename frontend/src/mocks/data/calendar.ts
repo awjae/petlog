@@ -1,4 +1,5 @@
 import type { CalendarEvent, CalendarPet } from '@/features/calendar/types/calendar.types';
+import { MOCK_USER_ID } from './home';
 
 function daysFromToday(offset: number): string {
   const d = new Date();
@@ -6,10 +7,13 @@ function daysFromToday(offset: number): string {
   return d.toISOString();
 }
 
-type MockCalendarData = { me: { pets: CalendarPet[]; calendarEvents: CalendarEvent[] } };
+type MockCalendarData = {
+  me: { id: string; pets: CalendarPet[]; calendarEvents: CalendarEvent[] };
+};
 
 export const mockCalendarData: MockCalendarData = {
   me: {
+    id: MOCK_USER_ID,
     pets: [
       { id: 'pet-1', name: '초코', profileImageUrl: null },
       { id: 'pet-2', name: '뭉치', profileImageUrl: null },

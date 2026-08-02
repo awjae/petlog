@@ -140,6 +140,7 @@ export type HomeQueryQueryVariables = Exact<{ [key: string]: never }>;
 
 export type HomeQueryQuery = {
   me: {
+    id: string;
     recordDates: Array<string>;
     pets: Array<{
       id: string;
@@ -454,7 +455,7 @@ export type ReportShareSettingsQuery = {
 
 export type ShareViewerQueryVariables = Exact<{ [key: string]: never }>;
 
-export type ShareViewerQuery = { me: { name: string | null } };
+export type ShareViewerQuery = { me: { id: string; name: string | null } };
 
 export type GenerateReportMutationVariables = Exact<{
   petId: string | number;
@@ -529,7 +530,7 @@ export type ReportPollStatusQuery = {
 export type PetsForReportQueryVariables = Exact<{ [key: string]: never }>;
 
 export type PetsForReportQuery = {
-  me: { pets: Array<{ id: string; name: string; createdAt: string }> };
+  me: { id: string; pets: Array<{ id: string; name: string; createdAt: string }> };
 };
 
 export type ReportPeriodPreviewQueryVariables = Exact<{
@@ -552,7 +553,7 @@ export type UpdateProfileMutation = {
 
 export type SettingsMeQueryVariables = Exact<{ [key: string]: never }>;
 
-export type SettingsMeQuery = { me: { name: string | null; email: string } };
+export type SettingsMeQuery = { me: { id: string; name: string | null; email: string } };
 
 export const ConsentStatusDocument = {
   kind: 'Document',
@@ -731,6 +732,7 @@ export const HomeQueryDocument = {
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'recordDates' },
@@ -2001,7 +2003,10 @@ export const ShareViewerDocument = {
             name: { kind: 'Name', value: 'me' },
             selectionSet: {
               kind: 'SelectionSet',
-              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'name' } }],
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+              ],
             },
           },
         ],
@@ -2298,6 +2303,7 @@ export const PetsForReportDocument = {
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'pets' },
@@ -2448,6 +2454,7 @@ export const SettingsMeDocument = {
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'email' } },
               ],
