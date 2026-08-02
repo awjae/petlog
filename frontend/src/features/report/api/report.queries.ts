@@ -107,14 +107,13 @@ interface PetsForReportQueryData {
   me: { id: string; pets: PetBasic[] } | null;
 }
 
+// me의 id는 캐시 정규화에 필요하다(이유는 settings.queries.ts 주석 참고).
 export const PETS_FOR_REPORT_QUERY: TypedDocumentNode<
   PetsForReportQueryData,
   Record<string, never>
 > = gql`
   query PetsForReport {
     me {
-      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다
-      # (settings.queries.ts의 주석 참고).
       id
       pets {
         id

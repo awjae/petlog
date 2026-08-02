@@ -15,11 +15,10 @@ type CalendarQueryVariables = {
   endDate: string;
 };
 
+// me의 id는 캐시 정규화에 필요하다(이유는 settings.queries.ts 주석 참고).
 export const CALENDAR_QUERY: TypedDocumentNode<CalendarQueryResult, CalendarQueryVariables> = gql`
   query CalendarQuery($startDate: String!, $endDate: String!) {
     me {
-      # id 없이 조회하면 캐시에서 ROOT_QUERY.me 자리를 두고 다른 me 쿼리와 충돌한다
-      # (settings.queries.ts의 주석 참고).
       id
       pets {
         id
