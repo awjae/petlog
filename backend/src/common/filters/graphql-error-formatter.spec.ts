@@ -45,6 +45,35 @@ describe('formatGraphQLError', () => {
     );
   });
 
+  // Apollo가 검증 실패를 ValidationError로 감쌀 때 originalError를 원본 GraphQLError로
+  // 채우기 때문에(PETLOG-API-4), originalError 유무만으로는 요청자 귀책과 서버 버그를
+  // 구분할 수 없다. 실제 Sentry에 올라왔던 introspection 차단 에러의 형태를 그대로 재현한다.
+  it('Apollo가 감싼 검증 실패(요청자 귀책)는 로그를 남기지 않는다', () => {
+    const validationError = new GraphQLError(
+      'GraphQL introspection is not allowed by Apollo Server, but the query contained __schema or __type.',
+    );
+    const error = new GraphQLError(validationError.message, {
+      originalError: validationError,
+      extensions: { code: 'GRAPHQL_VALIDATION_FAILED' },
+    });
+
+    formatGraphQLError({ message: error.message }, error);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('잘못된 쿼리 문법(파싱 실패)도 로그를 남기지 않는다', () => {
+    const syntaxError = new GraphQLError('Syntax Error: Expected Name, found "}".');
+    const error = new GraphQLError(syntaxError.message, {
+      originalError: syntaxError,
+      extensions: { code: 'GRAPHQL_PARSE_FAILED' },
+    });
+
+    formatGraphQLError({ message: error.message }, error);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it('GraphQLError가 아닌 값이 넘어오면(이례적 상황) 안전한 쪽으로 로그를 남긴다', () => {
     formatGraphQLError({ message: 'weird', path: ['weirdField'] }, 'not-a-graphql-error');
 
