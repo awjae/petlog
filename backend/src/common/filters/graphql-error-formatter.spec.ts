@@ -1,4 +1,5 @@
 import { Logger, NotFoundException } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 import { GraphQLError } from 'graphql';
 import { formatGraphQLError } from './graphql-error-formatter';
 
@@ -72,6 +73,40 @@ describe('formatGraphQLError', () => {
     formatGraphQLError({ message: error.message }, error);
 
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('APQ 미스(PERSISTED_QUERY_NOT_FOUND)는 로그를 남기지 않는다', () => {
+    const error = new GraphQLError('PersistedQueryNotFound', {
+      extensions: { code: 'PERSISTED_QUERY_NOT_FOUND' },
+    });
+
+    formatGraphQLError({ message: error.message }, error);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('Rate limit 초과(ThrottlerException 429)는 로그를 남기지 않는다', () => {
+    const original = new ThrottlerException();
+    const error = new GraphQLError(original.message, { originalError: original });
+
+    formatGraphQLError({ message: error.message, path: ['createHealthRecord'] }, error);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  // 코드 기준 제외가 넓어질수록 진짜 서버 버그까지 삼킬 위험이 생긴다. Apollo는 응답용
+  // formattedError에만 INTERNAL_SERVER_ERROR를 채우지만, 원본 error에 그 코드가 실려 와도
+  // 제외 대상이 아님을 고정한다.
+  it('INTERNAL_SERVER_ERROR 코드가 붙어 있어도 서버 에러는 그대로 로그를 남긴다', () => {
+    const original = new TypeError('Cannot read properties of undefined');
+    const error = new GraphQLError('Internal server error', {
+      originalError: original,
+      extensions: { code: 'INTERNAL_SERVER_ERROR' },
+    });
+
+    formatGraphQLError({ message: 'Internal server error', path: ['report'] }, error);
+
+    expect(errorSpy).toHaveBeenCalledWith('Unhandled GraphQL error at report', original.stack);
   });
 
   it('GraphQLError가 아닌 값이 넘어오면(이례적 상황) 안전한 쪽으로 로그를 남긴다', () => {
