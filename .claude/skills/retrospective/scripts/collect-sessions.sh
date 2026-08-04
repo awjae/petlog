@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # 대화 세션 단위로 사용자 발화를 추출한다.
 #
-# 사용법: collect-sessions.sh [일수] [프로젝트경로|all]
-#   일수         기본 7. 최근 며칠 내 세션을 볼지.
-#   프로젝트경로  기본 all(모든 프로젝트). 특정 저장소로 좁히려면 경로를 준다.
+# 사용법: collect-sessions.sh [current|일수] [프로젝트경로|all]
+#   current      기본값. 지금 이 대화 세션 하나만 본다.
+#   일수         최근 며칠 내 세션을 볼지. 여러 세션에 걸친 패턴을 볼 때만 쓴다.
+#   프로젝트경로  일수를 줬을 때의 기본은 all(모든 프로젝트).
 #                "." 은 현재 디렉토리. 경로가 git 저장소 안이면 저장소 루트로 올려서 찾는다.
 #
 # 출력: 세션 하나가 한 블록이며 오래된 것부터 나온다.
@@ -13,15 +14,22 @@
 
 set -euo pipefail
 
-DAYS="${1:-7}"
-SCOPE="${2:-all}"
+DAYS="${1:-current}"
+SCOPE="${2:-}"
 ROOT="$HOME/.claude/projects"
+
+# current는 지금 이 대화 세션 하나를 뜻한다. 범위는 자연히 현재 저장소다.
+if [ "$DAYS" = "current" ] && [ -z "$SCOPE" ]; then
+  SCOPE="."
+fi
+SCOPE="${SCOPE:-all}"
 
 command -v jq >/dev/null || { echo "jq가 필요하다" >&2; exit 1; }
 [ -d "$ROOT" ] || { echo "세션 기록 디렉토리가 없다: $ROOT" >&2; exit 1; }
 
 case "$DAYS" in
-  ''|*[!0-9]*) echo "일수는 숫자여야 한다: $DAYS" >&2; exit 1 ;;
+  current) ;;
+  ''|*[!0-9]*) echo "일수는 숫자이거나 current여야 한다: $DAYS" >&2; exit 1 ;;
 esac
 
 # --apply 같은 스킬 쪽 플래그가 흘러들어오면 경로로 해석돼 조용히 0건이 된다.
@@ -53,15 +61,26 @@ else
   scope_label="$SCOPE"
 fi
 
-cutoff=$(( $(date +%s) - DAYS * 86400 ))
+if [ "$DAYS" = "current" ]; then
+  cutoff=0
+else
+  cutoff=$(( $(date +%s) - DAYS * 86400 ))
+fi
 index=$(mktemp)
 trap 'rm -f "$index"' EXIT
 
-# 1단계: 기간에 드는 세션을 마지막 메시지 시각과 함께 모은다.
+# 1단계: 대상 세션을 마지막 메시지 시각과 함께 모은다.
 # mtime은 실제 마지막 메시지보다 늦을 수는 있어도 이를 수는 없으므로,
 # mtime으로 넉넉히 거른 뒤 실제 timestamp로 다시 판정한다.
 for dir in "${dirs[@]}"; do
   [ -d "$dir" ] || continue
+  if [ "$DAYS" = "current" ]; then
+    # 지금 쓰이고 있는 기록이 이 대화 세션이다.
+    candidates=$(ls -t "$dir"*.jsonl 2>/dev/null | head -1)
+  else
+    candidates=$(find "$dir" -maxdepth 1 -name '*.jsonl' -mtime -"$((DAYS + 1))" 2>/dev/null)
+  fi
+  [ -n "$candidates" ] || continue
   while IFS= read -r f; do
     [ -s "$f" ] || continue
     last=$(jq -r 'select(.timestamp) | .timestamp' "$f" 2>/dev/null | tail -1) || continue
@@ -70,8 +89,13 @@ for dir in "${dirs[@]}"; do
     [ -n "$epoch" ] || continue
     [ "$epoch" -ge "$cutoff" ] || continue
     printf '%s\t%s\n' "$epoch" "$f" >> "$index"
-  done < <(find "$dir" -maxdepth 1 -name '*.jsonl' -mtime -"$((DAYS + 1))" 2>/dev/null)
+  done < <(printf '%s\n' "$candidates")
 done
+
+# current는 세션 하나만 본다. 저장소가 여러 디렉토리로 나뉘어 있어도 최신 하나다.
+if [ "$DAYS" = "current" ] && [ -s "$index" ]; then
+  printf '%s\n' "$(sort -n "$index" | tail -1)" > "$index"
+fi
 
 # 2단계: 오래된 것부터 출력한다. 무엇이 반복인지 보려면 시간 순서가 필요하다.
 found=0
@@ -119,7 +143,7 @@ while IFS=$'\t' read -r epoch f; do
 done < <(sort -n "$index")
 
 if [ "$found" -eq 0 ]; then
-  echo "최근 ${DAYS}일 내 세션 기록이 없다 (범위: ${scope_label})" >&2
+  echo "대상 세션이 없다 (범위: ${scope_label})" >&2
   exit 2
 fi
 
