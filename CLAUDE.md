@@ -475,10 +475,13 @@ AI 연동은 후반부이지만, 데이터 모델은 처음부터 AI가 소비�
 
 Before implementing:
 
-- State your assumptions explicitly. If uncertain, ask.
+- State your assumptions explicitly. 불확실하면 먼저 코드·데이터를 조사해 근거를 확보한다.
+- 조사로 답이 나오는 것은 묻지 않는다. 합리적 기본값으로 만들어 보여주고 고친다.
+- 선택지를 나열해 고르게 하는 질문은, 조사로도 답이 안 나오고 틀리면 결과물이 무용해질 때만 한다.
 - If multiple interpretations exist, present them - don't pick silently.
 - If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+- 사용자가 단위·기준·범위·기본값을 말했으면 그 값을 그대로 쓴다. 더 넓거나 좁은 값이 합리적으로 보여도 임의로 바꾸지 않는다. 확장이 필요하면 옵션으로 두고 기본값은 사용자가 말한 것으로 한다.
+- 사용자가 "판단해서 정하라"고 한 것을 설계 시점에 고정하지 않는다. 실행 시점에 판단하게 남겨두라는 뜻이다.
 
 ## 2. Simplicity First
 
@@ -519,6 +522,10 @@ Transform tasks into verifiable goals:
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
+
+검증은 실제 사용 경로를 전부 밟는 것이다. 인자·옵션·실행 위치의 조합이 여럿이면 각각을 돌려본다. 한 조합만 확인하고 "검증했다"고 말하지 않는다.
+
+특히 실패가 조용한 경우(빈 결과·기본값 폴백·예외 삼킴)를 확인한다. 크래시는 드러나지만 "결과 없음"은 성공처럼 보인다.
 
 For multi-step tasks, state a brief plan:
 
