@@ -12,6 +12,11 @@ const DEFAULT_PREFERENCE: NotificationPreference = {
   weeklyCheckinEnabled: true,
 };
 
+// 탈퇴를 요청한 계정은 30일 그레이스 기간 동안 데이터가 그대로 남아 있지만, 알림 대상에서는
+// 제외한다. 토큰을 지우지 않고 조회 조건으로만 거르는 이유는 복구(restoreAccount)로
+// deletionRequestedAt이 다시 null이 되면 별도 조치 없이 알림이 재개되기 때문이다.
+const ACTIVE_USER = { deletionRequestedAt: null } as const;
+
 interface SendAndLogParams {
   userId: string;
   type: NotificationType;
@@ -98,6 +103,7 @@ export class NotificationService {
       where: {
         deletedAt: null,
         nextDueAt: { gte: start, lt: end },
+        pet: { user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
@@ -142,6 +148,7 @@ export class NotificationService {
         deletedAt: null,
         status: AppointmentStatus.scheduled,
         scheduledAt: { gte: start, lt: end },
+        pet: { user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
@@ -187,7 +194,7 @@ export class NotificationService {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const pets = await this.prisma.pet.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, user: ACTIVE_USER },
       select: { id: true, name: true, userId: true },
     });
 
