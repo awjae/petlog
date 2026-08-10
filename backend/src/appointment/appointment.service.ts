@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import { AppointmentStatus } from '@prisma/client';
 import { CreateAppointmentInput, UpdateAppointmentInput } from './appointment.types';
 
@@ -63,11 +64,7 @@ export class AppointmentService {
     return true;
   }
 
-  private async assertOwnership(userId: string, id: string) {
-    const appt = await this.prisma.appointment.findFirst({
-      where: { id, pet: { userId } },
-    });
-    if (!appt) throw new NotFoundException('예약을 찾을 수 없습니다.');
-    return appt;
+  private assertOwnership(userId: string, id: string) {
+    return findOwnedOrThrow(this.prisma.appointment, userId, id, '예약을 찾을 수 없습니다.');
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import type { HealthRecord as PrismaHealthRecord } from '@prisma/client';
 import { HealthRecordType } from '@prisma/client';
 import { CreateHealthRecordInput, UpdateHealthRecordInput } from './health-record.types';
@@ -60,12 +61,8 @@ export class HealthRecordService {
     return true;
   }
 
-  private async assertOwnership(userId: string, id: string) {
-    const record = await this.prisma.healthRecord.findFirst({
-      where: { id, pet: { userId } },
-    });
-    if (!record) throw new NotFoundException('기록을 찾을 수 없습니다.');
-    return record;
+  private assertOwnership(userId: string, id: string) {
+    return findOwnedOrThrow(this.prisma.healthRecord, userId, id, '기록을 찾을 수 없습니다.');
   }
 
   private validateValue(
