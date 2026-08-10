@@ -96,6 +96,7 @@ describe('NotificationService 탈퇴 계정 제외', () => {
 
     const { where } = prisma.vaccination.findMany.mock.calls[0][0];
     expect(where.pet.user.deletionRequestedAt).toBeNull();
+    expect(where.pet.user.anonymizedAt).toBeNull();
   });
 
   it('병원 방문 스캔이 탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
@@ -103,6 +104,7 @@ describe('NotificationService 탈퇴 계정 제외', () => {
 
     const { where } = prisma.appointment.findMany.mock.calls[0][0];
     expect(where.pet.user.deletionRequestedAt).toBeNull();
+    expect(where.pet.user.anonymizedAt).toBeNull();
   });
 
   it('건강기록 권장 알림 스캔이 탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
@@ -111,5 +113,6 @@ describe('NotificationService 탈퇴 계정 제외', () => {
     const { where } = prisma.pet.findMany.mock.calls[0][0];
     expect(where.deletedAt).toBeNull();
     expect(where.user.deletionRequestedAt).toBeNull();
+    expect(where.user.anonymizedAt).toBeNull();
   });
 });
