@@ -12,6 +12,16 @@ const DEFAULT_PREFERENCE: NotificationPreference = {
   weeklyCheckinEnabled: true,
 };
 
+// 탈퇴를 요청한 계정은 30일 그레이스 기간 동안 데이터가 그대로 남아 있지만, 알림 대상에서는
+// 제외한다. 토큰을 지우지 않고 조회 조건으로만 거르는 이유는 복구(restoreAccount)로
+// deletionRequestedAt이 다시 null이 되면 별도 조치 없이 알림이 재개되기 때문이다.
+//
+// anonymizedAt도 함께 본다. 지금은 deletionRequestedAt이 세팅된 계정만 익명화 대상이 되므로
+// 앞 조건에 이미 걸리지만, 익명화 배치가 아직 구현되지 않았다. 그 배치가 anonymizedAt을
+// 세팅하면서 deletionRequestedAt을 정리하는 방식으로 짜이면 익명화된 계정이 다시 알림
+// 대상으로 돌아온다. 배치 구현 방식과 무관하게 안전하도록 두 조건을 모두 건다.
+const ACTIVE_USER = { deletionRequestedAt: null, anonymizedAt: null } as const;
+
 interface SendAndLogParams {
   userId: string;
   type: NotificationType;
@@ -98,6 +108,7 @@ export class NotificationService {
       where: {
         deletedAt: null,
         nextDueAt: { gte: start, lt: end },
+        pet: { user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
@@ -142,6 +153,7 @@ export class NotificationService {
         deletedAt: null,
         status: AppointmentStatus.scheduled,
         scheduledAt: { gte: start, lt: end },
+        pet: { user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
@@ -187,7 +199,7 @@ export class NotificationService {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const pets = await this.prisma.pet.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, user: ACTIVE_USER },
       select: { id: true, name: true, userId: true },
     });
 

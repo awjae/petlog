@@ -68,3 +68,51 @@ describe('NotificationService 당일 스캔 구간', () => {
     expect(dueOn0730 >= where.nextDueAt.gte && dueOn0730 < where.nextDueAt.lt).toBe(true);
   });
 });
+
+// 탈퇴를 요청하면 30일 그레이스 기간 동안 Pet과 PushToken이 그대로 남는다. 이때 스캔 조건에
+// 계정 상태가 빠져 있으면 탈퇴한 사용자가 매일 아침 푸시를 계속 받는다.
+describe('NotificationService 탈퇴 계정 제외', () => {
+  let service: NotificationService;
+  let prisma: {
+    vaccination: { findMany: jest.Mock };
+    appointment: { findMany: jest.Mock };
+    pet: { findMany: jest.Mock };
+  };
+
+  beforeEach(() => {
+    prisma = {
+      vaccination: { findMany: jest.fn().mockResolvedValue([]) },
+      appointment: { findMany: jest.fn().mockResolvedValue([]) },
+      pet: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    service = new NotificationService(
+      prisma as unknown as PrismaService,
+      { send: jest.fn() } as unknown as PushSender,
+    );
+  });
+
+  it('접종 예정일 스캔이 탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
+    await service.scanAndSendVaccinationDue();
+
+    const { where } = prisma.vaccination.findMany.mock.calls[0][0];
+    expect(where.pet.user.deletionRequestedAt).toBeNull();
+    expect(where.pet.user.anonymizedAt).toBeNull();
+  });
+
+  it('병원 방문 스캔이 탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
+    await service.scanAndSendAppointmentReminder();
+
+    const { where } = prisma.appointment.findMany.mock.calls[0][0];
+    expect(where.pet.user.deletionRequestedAt).toBeNull();
+    expect(where.pet.user.anonymizedAt).toBeNull();
+  });
+
+  it('건강기록 권장 알림 스캔이 탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
+    await service.scanAndSendWeeklyCheckin();
+
+    const { where } = prisma.pet.findMany.mock.calls[0][0];
+    expect(where.deletedAt).toBeNull();
+    expect(where.user.deletionRequestedAt).toBeNull();
+    expect(where.user.anonymizedAt).toBeNull();
+  });
+});
