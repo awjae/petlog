@@ -39,49 +39,8 @@ export class LlmHealthReportGenerator implements HealthReportGenerator {
       recommendations: output.actions,
     };
 
-    return this.mergeBreedProfile(content, params);
-  }
-
-  // Mock 생성기와 동일한 규칙으로 breed-profile(품종별 위험질환/생애주기) 결과를 후처리 병합한다.
-  // LLM 프롬프트/파인튜닝 모델은 건드리지 않고 응답에 규칙 기반 문구만 덧붙인다.
-  private mergeBreedProfile(
-    content: ReportContent,
-    params: HealthReportGenerationParams,
-  ): ReportContent {
-    const { petName, species, breed, birthDate } = params;
-    const speciesKey = species.toLowerCase() as 'dog' | 'cat';
-
-    const alerts = this.breedProfileService.getBreedAlerts(speciesKey, breed, birthDate);
-    const lifeStage = this.breedProfileService.getLifeStageInfo(speciesKey, breed, birthDate);
-
-    const highlights = [...content.highlights];
-    if (lifeStage?.is_senior) {
-      highlights.push(
-        `${petName}는 노령기에 접어들었어요. ${lifeStage.recommended_checkup}을 권장해요`,
-      );
-    }
-
-    const concerns = [
-      ...content.concerns,
-      ...alerts
-        .filter((a) => a.risk_level === 'high')
-        .map((a) => `${a.condition} 위험이 있어요. ${a.watch_for.join(', ')} 증상을 주의하세요`),
-    ];
-
-    const recommendations = [...content.recommendations];
-    // high는 concerns에서 이미 다루므로, medium은 recommendations에서 조건별로 개별 안내한다.
-    if (breed) {
-      recommendations.push(
-        ...alerts
-          .filter((a) => a.risk_level === 'medium')
-          .map(
-            (a) =>
-              `${breed} 품종은 ${a.condition} 발병률이 상대적으로 높아요. ${a.watch_for.join(', ')} 증상이 보이면 미리 관리해주세요`,
-          ),
-      );
-    }
-
-    return { ...content, highlights, concerns, recommendations };
+    // LLM 프롬프트/파인튜닝 모델은 건드리지 않고 응답에 규칙 기반 문구만 덧붙인다.
+    return this.breedProfileService.mergeIntoReport(content, params);
   }
 
   private async buildInput(params: HealthReportGenerationParams): Promise<HealthReportInput> {
