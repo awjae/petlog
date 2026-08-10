@@ -18,6 +18,13 @@ export class MedicalEventService {
     });
   }
 
+  // petIds 기반 조회 — 호출자(캘린더)가 이미 소유권을 확인한 pet 목록을 넘긴다.
+  async findByPetsInRange(petIds: string[], start: Date, end: Date) {
+    return this.prisma.medicalEvent.findMany({
+      where: { petId: { in: petIds }, deletedAt: null, visitDate: { gte: start, lte: end } },
+    });
+  }
+
   async create(userId: string, input: CreateMedicalEventInput) {
     await this.petService.assertOwnership(userId, input.petId);
     return this.prisma.medicalEvent.create({

@@ -31,6 +31,20 @@ export class MedicationService {
     });
   }
 
+  // petIds 기반 조회 — 호출자(캘린더/홈)가 이미 소유권을 확인한 pet 목록을 넘긴다.
+  async findByPetsInRange(petIds: string[], start: Date, end: Date) {
+    return this.prisma.medication.findMany({
+      where: { petId: { in: petIds }, deletedAt: null, startDate: { gte: start, lte: end } },
+    });
+  }
+
+  async findEndingAfter(petIds: string[], from: Date) {
+    return this.prisma.medication.findMany({
+      where: { petId: { in: petIds }, deletedAt: null, endDate: { gte: from } },
+      orderBy: { endDate: 'asc' },
+    });
+  }
+
   async create(userId: string, input: CreateMedicationInput) {
     await this.petService.assertOwnership(userId, input.petId);
     return this.prisma.medication.create({

@@ -30,6 +30,25 @@ export class AppointmentService {
     });
   }
 
+  // petIds 기반 조회 — 호출자(캘린더/홈)가 이미 소유권을 확인한 pet 목록을 넘긴다.
+  async findByPetsInRange(petIds: string[], start: Date, end: Date) {
+    return this.prisma.appointment.findMany({
+      where: { petId: { in: petIds }, deletedAt: null, scheduledAt: { gte: start, lte: end } },
+    });
+  }
+
+  async findScheduledAfter(petIds: string[], from: Date) {
+    return this.prisma.appointment.findMany({
+      where: {
+        petId: { in: petIds },
+        deletedAt: null,
+        status: AppointmentStatus.scheduled,
+        scheduledAt: { gte: from },
+      },
+      orderBy: { scheduledAt: 'asc' },
+    });
+  }
+
   async create(userId: string, input: CreateAppointmentInput) {
     await this.petService.assertOwnership(userId, input.petId);
     return this.prisma.appointment.create({

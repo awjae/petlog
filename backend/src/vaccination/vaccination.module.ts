@@ -6,5 +6,6 @@ import { PetModule } from '../pet/pet.module';
 @Module({
   imports: [PetModule],
   providers: [VaccinationService, VaccinationResolver],
+  exports: [VaccinationService],
 })
 export class VaccinationModule {}
