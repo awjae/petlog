@@ -6,5 +6,6 @@ import { PetModule } from '../pet/pet.module';
 @Module({
   imports: [PetModule],
   providers: [MedicalEventService, MedicalEventResolver],
+  exports: [MedicalEventService],
 })
 export class MedicalEventModule {}

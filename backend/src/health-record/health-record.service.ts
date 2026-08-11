@@ -21,6 +21,15 @@ export class HealthRecordService {
     return records.map(this.serialize);
   }
 
+  // petIds 기반 조회 — 호출자(캘린더)가 이미 소유권을 확인한 pet 목록을 넘긴다.
+  // 다른 조회와 동일하게 Decimal → number 직렬화를 거쳐 나간다.
+  async findByPetsInRange(petIds: string[], start: Date, end: Date) {
+    const records = await this.prisma.healthRecord.findMany({
+      where: { petId: { in: petIds }, deletedAt: null, recordedAt: { gte: start, lte: end } },
+    });
+    return records.map(this.serialize);
+  }
+
   async create(userId: string, input: CreateHealthRecordInput) {
     await this.petService.assertOwnership(userId, input.petId);
     this.validateValue(input.type, input);
