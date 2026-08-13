@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { kstDayRange } from '../common/utils/date';
 import type { Pet as PrismaPet } from '@prisma/client';
@@ -64,9 +64,10 @@ export class PetService {
     return true;
   }
 
+  // pet은 userId를 직접 들고 있어 헬퍼를 쓸 수 없다. 404로 답하는 이유는 ownership.ts 참고.
   async assertOwnership(userId: string, petId: string) {
     const pet = await this.prisma.pet.findFirst({ where: { id: petId, userId } });
-    if (!pet) throw new ForbiddenException('접근 권한이 없습니다.');
+    if (!pet) throw new NotFoundException('반려동물을 찾을 수 없습니다.');
     return pet;
   }
 

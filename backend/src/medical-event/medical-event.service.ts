@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import { CreateMedicalEventInput, UpdateMedicalEventInput } from './medical-event.types';
 
 @Injectable()
@@ -57,11 +58,7 @@ export class MedicalEventService {
     return true;
   }
 
-  private async assertOwnership(userId: string, id: string) {
-    const event = await this.prisma.medicalEvent.findFirst({
-      where: { id, pet: { userId } },
-    });
-    if (!event) throw new NotFoundException('진료 기록을 찾을 수 없습니다.');
-    return event;
+  private assertOwnership(userId: string, id: string) {
+    return findOwnedOrThrow(this.prisma.medicalEvent, userId, id, '진료 기록을 찾을 수 없습니다.');
   }
 }

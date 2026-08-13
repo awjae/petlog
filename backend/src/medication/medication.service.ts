@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import { CreateMedicationInput, UpdateMedicationInput } from './medication.types';
 
 @Injectable()
@@ -79,11 +80,7 @@ export class MedicationService {
     return true;
   }
 
-  private async assertOwnership(userId: string, id: string) {
-    const med = await this.prisma.medication.findFirst({
-      where: { id, pet: { userId } },
-    });
-    if (!med) throw new NotFoundException('투약 정보를 찾을 수 없습니다.');
-    return med;
+  private assertOwnership(userId: string, id: string) {
+    return findOwnedOrThrow(this.prisma.medication, userId, id, '투약 정보를 찾을 수 없습니다.');
   }
 }

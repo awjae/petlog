@@ -1,6 +1,7 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import { PetService } from '../pet/pet.service';
 import {
   HEALTH_REPORT_GENERATOR,
@@ -248,14 +249,9 @@ export class ReportService {
     return { recordCount, recordDays, hasEnoughRecords };
   }
 
-  // ReportShareService 등 리포트 소유권 검증이 필요한 다른 서비스에서도 재사용한다 —
-  // 소유권 검증 로직(및 "존재하지 않음"과 "권한 없음"을 구분하지 않는 방식)을 한 곳에서만 유지한다.
-  async assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
-    const report = await this.prisma.report.findFirst({
-      where: { id: reportId, pet: { userId } },
-    });
-    if (!report) throw new NotFoundException('리포트를 찾을 수 없습니다.');
-    return report;
+  // ReportShareService 등 리포트 소유권 검증이 필요한 다른 서비스에서도 재사용한다.
+  assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
+    return findOwnedOrThrow(this.prisma.report, userId, reportId, '리포트를 찾을 수 없습니다.');
   }
 
   // 시간 성분을 버리고 "달력상 그 날"만 남긴다. periodStart/periodEnd/petCreatedAt/오늘을

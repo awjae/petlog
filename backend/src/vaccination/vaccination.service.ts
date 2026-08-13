@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
+import { findOwnedOrThrow } from '../common/ownership';
 import { CreateVaccinationInput, UpdateVaccinationInput } from './vaccination.types';
 
 @Injectable()
@@ -81,11 +82,12 @@ export class VaccinationService {
     return true;
   }
 
-  private async assertOwnership(userId: string, id: string) {
-    const vacc = await this.prisma.vaccination.findFirst({
-      where: { id, pet: { userId } },
-    });
-    if (!vacc) throw new NotFoundException('예방접종 기록을 찾을 수 없습니다.');
-    return vacc;
+  private assertOwnership(userId: string, id: string) {
+    return findOwnedOrThrow(
+      this.prisma.vaccination,
+      userId,
+      id,
+      '예방접종 기록을 찾을 수 없습니다.',
+    );
   }
 }
