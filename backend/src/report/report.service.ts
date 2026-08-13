@@ -249,9 +249,7 @@ export class ReportService {
     return { recordCount, recordDays, hasEnoughRecords };
   }
 
-  // ReportShareService 등 리포트 소유권 검증이 필요한 다른 서비스에서도 재사용한다 —
-  // 리포트를 어떻게 찾는지를 한 곳에서만 유지한다. "존재하지 않음"과 "권한 없음"을
-  // 구분하지 않는 규칙 자체는 findOwnedOrThrow가 모든 도메인에 대해 보장한다.
+  // ReportShareService 등 리포트 소유권 검증이 필요한 다른 서비스에서도 재사용한다.
   assertOwnership(userId: string, reportId: string): Promise<PrismaReport> {
     return findOwnedOrThrow(this.prisma.report, userId, reportId, '리포트를 찾을 수 없습니다.');
   }

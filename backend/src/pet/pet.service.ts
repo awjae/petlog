@@ -64,9 +64,7 @@ export class PetService {
     return true;
   }
 
-  // pet은 userId를 직접 들고 있어 findOwnedOrThrow(pet 관계를 타는 헬퍼)를 쓸 수 없다.
-  // 다만 응답 규칙은 같아야 한다 — 권한이 없을 때 403을 주면 "그 id는 존재한다"가 새어나가
-  // pet만 다른 도메인과 달리 존재 여부를 노출하게 된다.
+  // pet은 userId를 직접 들고 있어 헬퍼를 쓸 수 없다. 404로 답하는 이유는 ownership.ts 참고.
   async assertOwnership(userId: string, petId: string) {
     const pet = await this.prisma.pet.findFirst({ where: { id: petId, userId } });
     if (!pet) throw new NotFoundException('반려동물을 찾을 수 없습니다.');

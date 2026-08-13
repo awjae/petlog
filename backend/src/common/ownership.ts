@@ -13,12 +13,10 @@ import { NotFoundException } from '@nestjs/common';
  * 소프트 삭제(deletedAt) 필터는 Prisma 확장(soft-delete.extension.ts)이 findFirst에
  * 자동으로 붙이므로 여기서 따로 걸지 않는다.
  */
-interface PetScopedDelegate<T> {
-  findFirst(args: { where: { id: string; pet: { userId: string } } }): PromiseLike<T | null>;
-}
-
 export async function findOwnedOrThrow<T>(
-  delegate: PetScopedDelegate<T>,
+  delegate: {
+    findFirst(args: { where: { id: string; pet: { userId: string } } }): PromiseLike<T | null>;
+  },
   userId: string,
   id: string,
   notFoundMessage: string,
