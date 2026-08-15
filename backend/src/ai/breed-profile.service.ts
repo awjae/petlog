@@ -100,20 +100,13 @@ export class BreedProfileService {
 
   /**
    * 생성기가 만든 리포트 본문에 품종 기반 규칙 문구를 덧붙인다.
-   *
-   * 이 병합은 LLM이 하는 일이 아니라 규칙 기반 비즈니스 로직이다. 생성기마다 두면
-   * 구현체를 하나 추가할 때마다 같은 문구가 한 벌씩 늘어난다. 실제로 mock과 LLM
-   * 두 곳에 사용자에게 보이는 문장까지 그대로 복제돼 있었고, species를 다루는 방식이
-   * 이미 미묘하게 갈라져 있었다(한쪽만 toLowerCase). 생성기는 본문 생성만 하고
-   * 규칙 병합은 여기서 한 번만 한다.
+   * 규칙 기반 병합은 생성기마다가 아니라 여기서 한 번만 한다.
    */
   mergeIntoReport(
     content: ReportContent,
     params: Pick<HealthReportGenerationParams, 'petName' | 'species' | 'breed' | 'birthDate'>,
   ): ReportContent {
-    const { petName, breed, birthDate } = params;
-    // Prisma Species enum은 소문자지만, 호출부가 어떤 표기로 넘기든 같게 동작하도록 맞춘다.
-    const species = params.species.toLowerCase() as 'dog' | 'cat';
+    const { petName, species, breed, birthDate } = params;
 
     const alerts = this.getBreedAlerts(species, breed, birthDate);
     const lifeStage = this.getLifeStageInfo(species, breed, birthDate);

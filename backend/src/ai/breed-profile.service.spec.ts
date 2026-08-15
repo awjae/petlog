@@ -22,19 +22,22 @@ const emptyContent = (): ReportContent => ({
   recommendations: ['기존 권장'],
 });
 
-const params = (o: Partial<HealthReportGenerationParams> = {}): HealthReportGenerationParams =>
-  ({
-    petId: 'pet-1',
-    petName: '초코',
-    species: Species.dog,
-    breed: null,
-    birthDate: null,
-    periodStart: new Date('2026-06-01T00:00:00Z'),
-    periodEnd: new Date('2026-06-30T00:00:00Z'),
-    recordCount: 12,
-    recordDays: 8,
-    ...o,
-  }) as HealthReportGenerationParams;
+const baseParams = {
+  petId: 'pet-1',
+  petName: '초코',
+  species: Species.dog,
+  breed: null,
+  birthDate: null,
+  periodStart: new Date('2026-06-01T00:00:00Z'),
+  periodEnd: new Date('2026-06-30T00:00:00Z'),
+  recordCount: 12,
+  recordDays: 8,
+} satisfies HealthReportGenerationParams;
+
+const params = (o: Partial<HealthReportGenerationParams> = {}): HealthReportGenerationParams => ({
+  ...baseParams,
+  ...o,
+});
 
 describe('BreedProfileService.mergeIntoReport', () => {
   let service: BreedProfileService;
@@ -115,25 +118,6 @@ describe('BreedProfileService.mergeIntoReport', () => {
       expect(mentions(addedRecommendations, condition)).toBe(true);
       expect(mentions(addedConcerns, condition)).toBe(false);
     }
-  });
-
-  // 분리 전 mock은 species를 그대로, LLM은 toLowerCase해서 넘겼다. 표기가 갈려도
-  // 같은 결과가 나와야 한다.
-  it('species 표기가 대문자여도 같은 결과를 낸다', () => {
-    const lower = service.mergeIntoReport(
-      emptyContent(),
-      params({ breed: '말티즈', birthDate: SENIOR_BIRTH }),
-    );
-    const upper = service.mergeIntoReport(
-      emptyContent(),
-      params({
-        breed: '말티즈',
-        birthDate: SENIOR_BIRTH,
-        species: 'DOG' as unknown as Species,
-      }),
-    );
-
-    expect(upper).toEqual(lower);
   });
 
   it('프로필에 없는 품종이면 아무것도 덧붙이지 않는다', () => {
