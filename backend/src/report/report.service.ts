@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { findOwnedOrThrow } from '../common/ownership';
+import { kstDayRange, kstMonthRange } from '../common/utils/date';
 import { PetService } from '../pet/pet.service';
 import {
   HEALTH_REPORT_GENERATOR,
@@ -29,7 +30,7 @@ export class ReportService {
   async getReportStatus(userId: string, petId: string) {
     await this.petService.assertOwnership(userId, petId);
 
-    const { periodStart: monthStart, nextMonthStart } = this.currentMonthBounds();
+    const { start: monthStart, nextStart: nextMonthStart } = this.currentMonthBounds();
 
     const [records, activeReport] = await Promise.all([
       this.prisma.healthRecord.findMany({
@@ -130,7 +131,7 @@ export class ReportService {
 
     this.assertValidPeriod(periodStart, periodEnd, pet.createdAt);
 
-    const { periodStart: monthStart, nextMonthStart } = this.currentMonthBounds();
+    const { start: monthStart, nextStart: nextMonthStart } = this.currentMonthBounds();
 
     const existing = await this.prisma.report.findFirst({
       where: {
@@ -256,8 +257,11 @@ export class ReportService {
 
   // 시간 성분을 버리고 "달력상 그 날"만 남긴다. periodStart/periodEnd/petCreatedAt/오늘을
   // 전부 이 기준으로 비교해야 "선택한 날짜"와 "그 날짜의 특정 시각"을 혼동하지 않는다.
+  //
+  // "그 날"은 KST 달력 기준이다. getFullYear/getMonth는 프로세스 TZ(배포 환경은 UTC)를
+  // 따르므로, KST 00~09시에는 하루 전으로 접혀 종료일을 오늘로 고른 선택이 거부됐다.
   private toCalendarDay(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return kstDayRange(date).start;
   }
 
   // generateReport 전용 — 사용자가 지정한 분석 기간(7~90일)의 유효성을 검증한다.
@@ -299,15 +303,11 @@ export class ReportService {
   }
 
   // 리포트 "내용"의 기간이 아니라 "월 1회 생성 제한" 게이팅에만 쓰이는 캘린더 월 경계.
-  private currentMonthBounds(): {
-    periodStart: Date;
-    periodEnd: Date;
-    nextMonthStart: Date;
-  } {
-    const now = new Date();
-    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
-    const periodEnd = new Date(nextMonthStart.getTime() - 1);
-    return { periodStart, periodEnd, nextMonthStart };
+  //
+  // "이번 달"은 KST 달력 기준이다. 이전에는 프로세스 TZ(배포 환경은 UTC)를 따라
+  // 9월 1일 00~09시(KST)가 아직 8월로 잡혔다. 그 구간에서 생성한 리포트는 8월분으로
+  // 기록돼, 같은 날 09시 이후에 한 장이 더 나갔다.
+  private currentMonthBounds(): { start: Date; nextStart: Date } {
+    return kstMonthRange();
   }
 }
