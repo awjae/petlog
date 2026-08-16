@@ -13,6 +13,7 @@ import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { useReports } from '@/features/report/hooks/useReports';
 import { useReportPolling } from '@/features/report/hooks/useReportPolling';
 import { PETS_FOR_REPORT_QUERY } from '@/features/report/api/report.queries';
+import { formatMonthDay } from '@/features/report/utils/reportFormat';
 import type { PetBasic } from '@/features/report/types/report.types';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import styles from './page.module.css';
@@ -127,12 +128,6 @@ function ReportsContent() {
   const isInitialLoading = (petsLoading || statusLoading) && !status;
   const isPolling = !!pollingReportId || !!status?.processingReport;
 
-  function formatNextAvailable(iso: string | null | undefined) {
-    if (!iso) return null;
-    const d = new Date(iso);
-    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
-  }
-
   const recordProgress = Math.min(((status?.recordCount ?? 0) / MIN_RECORDS) * 100, 100);
   const daysProgress = Math.min(((status?.recordDays ?? 0) / MIN_DAYS) * 100, 100);
 
@@ -178,7 +173,7 @@ function ReportsContent() {
     }
 
     if (!status?.canGenerateThisMonth) {
-      const nextDate = formatNextAvailable(status?.nextAvailableAt);
+      const nextDate = status?.nextAvailableAt ? formatMonthDay(status.nextAvailableAt) : null;
       return (
         <>
           <div
