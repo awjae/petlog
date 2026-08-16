@@ -38,6 +38,19 @@ export function formatCreatedAt(iso: string): string {
   return `${d.year}.${String(d.month).padStart(2, '0')}.${String(d.day).padStart(2, '0')}`;
 }
 
+/**
+ * "다음 리포트는 9월 1일부터예요" 같은 안내에 쓰는 월/일 표기.
+ *
+ * 서버가 주는 nextAvailableAt은 다음 달 1일 00:00이라 자정 경계에 딱 걸린다.
+ * 보는 사람의 타임존으로 포맷하면 KST보다 뒤인 지역에서 하루 밀려 "8월 31일"이
+ * 된다. 이 값이 가리키는 건 서비스의 달 경계지 보는 사람의 달력이 아니므로
+ * 다른 표기와 같이 Asia/Seoul로 고정한다.
+ */
+export function formatMonthDay(iso: string): string {
+  const d = dateParts(iso);
+  return `${d.month}월 ${d.day}일`;
+}
+
 export interface FailureNotice {
   heading: string;
   desc: string;
