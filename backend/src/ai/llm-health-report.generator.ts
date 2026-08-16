@@ -3,6 +3,7 @@ import { HealthRecordType, ReportGeneratedBy } from '@prisma/client';
 import { ChatGptHealthReportClient } from '@petlog/ai';
 import type { HealthReportInput, AppetiteLevel, ActivityLevel } from '@petlog/ai';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { kstDateString } from '../common/utils/date';
 import { BreedProfileService } from './breed-profile.service';
 import { toAppetiteLevel, toActivityLevel } from './record-value.mapper';
 import {
@@ -98,14 +99,16 @@ export class LlmHealthReportGenerator implements HealthReportGenerator {
         breed: breed ?? null,
         age_months: birthDate ? this.calcAgeMonths(birthDate, periodEnd) : 0,
       },
+      // KST 달력 기준으로 뽑는다. periodStart는 KST 자정(= 전날 15:00Z)이라
+      // UTC로 자르면 화면·OG(reportFormat.ts는 Asia/Seoul)와 하루 어긋난다.
       period: {
-        start: periodStart.toISOString().slice(0, 10),
-        end: periodEnd.toISOString().slice(0, 10),
+        start: kstDateString(periodStart),
+        end: kstDateString(periodEnd),
       },
       records: { weight: weights, appetite: appetites, activity: activities },
       symptoms,
       medications: medications.filter((m) => m.name).map((m) => m.name!),
-      last_vet_visit: lastVisit ? lastVisit.visitDate.toISOString().slice(0, 10) : null,
+      last_vet_visit: lastVisit ? kstDateString(lastVisit.visitDate) : null,
     };
   }
 

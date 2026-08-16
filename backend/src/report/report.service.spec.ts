@@ -352,6 +352,10 @@ describe('ReportService', () => {
   });
 
   describe('getReportStatus', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('이번 달 활성 리포트가 없으면 생성 가능하다', async () => {
       prisma.healthRecord.findMany.mockResolvedValue(SUFFICIENT_RECORDS);
       prisma.report.findFirst.mockResolvedValue(null);
@@ -391,7 +395,6 @@ describe('ReportService', () => {
       // KST 9/1 00:00 이상 ~ KST 10/1 00:00 미만
       expect(where.createdAt.gte.toISOString()).toBe('2026-08-31T15:00:00.000Z');
       expect(where.createdAt.lt.toISOString()).toBe('2026-09-30T15:00:00.000Z');
-      jest.useRealTimers();
     });
 
     it('활성 리포트가 pending/processing 상태면 processingReport를 채운다', async () => {

@@ -73,8 +73,14 @@ per-user 타임존을 지금 도입하지 않는다. 이유:
 | --- | --- | --- |
 | `report.service.ts` `currentMonthBounds` | 월 1회 생성 제한의 달 경계 | KST 9/1 00~09시에 제한이 안 풀림. 그 구간에 만든 리포트는 8월분으로 기록돼 같은 날 한 장이 더 나감 |
 | `report.service.ts` `toCalendarDay` | 리포트 기간(7~90일) 검증 | 프론트가 보내는 KST 기준 값의 시작일이 하루 앞으로 접혀 **"최근 90일" 프리셋이 91일로 계산돼 거부됨** |
+| `llm-health-report.generator.ts` `period.start` | AI 프롬프트의 분석 기간 | `periodStart`가 KST 자정(전날 15:00Z)이라 UTC로 자르면 하루 앞. **AI 본문의 기간과 화면·OG 표기가 어긋남** |
 
-`kstMonthRange`를 추가하고 두 곳 모두 `date.ts` 헬퍼로 넘겼다.
+`kstMonthRange`, `kstDateString`을 추가하고 세 곳 모두 `date.ts` 헬퍼로 넘겼다.
+
+`period.start`는 아래 "암묵적으로 가정하던 곳"에 `.toISOString().slice(0, 10)`으로 묶여
+유예돼 있었다. 그 유예의 근거("프론트가 정오를 앵커로 저장")는 `recordedAt`·`birthDate`·
+`visitDate`에만 해당하고, **00:00을 앵커로 하는 `periodStart`에는 해당하지 않는다.**
+같은 코드 모양이라고 같은 안전성을 갖는 게 아니다.
 
 **교훈:** 이 표는 "명시적으로 만든 곳"만 담고 있어서, 같은 가정을 쓰면서 헬퍼를 안
 거치는 코드는 표에 오르지 않는다. 달력 경계를 새로 계산하는 코드를 추가할 때는
@@ -86,14 +92,20 @@ per-user 타임존을 지금 도입하지 않는다. 이유:
 앵커로 저장하기 때문에(`useCreateHealthRecord.ts`) KST에서만 우연히 맞는다. UTC-8
 사용자라면 정오 앵커가 20:00Z가 되어 날짜가 하루 밀린다.
 
-| 위치 | 내용 |
-| --- | --- |
-| `report.service.ts:49,154,244` | `distinctDates` 기록일 수 집계 |
-| `llm-health-report.generator.ts:140,141,146` | AI 프롬프트의 기간·최근 진료일 |
-| `user.resolver.ts:90` | 캘린더 이벤트 날짜 |
+| 위치 | 내용 | 왜 지금은 안전한가 |
+| --- | --- | --- |
+| `report.service.ts` `distinctDates` (3곳) | 기록일 수 집계 | `recordedAt`이 정오 앵커 |
+| `user.resolver.ts:90` | 캘린더 이벤트 날짜 | 〃 |
+| `breed-profile.service.ts` `calculateAgeMonths` | `is_senior` 판정, 품종 주의 질환 | **안전하지 않다** — 아래 참고 |
 
-이 5곳은 이번 PR에서 손대지 않았다. 지금 동작이 맞고, 고치려면 per-user 타임존이
-전제되어야 한다.
+앞의 두 부류는 지금 동작이 맞고, 고치려면 per-user 타임존이 전제되어야 한다.
+
+`breed-profile.service.ts`는 `new Date()`의 `getFullYear/getMonth/getDate`를 그대로
+읽어 프로세스 TZ(UTC)를 탄다. KST 00~09시에 월 경계를 넘으면 나이가 한 달 어긋나
+`is_senior` 판정이 갈릴 수 있다. 영향 구간이 좁아 별도로 다룬다.
+
+(같은 파일의 `llm-health-report.generator.ts` `calcAgeMonths`는 인자가 정오 앵커
+`birthDate`와 KST 23:59:59인 `periodEnd`라 UTC로 읽어도 같은 달이 나온다 — 안전하다.)
 
 ---
 

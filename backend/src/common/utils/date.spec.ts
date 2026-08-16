@@ -1,4 +1,4 @@
-import { kstDayRange, kstMonthRange } from './date';
+import { kstDateString, kstDayRange, kstMonthRange } from './date';
 
 // 고정 오프셋 계산이라 프로세스 TZ와 무관하게 같은 결과가 나온다.
 // 그래서 이 스펙은 TZ를 고정하지 않는다 — 고정이 필요하다면 구현이 TZ에
@@ -75,5 +75,22 @@ describe('kstMonthRange', () => {
 
     expect(start.toISOString()).toBe('2026-01-31T15:00:00.000Z');
     expect(nextStart.toISOString()).toBe('2026-02-28T15:00:00.000Z');
+  });
+});
+
+describe('kstDateString', () => {
+  it('KST 자정(전날 15:00Z)을 그날 날짜로 읽는다', () => {
+    // 리포트 periodStart의 형태 — UTC로 자르면 하루 앞으로 밀린다.
+    expect(kstDateString(new Date('2026-05-31T15:00:00Z'))).toBe('2026-06-01');
+    expect(new Date('2026-05-31T15:00:00Z').toISOString().slice(0, 10)).toBe('2026-05-31');
+  });
+
+  it('KST 하루 끝(당일 14:59:59Z)도 같은 날짜다', () => {
+    expect(kstDateString(new Date('2026-06-30T14:59:59Z'))).toBe('2026-06-30');
+  });
+
+  it('정오 앵커로 저장된 값도 그대로 읽는다', () => {
+    // recordedAt/birthDate/visitDate는 KST 정오(= 03:00Z)로 저장된다.
+    expect(kstDateString(new Date('2026-05-20T03:00:00Z'))).toBe('2026-05-20');
   });
 });

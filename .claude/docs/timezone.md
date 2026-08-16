@@ -90,13 +90,18 @@ UTC에 사는 사람은 0명이다.
 `backend/src/common/utils/date.ts`의 헬퍼를 쓴다. 직접 계산하지 않는다.
 
 ```ts
-import { kstDayRange, kstMonthRange } from '../common/utils/date';
+import { kstDateString, kstDayRange, kstMonthRange } from '../common/utils/date';
 
-const { start, end } = kstDayRange();        // KST 달력 하루
+const { start, end } = kstDayRange();         // KST 달력 하루
 const { start, nextStart } = kstMonthRange(); // KST 달력 한 달
+kstDateString(someInstant);                   // 'YYYY-MM-DD' (KST 달력 날짜)
 ```
 
-둘 다 **입력도 출력도 UTC 순간**이다. KST는 함수 안에서만 잠깐 존재한다.
+`toISOString().slice(0, 10)`을 직접 쓰지 않는다. 그건 UTC 날짜다. 정오 앵커로 저장된
+값(`recordedAt`, `birthDate`, `visitDate`)은 우연히 맞지만, 00:00 앵커인 값
+(`periodStart`)은 하루 앞으로 밀린다 — **같은 코드 모양이라고 같은 안전성을 갖지 않는다.**
+
+구간 헬퍼 둘은 **입력도 출력도 UTC 순간**이다. KST는 함수 안에서만 잠깐 존재한다.
 
 ### 안에서 무슨 일이 일어나나
 
@@ -139,6 +144,19 @@ where: { createdAt: { gte: start, lt: nextStart } }
 `frontend/src/features/report/utils/reportFormat.ts`는 `Asia/Seoul`로 고정한다.
 표시 대상이 **작성자가 고른 기간**이고, 서버(OG 이미지·메타데이터)와 브라우저
 양쪽에서 렌더되기 때문이다. 보는 사람이 누구든 작성자가 고른 그 날짜여야 한다.
+
+### 클라이언트가 만드는 값도 서버의 KST 가정에 묶여 있다
+
+`reportPeriod.ts`의 `toStartOfDayIso`/`toEndOfDayIso`는 `Z` 없이 파싱해 **기기 로컬**
+기준 경계를 만들어 서버로 보낸다. 서버는 그 값을 KST 달력으로 판정한다.
+
+한국 사용자는 둘이 같아서 맞아떨어진다. 다른 타임존에서는 어긋난다 — EDT 사용자가
+오늘(8/16)을 종료일로 고르면 `2026-08-17T03:59:59Z`가 나가고, 서버는 이걸 KST 8/17로
+읽어 "종료일은 오늘보다 미래일 수 없습니다"로 거부한다.
+
+**표시가 아니라 전송값이라 아래 "판단 기준"(작성자 기준 vs 보는 사람 기준)이 적용되지
+않는다.** 033의 단일 타임존 가정에 클라이언트도 함께 묶여 있는 지점이고, per-user
+타임존을 도입할 때 같이 손봐야 한다.
 
 ### 하지 말 것 (실제로 있었던 실수)
 
@@ -194,6 +212,7 @@ kst('2024-01-01T00:00:00'); // → 2023-12-31T15:00:00Z
 | **"최근 90일" 프리셋이 거부됨** | 서버가 UTC 달력으로 시작일을 하루 앞으로 접어 **91일**로 계산 | `toCalendarDay` → KST |
 | KST 9/1 00~09시에 월 1회 제한이 안 풀림 | 월 경계가 UTC 기준 | `currentMonthBounds` → `kstMonthRange` |
 | 같은 날 리포트 2장 (KST 9/1 새벽 + 오전) | 위와 같음 — 조회 창이 밀리며 이미 쓴 리포트가 빠짐 | 〃 |
+| AI 본문의 기간이 화면 표기보다 하루 빠름 | `periodStart`(KST 자정 = 전날 15:00Z)를 `toISOString().slice(0,10)`로 자름 | `kstDateString` 도입 |
 
 공통점: **개발 머신에서는 전부 정상이고 배포 환경에서만 틀렸다.**
 

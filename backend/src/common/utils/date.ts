@@ -36,6 +36,17 @@ export function kstDayRange(now: Date = new Date()): { start: Date; end: Date } 
 }
 
 /**
+ * 주어진 순간이 속한 **KST 달력 날짜**를 `YYYY-MM-DD`로 반환한다.
+ *
+ * `toISOString().slice(0, 10)`은 UTC 날짜를 뽑는다. 프론트가 정오를 앵커로 저장하는
+ * 값(recordedAt, birthDate, visitDate)은 UTC로 읽어도 우연히 맞지만, 00:00을 앵커로
+ * 하는 값(리포트의 periodStart)은 KST 자정이 전날 15:00Z라 하루 앞으로 밀린다.
+ */
+export function kstDateString(date: Date): string {
+  return new Date(date.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/**
  * 주어진 시각이 속한 **KST 달력 한 달**의 시작과 다음 달 시작을 UTC 인스턴트로 반환한다.
  *
  * `start <= x < nextStart` 형태로 쓴다(반열림). 월마다 길이가 달라 `start + 30일` 같은

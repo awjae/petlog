@@ -193,6 +193,22 @@ describe('LlmHealthReportGenerator buildInput', () => {
     expect(sentInput().period).toEqual({ start: '2026-06-01', end: '2026-06-30' });
   });
 
+  it('KST 기준 기간을 화면과 같은 날짜로 보낸다 (회귀)', async () => {
+    // 프론트는 KST 자정 ~ KST 23:59:59를 보낸다(reportPeriod.ts). 사용자가 6/1을
+    // 고르면 periodStart는 5/31 15:00Z라, UTC로 자르면 프롬프트만 "2026-05-31"이
+    // 되어 화면·OG(reportFormat.ts는 Asia/Seoul)와 하루 어긋났다.
+    const { generator } = build({});
+
+    await generator.generate(
+      params({
+        periodStart: new Date('2026-05-31T15:00:00Z'), // KST 2026-06-01 00:00
+        periodEnd: new Date('2026-06-30T14:59:59Z'), // KST 2026-06-30 23:59:59
+      }),
+    );
+
+    expect(sentInput().period).toEqual({ start: '2026-06-01', end: '2026-06-30' });
+  });
+
   it('조회 구간과 소프트 삭제 필터를 기간에 맞춰 건다', async () => {
     const { generator, prisma } = build({});
 
