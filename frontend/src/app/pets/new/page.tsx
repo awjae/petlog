@@ -1,58 +1,17 @@
 'use client';
 
-import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Camera, Dog, Cat, type LucideIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
-import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
-import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
-import { useLocalToday } from '@/shared/hooks/useLocalToday';
+import { PetForm, type PetFormValues } from '@/features/pet/components/PetForm';
 import styles from './page.module.css';
-
-type Species = 'dog' | 'cat';
-type Gender = 'male' | 'female' | null;
-
-const SPECIES_OPTIONS: { value: Species; Icon: LucideIcon; label: string }[] = [
-  { value: 'dog', Icon: Dog, label: '강아지' },
-  { value: 'cat', Icon: Cat, label: '고양이' },
-];
 
 export default function NewPetPage() {
   const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
   const { createPet, loading, error } = useCreatePet();
 
-  const [name, setName] = useState('');
-  const [species, setSpecies] = useState<Species>('dog');
-  const [breed, setBreed] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  // max는 렌더 중에 계산하면 하이드레이션에서 서버 값이 굳는다 (useLocalToday 주석 참고).
-  const maxDate = useLocalToday();
-  const [gender, setGender] = useState<Gender>(null);
-  const [neutered, setNeutered] = useState(false);
-  const { imageFile, previewUrl, imageError, selectFile, handlePreviewError } = useImageSelection();
-
-  function isValid() {
-    return name.trim().length >= 1;
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) void selectFile(file);
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValid()) return;
-    const ok = await createPet({
-      name,
-      species,
-      breed,
-      birthDate,
-      gender,
-      isNeutered: neutered,
-      imageFile,
-    });
+  async function handleSubmit(values: PetFormValues) {
+    const ok = await createPet(values);
     if (ok) router.push('/home');
   }
 
@@ -71,179 +30,14 @@ export default function NewPetPage() {
         <div className={styles.headerRight} aria-hidden="true" />
       </header>
 
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        {/* ── 프로필 사진 ── */}
-        <div className={styles.avatarWrap}>
-          <button
-            type="button"
-            className={styles.avatarBtn}
-            onClick={() => fileRef.current?.click()}
-            aria-label="프로필 사진 선택"
-          >
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="미리보기"
-                className={styles.avatarImg}
-                onError={handlePreviewError}
-              />
-            ) : (
-              <span className={styles.avatarPlaceholder} aria-hidden="true">
-                <Camera size={32} strokeWidth={1.5} />
-              </span>
-            )}
-          </button>
-          {imageError ? (
-            <p className={styles.avatarError} role="alert">
-              {imageError}
-            </p>
-          ) : (
-            <p className={styles.avatarHint}>사진 추가 (선택)</p>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className={styles.fileInput}
-            onChange={handleFileChange}
-            aria-label="프로필 사진 업로드"
-          />
-        </div>
-
-        {/* ── 이름 ── */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label} htmlFor="pet-name">
-            이름 <span className={styles.required}>*</span>
-          </label>
-          <input
-            id="pet-name"
-            type="text"
-            className={styles.input}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="예) 초코, 뭉치"
-            maxLength={20}
-            required
-          />
-        </div>
-
-        {/* ── 종류 ── */}
-        <div className={styles.fieldGroup}>
-          <p className={styles.label}>종류</p>
-          <div className={styles.speciesGrid} role="group" aria-label="종류 선택">
-            {SPECIES_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className={`${styles.speciesBtn} ${species === opt.value ? styles.speciesBtnActive : ''}`}
-                onClick={() => {
-                  setSpecies(opt.value);
-                  setBreed('');
-                }}
-                aria-pressed={species === opt.value}
-              >
-                <opt.Icon
-                  size={22}
-                  strokeWidth={1.5}
-                  className={styles.speciesIcon}
-                  aria-hidden="true"
-                />
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── 품종 ── */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label} htmlFor="pet-breed">
-            품종 <span className={styles.optional}>(선택)</span>
-          </label>
-          <select
-            id="pet-breed"
-            className={styles.select}
-            value={breed}
-            onChange={(e) => setBreed(e.target.value)}
-          >
-            <option value="">선택 안 함</option>
-            {BREEDS_BY_SPECIES[species].map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-          <p className={styles.breedHint}>{BREED_SELECT_HINT}</p>
-        </div>
-
-        {/* ── 생년월일 ── */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label} htmlFor="pet-birth">
-            생년월일 <span className={styles.optional}>(선택)</span>
-          </label>
-          <input
-            id="pet-birth"
-            type="date"
-            className={styles.input}
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            max={maxDate}
-          />
-        </div>
-
-        {/* ── 성별 ── */}
-        <div className={styles.fieldGroup}>
-          <p className={styles.label}>
-            성별 <span className={styles.optional}>(선택)</span>
-          </p>
-          <div className={styles.segmented} role="group" aria-label="성별 선택">
-            {[
-              { value: 'male' as Gender, label: '수컷' },
-              { value: 'female' as Gender, label: '암컷' },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className={`${styles.segBtn} ${gender === opt.value ? styles.segBtnActive : ''}`}
-                onClick={() => setGender(gender === opt.value ? null : opt.value)}
-                aria-pressed={gender === opt.value}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── 중성화 ── */}
-        <div className={styles.fieldGroup}>
-          <div className={styles.toggleRow}>
-            <label className={styles.toggleLabel} htmlFor="neutered">
-              중성화 완료
-            </label>
-            <button
-              id="neutered"
-              type="button"
-              role="switch"
-              aria-checked={neutered}
-              className={`${styles.toggle} ${neutered ? styles.toggleOn : ''}`}
-              onClick={() => setNeutered((v) => !v)}
-            >
-              <span className={styles.toggleKnob} />
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <p className={styles.errorMsg} role="alert">
-            {error}
-          </p>
-        )}
-
-        <div className={styles.footer}>
-          <button type="submit" className={styles.submitBtn} disabled={!isValid() || loading}>
-            {loading ? '등록 중...' : '등록하기'}
-          </button>
-        </div>
-      </form>
+      <PetForm
+        avatarHint="사진 추가 (선택)"
+        submitLabel="등록하기"
+        submittingLabel="등록 중..."
+        submitting={loading}
+        error={error}
+        onSubmit={handleSubmit}
+      />
     </main>
   );
 }
