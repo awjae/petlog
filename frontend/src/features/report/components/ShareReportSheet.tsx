@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
-import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import { useEffect, useState } from 'react';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { Copy, Download, ImageIcon, Loader2, X } from 'lucide-react';
 import { useReportShare } from '../hooks/useReportShare';
 import { ConcernsToggleRow } from './ConcernsToggleRow';
@@ -45,46 +44,6 @@ export function ShareReportSheet({
   concerns,
   recommendations,
 }: ShareReportSheetProps) {
-  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
-
-  useOverlayDismiss(isOpen, handleClose);
-
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const dragStartY = useRef(0);
-  const dragCurrentY = useRef(0);
-  const dragStartTime = useRef(0);
-
-  function handleDragStart(e: React.TouchEvent) {
-    isDragging.current = true;
-    dragStartY.current = e.touches[0].clientY;
-    dragCurrentY.current = 0;
-    dragStartTime.current = Date.now();
-    if (sheetRef.current) sheetRef.current.style.transition = 'none';
-  }
-
-  function handleDragMove(e: React.TouchEvent) {
-    if (!isDragging.current) return;
-    const delta = e.touches[0].clientY - dragStartY.current;
-    if (delta < 0) return;
-    dragCurrentY.current = delta;
-    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${delta}px)`;
-  }
-
-  function handleDragEnd() {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    const delta = dragCurrentY.current;
-    const elapsed = Date.now() - dragStartTime.current;
-    const velocity = elapsed > 0 ? delta / elapsed : 0;
-
-    if (sheetRef.current) {
-      sheetRef.current.style.transition = '';
-      sheetRef.current.style.transform = '';
-    }
-    if (delta >= 80 || velocity >= 0.5) handleClose();
-  }
-
   const {
     settings,
     loading: settingsLoading,
@@ -207,156 +166,145 @@ export function ShareReportSheet({
     if (ok) setShowStopConfirm(false);
   }
 
-  if (!mounted) return null;
-
   const combinedActionError = localActionError || actionError;
 
   return (
-    <div className={`${styles.root} ${visible ? styles.rootVisible : ''}`}>
-      <div className={styles.overlay} onClick={handleClose} aria-hidden="true" />
-      <div
-        ref={sheetRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="리포트 공유하기"
-        className={`${styles.sheet} ${visible ? styles.sheetVisible : ''}`}
+    <>
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        label="리포트 공유하기"
+        maxHeight="88dvh"
+        draggable
       >
-        <div
-          className={styles.dragHandleArea}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-        >
-          <div className={styles.dragHandle} aria-hidden="true" />
-        </div>
+        {({ close, drag }) => (
+          <>
+            <header className={styles.header} {...drag}>
+              <span className={styles.headerSpacer} aria-hidden="true" />
+              <span className={styles.headerTitle}>공유하기</span>
+              <button type="button" className={styles.closeBtn} onClick={close} aria-label="닫기">
+                <X size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </header>
 
-        <header
-          className={styles.header}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-        >
-          <span className={styles.headerSpacer} aria-hidden="true" />
-          <span className={styles.headerTitle}>공유하기</span>
-          <button type="button" className={styles.closeBtn} onClick={handleClose} aria-label="닫기">
-            <X size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-        </header>
+            <div className={styles.body}>
+              {settingsError ? (
+                <SharePreviewFrame state="error" onRetry={refetchSettings} />
+              ) : (
+                <>
+                  <SharePreviewFrame
+                    state={isLoadingSettings ? 'loading' : 'ready'}
+                    data={
+                      !isLoadingSettings
+                        ? {
+                            petName,
+                            periodStart,
+                            periodEnd,
+                            overview,
+                            highlights: highlights ?? [],
+                            recommendations: recommendations ?? [],
+                            concerns:
+                              settings.includeConcerns && hasConcerns
+                                ? (concerns ?? [])
+                                : undefined,
+                          }
+                        : undefined
+                    }
+                  />
 
-        <div className={styles.body}>
-          {settingsError ? (
-            <SharePreviewFrame state="error" onRetry={refetchSettings} />
-          ) : (
-            <>
-              <SharePreviewFrame
-                state={isLoadingSettings ? 'loading' : 'ready'}
-                data={
-                  !isLoadingSettings
-                    ? {
-                        petName,
-                        periodStart,
-                        periodEnd,
-                        overview,
-                        highlights: highlights ?? [],
-                        recommendations: recommendations ?? [],
-                        concerns:
-                          settings.includeConcerns && hasConcerns ? (concerns ?? []) : undefined,
+                  <div className={styles.controls}>
+                    <ConcernsToggleRow
+                      checked={settings?.includeConcerns ?? false}
+                      disabled={isLoadingSettings || !hasConcerns}
+                      captionOverride={
+                        !isLoadingSettings && !hasConcerns
+                          ? '이번 리포트에는 우려 사항이 없어요'
+                          : undefined
                       }
-                    : undefined
-                }
-              />
+                      onChange={toggleIncludeConcerns}
+                    />
+                    {toggleError && (
+                      <p className={styles.inlineError} role="alert">
+                        {toggleError}
+                      </p>
+                    )}
 
-              <div className={styles.controls}>
-                <ConcernsToggleRow
-                  checked={settings?.includeConcerns ?? false}
-                  disabled={isLoadingSettings || !hasConcerns}
-                  captionOverride={
-                    !isLoadingSettings && !hasConcerns
-                      ? '이번 리포트에는 우려 사항이 없어요'
-                      : undefined
-                  }
-                  onChange={toggleIncludeConcerns}
-                />
-                {toggleError && (
-                  <p className={styles.inlineError} role="alert">
-                    {toggleError}
+                    {settings?.isActive && (
+                      <ActiveShareStatusRow
+                        onStopClick={() => setShowStopConfirm(true)}
+                        disabled={stopping}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {!settingsError && (
+              <footer className={styles.footer}>
+                {combinedActionError && (
+                  <p className={styles.actionErrorBar} role="alert">
+                    {combinedActionError}
                   </p>
                 )}
 
-                {settings?.isActive && (
-                  <ActiveShareStatusRow
-                    onStopClick={() => setShowStopConfirm(true)}
-                    disabled={stopping}
-                  />
+                {toastMessage && (
+                  <div className={styles.inlineToast} role="status" aria-live="polite">
+                    {toastMessage}
+                  </div>
                 )}
-              </div>
-            </>
-          )}
-        </div>
 
-        {!settingsError && (
-          <footer className={styles.footer}>
-            {combinedActionError && (
-              <p className={styles.actionErrorBar} role="alert">
-                {combinedActionError}
-              </p>
+                <div className={styles.actionRow}>
+                  <button
+                    type="button"
+                    className={styles.copyBtn}
+                    onClick={handleCopyLink}
+                    disabled={isLoadingSettings || actionKind !== null}
+                    aria-busy={actionKind === 'copy'}
+                  >
+                    {actionKind === 'copy' ? (
+                      <>
+                        <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
+                        복사 중...
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={18} strokeWidth={2} aria-hidden="true" />
+                        링크 복사
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.imageBtn}
+                    onClick={handleImageShare}
+                    disabled={isLoadingSettings || actionKind !== null}
+                    aria-busy={actionKind === 'image'}
+                  >
+                    {actionKind === 'image' ? (
+                      <>
+                        <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
+                        생성 중...
+                      </>
+                    ) : supportsNativeShare ? (
+                      <>
+                        <ImageIcon size={18} strokeWidth={2} aria-hidden="true" />
+                        이미지로 공유
+                      </>
+                    ) : (
+                      <>
+                        <Download size={18} strokeWidth={2} aria-hidden="true" />
+                        이미지 저장
+                      </>
+                    )}
+                  </button>
+                </div>
+              </footer>
             )}
-
-            {toastMessage && (
-              <div className={styles.inlineToast} role="status" aria-live="polite">
-                {toastMessage}
-              </div>
-            )}
-
-            <div className={styles.actionRow}>
-              <button
-                type="button"
-                className={styles.copyBtn}
-                onClick={handleCopyLink}
-                disabled={isLoadingSettings || actionKind !== null}
-                aria-busy={actionKind === 'copy'}
-              >
-                {actionKind === 'copy' ? (
-                  <>
-                    <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
-                    복사 중...
-                  </>
-                ) : (
-                  <>
-                    <Copy size={18} strokeWidth={2} aria-hidden="true" />
-                    링크 복사
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                className={styles.imageBtn}
-                onClick={handleImageShare}
-                disabled={isLoadingSettings || actionKind !== null}
-                aria-busy={actionKind === 'image'}
-              >
-                {actionKind === 'image' ? (
-                  <>
-                    <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
-                    생성 중...
-                  </>
-                ) : supportsNativeShare ? (
-                  <>
-                    <ImageIcon size={18} strokeWidth={2} aria-hidden="true" />
-                    이미지로 공유
-                  </>
-                ) : (
-                  <>
-                    <Download size={18} strokeWidth={2} aria-hidden="true" />
-                    이미지 저장
-                  </>
-                )}
-              </button>
-            </div>
-          </footer>
+          </>
         )}
-      </div>
+      </BottomSheet>
 
       {showStopConfirm && (
         <StopShareConfirmDialog
@@ -365,6 +313,6 @@ export function ShareReportSheet({
           onClose={() => setShowStopConfirm(false)}
         />
       )}
-    </div>
+    </>
   );
 }

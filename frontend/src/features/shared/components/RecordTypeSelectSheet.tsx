@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
-import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import { useEffect, useState } from 'react';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { useRouter } from 'next/navigation';
 import { X, ChevronLeft } from 'lucide-react';
 import { RECORD_TYPE_ICONS, type RecordIconKey } from '@/shared/components/recordTypeIcons';
@@ -62,147 +61,138 @@ type Step = 'type' | 'pet';
 
 export function RecordTypeSelectSheet({ isOpen, onClose, pets }: RecordTypeSelectSheetProps) {
   const router = useRouter();
-  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
-
-  useOverlayDismiss(isOpen, handleClose);
-
   const [step, setStep] = useState<Step>('type');
   const [pendingItem, setPendingItem] = useState<SheetItem | null>(null);
-  const sheetRef = useRef<HTMLDivElement>(null);
 
-  // 열릴 때마다 1단계로 되돌린다(전환 상태는 useSheetTransition이 관리).
+  // 열릴 때마다 1단계로 되돌린다(전환 상태는 BottomSheet이 관리).
   useEffect(() => {
     if (!isOpen) return;
     setStep('type');
     setPendingItem(null);
   }, [isOpen]);
 
-  function handleSelectType(item: SheetItem) {
-    if (pets.length === 0) {
-      handleClose();
-      setTimeout(() => router.push('/pets/new'), 310);
-      return;
-    }
-
-    if (pets.length === 1) {
-      handleClose();
-      setTimeout(() => router.push(item.href(pets[0].id)), 310);
-      return;
-    }
-
-    setPendingItem(item);
-    setStep('pet');
-  }
-
-  function handleSelectPet(petId: string) {
-    if (!pendingItem) return;
-    handleClose();
-    setTimeout(() => router.push(pendingItem.href(petId)), 310);
-  }
-
   function handleBackToType() {
     setStep('type');
     setPendingItem(null);
   }
 
-  if (!mounted) return null;
-
   return (
-    <div className={`${styles.root} ${visible ? styles.rootVisible : ''}`}>
-      <div className={styles.overlay} onClick={handleClose} aria-hidden="true" />
-      <div
-        ref={sheetRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="기록 유형 선택"
-        className={`${styles.sheet} ${visible ? styles.sheetVisible : ''}`}
-      >
-        <div className={styles.dragHandleArea}>
-          <div className={styles.dragHandle} aria-hidden="true" />
-        </div>
+    <BottomSheet isOpen={isOpen} onClose={onClose} label="기록 유형 선택" maxHeight="85dvh">
+      {({ close, closeWith }) => {
+        // 닫히는 애니메이션이 끝난 뒤 이동한다. 바로 push하면 시트가 남은 채 화면이 바뀐다.
+        function leaveTo(href: string) {
+          closeWith(() => {
+            onClose();
+            router.push(href);
+          });
+        }
 
-        <header className={styles.header}>
-          {step === 'pet' && (
-            <button
-              type="button"
-              className={styles.backBtn}
-              onClick={handleBackToType}
-              aria-label="뒤로"
-            >
-              <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
-            </button>
-          )}
-          <span className={styles.title}>
-            {step === 'type' ? '무엇을 기록할까요?' : '어떤 반려동물인가요?'}
-          </span>
-          <button type="button" className={styles.closeBtn} onClick={handleClose} aria-label="닫기">
-            <X size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-        </header>
+        function handleSelectType(item: SheetItem) {
+          if (pets.length === 0) {
+            leaveTo('/pets/new');
+            return;
+          }
 
-        {step === 'type' && (
-          <div className={styles.body}>
-            <section className={styles.section}>
-              <h2 className={styles.sectionLabel}>일상 / 건강 기록</h2>
-              <div className={styles.grid}>
-                {DAILY_ITEMS.map((item) => {
-                  const Icon = RECORD_TYPE_ICONS[item.icon];
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={styles.gridBtn}
-                      onClick={() => handleSelectType(item)}
-                    >
-                      <span className={styles.gridIcon} aria-hidden="true">
-                        <Icon size={24} strokeWidth={1.75} />
-                      </span>
-                      <span className={styles.gridLabel}>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
+          if (pets.length === 1) {
+            leaveTo(item.href(pets[0].id));
+            return;
+          }
 
-            <section className={styles.section}>
-              <h2 className={styles.sectionLabel}>의료 기록</h2>
-              <div className={styles.grid}>
-                {MEDICAL_ITEMS.map((item) => {
-                  const Icon = RECORD_TYPE_ICONS[item.icon];
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={`${styles.gridBtn} ${styles.gridBtnMedical}`}
-                      onClick={() => handleSelectType(item)}
-                    >
-                      <span className={styles.gridIcon} aria-hidden="true">
-                        <Icon size={24} strokeWidth={1.75} />
-                      </span>
-                      <span className={styles.gridLabel}>{item.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-        )}
+          setPendingItem(item);
+          setStep('pet');
+        }
 
-        {step === 'pet' && (
-          <div className={styles.petList}>
-            {pets.map((pet) => (
-              <button
-                key={pet.id}
-                type="button"
-                className={styles.petItem}
-                onClick={() => handleSelectPet(pet.id)}
-              >
-                {pet.name}
+        function handleSelectPet(petId: string) {
+          if (!pendingItem) return;
+          leaveTo(pendingItem.href(petId));
+        }
+
+        return (
+          <>
+            <header className={styles.header}>
+              {step === 'pet' && (
+                <button
+                  type="button"
+                  className={styles.backBtn}
+                  onClick={handleBackToType}
+                  aria-label="뒤로"
+                >
+                  <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
+                </button>
+              )}
+              <span className={styles.title}>
+                {step === 'type' ? '무엇을 기록할까요?' : '어떤 반려동물인가요?'}
+              </span>
+              <button type="button" className={styles.closeBtn} onClick={close} aria-label="닫기">
+                <X size={20} strokeWidth={2} aria-hidden="true" />
               </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+            </header>
+
+            {step === 'type' && (
+              <div className={styles.body}>
+                <section className={styles.section}>
+                  <h2 className={styles.sectionLabel}>일상 / 건강 기록</h2>
+                  <div className={styles.grid}>
+                    {DAILY_ITEMS.map((item) => {
+                      const Icon = RECORD_TYPE_ICONS[item.icon];
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          className={styles.gridBtn}
+                          onClick={() => handleSelectType(item)}
+                        >
+                          <span className={styles.gridIcon} aria-hidden="true">
+                            <Icon size={24} strokeWidth={1.75} />
+                          </span>
+                          <span className={styles.gridLabel}>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                <section className={styles.section}>
+                  <h2 className={styles.sectionLabel}>의료 기록</h2>
+                  <div className={styles.grid}>
+                    {MEDICAL_ITEMS.map((item) => {
+                      const Icon = RECORD_TYPE_ICONS[item.icon];
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          className={`${styles.gridBtn} ${styles.gridBtnMedical}`}
+                          onClick={() => handleSelectType(item)}
+                        >
+                          <span className={styles.gridIcon} aria-hidden="true">
+                            <Icon size={24} strokeWidth={1.75} />
+                          </span>
+                          <span className={styles.gridLabel}>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+            )}
+
+            {step === 'pet' && (
+              <div className={styles.petList}>
+                {pets.map((pet) => (
+                  <button
+                    key={pet.id}
+                    type="button"
+                    className={styles.petItem}
+                    onClick={() => handleSelectPet(pet.id)}
+                  >
+                    {pet.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        );
+      }}
+    </BottomSheet>
   );
 }

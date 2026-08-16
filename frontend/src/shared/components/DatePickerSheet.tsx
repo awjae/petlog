@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
-import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { localToday } from '@/shared/utils/date';
 import styles from './DatePickerSheet.module.css';
 
@@ -130,10 +129,6 @@ export function DatePickerSheet({
   max,
   title = '날짜 선택',
 }: DatePickerSheetProps) {
-  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
-
-  useOverlayDismiss(isOpen, handleClose);
-
   const initial = value || localToday();
   const [year, setYear] = useState(initial.slice(0, 4));
   const [month, setMonth] = useState(initial.slice(5, 7));
@@ -153,7 +148,7 @@ export function DatePickerSheet({
     if (clamped !== day && clamped) setDay(clamped);
   }, [year, month]);
 
-  // 열릴 때마다 현재 값으로 되돌린다(전환 상태는 useSheetTransition이 관리한다).
+  // 열릴 때마다 현재 값으로 되돌린다(전환 상태는 BottomSheet이 관리한다).
   useEffect(() => {
     if (!isOpen) return;
     const src = value || localToday();
@@ -162,42 +157,42 @@ export function DatePickerSheet({
     setDay(src.slice(8, 10));
   }, [isOpen, value]);
 
-  function handleConfirm() {
-    onChange(`${year}-${month}-${day}`);
-    handleClose();
-  }
-
-  if (!mounted) return null;
-
   return (
-    <div className={`${styles.root} ${visible ? styles.rootVisible : ''}`}>
-      <div className={styles.overlay} onClick={handleClose} aria-hidden="true" />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className={`${styles.sheet} ${visible ? styles.sheetVisible : ''}`}
-      >
-        <div className={styles.dragHandleArea}>
-          <div className={styles.dragHandle} aria-hidden="true" />
-        </div>
-        <header className={styles.header}>
-          <button type="button" className={styles.cancelBtn} onClick={handleClose}>
-            취소
-          </button>
-          <span className={styles.title}>{title}</span>
-          <button type="button" className={styles.confirmBtn} onClick={handleConfirm}>
-            확인
-          </button>
-        </header>
+    // 페이지 위 폼에서 열리는데 Toast(200)와 같은 계층에 두면 가려질 수 있어 300에 둔다.
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      label={title}
+      zIndex={300}
+      sheetClassName={styles.sheet}
+    >
+      {({ close }) => (
+        <>
+          <header className={styles.header}>
+            <button type="button" className={styles.cancelBtn} onClick={close}>
+              취소
+            </button>
+            <span className={styles.title}>{title}</span>
+            <button
+              type="button"
+              className={styles.confirmBtn}
+              onClick={() => {
+                onChange(`${year}-${month}-${day}`);
+                close();
+              }}
+            >
+              확인
+            </button>
+          </header>
 
-        <div className={styles.pickerRow}>
-          <DrumColumn items={years} value={year} onChange={setYear} unit="년" />
-          <DrumColumn items={months} value={month} onChange={setMonth} unit="월" />
-          <DrumColumn items={days} value={day} onChange={setDay} unit="일" />
-        </div>
-      </div>
-    </div>
+          <div className={styles.pickerRow}>
+            <DrumColumn items={years} value={year} onChange={setYear} unit="년" />
+            <DrumColumn items={months} value={month} onChange={setMonth} unit="월" />
+            <DrumColumn items={days} value={day} onChange={setDay} unit="일" />
+          </div>
+        </>
+      )}
+    </BottomSheet>
   );
 }
 
