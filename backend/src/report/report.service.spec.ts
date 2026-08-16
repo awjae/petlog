@@ -35,6 +35,25 @@ function buildRecords(days: number, perDay = 2): { recordedAt: Date }[] {
 
 const SUFFICIENT_RECORDS = buildRecords(7, 2);
 
+/**
+ * KST 벽시계 문자열을 UTC 인스턴트로 바꾼다.
+ *
+ * 프론트는 `new Date('2026-08-16T23:59:59')`처럼 Z 없이 파싱해 **브라우저 로컬**
+ * 기준으로 보낸다(reportPeriod.ts의 toStartOfDayIso/toEndOfDayIso). 한국 사용자
+ * 기준으로는 이 함수가 만드는 값과 같다.
+ *
+ * **타임존 경계를 검증하는 테스트는 이 헬퍼를 쓴다.** `new Date(2024, 0, 1)`은
+ * 프로세스 TZ(테스트는 UTC)를 따라 자정이 되는데, 그 값은 KST 경계를 넘지 않아
+ * 경계 버그를 통과시킨다 — 실제로 "최근 90일" 프리셋이 거부되던 버그가 그렇게
+ * 숨어 있었다.
+ *
+ * 반대로 기간 길이 산술(7일/90일 판정)처럼 타임존과 무관한 검증은 아래 기존
+ * 테스트들처럼 `new Date(y, m, d)`를 그대로 써도 된다.
+ */
+function kst(wallClock: string): Date {
+  return new Date(`${wallClock}+09:00`);
+}
+
 function flushPromises(): Promise<void> {
   return new Promise((resolve) => setImmediate(resolve));
 }
@@ -79,6 +98,10 @@ describe('ReportService', () => {
   });
 
   describe('generateReport — assertValidPeriod', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     beforeEach(() => {
       prisma.report.findFirst.mockResolvedValue(null);
       prisma.healthRecord.findMany.mockResolvedValue(SUFFICIENT_RECORDS);
@@ -134,26 +157,73 @@ describe('ReportService', () => {
     });
 
     it('오늘을 종료일로 선택해도 "미래" 오류로 거부되지 않는다 (회귀)', async () => {
-      const today = new Date();
-      const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
-      const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-      petService.assertOwnership.mockResolvedValue(buildPet({ createdAt: new Date(2020, 0, 1) }));
+      // KST 8/16 새벽 2시 = UTC 8/15 17:00. "오늘"을 UTC 달력으로 잡으면 8/15가 되어,
+      // 사용자가 고른 8/16이 미래로 판정돼 거부됐다.
+      jest.useFakeTimers().setSystemTime(kst('2026-08-16T02:00:00'));
+      petService.assertOwnership.mockResolvedValue(
+        buildPet({ createdAt: kst('2020-01-01T00:00:00') }),
+      );
 
-      const result = await service.generateReport(USER_ID, PET_ID, start, end);
+      const result = await service.generateReport(
+        USER_ID,
+        PET_ID,
+        kst('2026-08-10T00:00:00'),
+        kst('2026-08-16T23:59:59'),
+      );
       expect(result).toEqual({ reportId: 'report-1', status: ReportStatus.pending });
     });
 
     it('등록 당일 00:00을 시작일로 선택해도 "등록일 이전" 오류로 거부되지 않는다 (회귀)', async () => {
       // 가입은 당일 오후(15:30)에 했지만, 리포트 시작일로는 그날 00:00을 고르는
       // 정상적인 시나리오다 — 시각까지 비교하면 "가입 시각보다 이전"으로 잘못 거부된다.
-      const registeredAt = new Date(2024, 0, 1, 15, 30);
-      petService.assertOwnership.mockResolvedValue(buildPet({ createdAt: registeredAt }));
+      petService.assertOwnership.mockResolvedValue(
+        buildPet({ createdAt: kst('2024-01-01T15:30:00') }),
+      );
 
-      const start = new Date(2024, 0, 1);
-      const end = new Date(2024, 0, 7);
-
-      const result = await service.generateReport(USER_ID, PET_ID, start, end);
+      const result = await service.generateReport(
+        USER_ID,
+        PET_ID,
+        kst('2024-01-01T00:00:00'),
+        kst('2024-01-07T23:59:59'),
+      );
       expect(result).toEqual({ reportId: 'report-1', status: ReportStatus.pending });
+    });
+
+    it('프론트의 "최근 90일" 프리셋(KST 기준)을 거부하지 않는다 (회귀)', async () => {
+      // 프론트는 addDays(today, -89) ~ today를 보낸다 — 양 끝 포함 정확히 90일이다.
+      // 이전에는 서버가 UTC 달력으로 시작일을 하루 앞으로 접어 91일로 세고,
+      // "90일 이하" 조건에 걸려 프리셋 자체가 거부됐다.
+      jest.useFakeTimers().setSystemTime(kst('2026-08-16T12:00:00'));
+      petService.assertOwnership.mockResolvedValue(
+        buildPet({ createdAt: kst('2020-01-01T00:00:00') }),
+      );
+
+      const result = await service.generateReport(
+        USER_ID,
+        PET_ID,
+        kst('2026-05-19T00:00:00'), // 8/16에서 89일 전 = 양 끝 포함 90일
+        kst('2026-08-16T23:59:59'),
+      );
+      expect(result).toEqual({ reportId: 'report-1', status: ReportStatus.pending });
+    });
+
+    it('KST 기준 91일은 여전히 거부한다', async () => {
+      jest.useFakeTimers().setSystemTime(kst('2026-08-16T12:00:00'));
+      petService.assertOwnership.mockResolvedValue(
+        buildPet({ createdAt: kst('2020-01-01T00:00:00') }),
+      );
+
+      await expect(
+        service.generateReport(
+          USER_ID,
+          PET_ID,
+          kst('2026-05-18T00:00:00'), // 하루 더 앞 = 91일
+          kst('2026-08-16T23:59:59'),
+        ),
+      ).rejects.toMatchObject({
+        message: '분석 기간은 7일 이상 90일 이하로 지정해야 합니다.',
+        extensions: { code: 'BAD_REQUEST' },
+      });
     });
 
     it('반려동물 등록일 이전 날짜를 시작일로 선택하면 거부한다', async () => {
@@ -282,6 +352,10 @@ describe('ReportService', () => {
   });
 
   describe('getReportStatus', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     it('이번 달 활성 리포트가 없으면 생성 가능하다', async () => {
       prisma.healthRecord.findMany.mockResolvedValue(SUFFICIENT_RECORDS);
       prisma.report.findFirst.mockResolvedValue(null);
@@ -305,6 +379,22 @@ describe('ReportService', () => {
 
       expect(result.canGenerateThisMonth).toBe(false);
       expect(result.nextAvailableAt).toBeInstanceOf(Date);
+    });
+
+    it('KST 새벽에도 "이번 달"을 KST 달력으로 판정한다 (회귀)', async () => {
+      // KST 9/1 02:00 = UTC 8/31 17:00. UTC 달력으로는 아직 8월이라, 이 시각에는
+      // 8월 구간을 훑어 이미 쓴 8월 리포트에 막혔다. 반대로 09시를 넘기면 9월로
+      // 넘어가면서 같은 날 한 장이 더 나갔다.
+      jest.useFakeTimers().setSystemTime(kst('2026-09-01T02:00:00'));
+      prisma.healthRecord.findMany.mockResolvedValue(SUFFICIENT_RECORDS);
+      prisma.report.findFirst.mockResolvedValue(null);
+
+      await service.getReportStatus(USER_ID, PET_ID);
+
+      const { where } = prisma.report.findFirst.mock.calls[0][0];
+      // KST 9/1 00:00 이상 ~ KST 10/1 00:00 미만
+      expect(where.createdAt.gte.toISOString()).toBe('2026-08-31T15:00:00.000Z');
+      expect(where.createdAt.lt.toISOString()).toBe('2026-09-30T15:00:00.000Z');
     });
 
     it('활성 리포트가 pending/processing 상태면 processingReport를 채운다', async () => {
