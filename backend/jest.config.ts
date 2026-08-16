@@ -23,10 +23,6 @@ const config: Config = {
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
-  moduleNameMapper: {
-    '^@petlog/types(.*)$': '<rootDir>/../../libs/types$1',
-    '^@petlog/utils(.*)$': '<rootDir>/../../libs/utils$1',
-  },
 };
 
 export default config;

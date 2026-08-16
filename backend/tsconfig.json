@@ -17,8 +17,6 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
   "references": [
-    { "path": "../libs/types" },
-    { "path": "../libs/utils" },
     { "path": "../libs/ai" },
     { "path": "../libs/storage" },
     { "path": "../libs/mail" },
