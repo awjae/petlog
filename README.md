@@ -6,7 +6,8 @@
 
 실제 반려동물 보호자가 일상에서 사용하는 서비스를 목표로 합니다.
 
-**서비스 바로가기**: [https://petlog.quest](https://petlog.quest)
+**웹**: [https://petlog.quest](https://petlog.quest)
+**Android 앱**: [Google Play](https://play.google.com/store/apps/details?id=quest.petlog.app) (2026년 8월 출시)
 
 ---
 
@@ -19,37 +20,58 @@
 
 ## 주요 기능
 
-| 기능 | 설명 |
-|------|------|
-| 반려동물 프로필 관리 | 이름, 종, 품종, 성별, 체중 등 기본 정보 관리 |
-| 건강 기록 | 체중, 식사, 활동량, 증상, 배변, 구토, 기분 일별 기록 |
-| 병원 방문 기록 | 진료 내역, 병원명, 첨부파일 관리 |
-| 투약 관리 | 투약 이름, 용량, 투여 주기, 기간 관리 |
-| 건강 리포트 | 주간/월간 건강 변화 AI 요약 및 권고사항 제공 |
+| 기능                 | 설명                                                   |
+| -------------------- | ------------------------------------------------------ |
+| 반려동물 프로필 관리 | 이름, 종, 품종, 성별, 체중 등 기본 정보 관리           |
+| 건강 기록            | 체중, 식사, 활동량, 증상, 배변, 구토, 기분 일별 기록   |
+| 병원 방문 기록       | 진료 내역, 병원명, 첨부파일 관리                       |
+| 투약 관리            | 투약 이름, 용량, 투여 주기, 기간 관리                  |
+| 예방접종 관리        | 접종 이력과 다음 접종 예정일 관리                      |
+| 병원 예약            | 예약 일정 등록 및 다가오는 일정 확인                   |
+| 건강 리포트          | 주간/월간 건강 변화 AI 요약 및 권고사항 제공           |
+| 리포트 공유          | 공유 링크로 가족·수의사에게 리포트 전달 (OG 카드 포함) |
+| 알림                 | 백신/투약/예약 등 푸시 알림, 알림 설정 관리            |
 
 ---
 
 ## 기술 스택
 
 ### Frontend
+
 - **Next.js** + **React** + **TypeScript**
 - 모바일 우선 반응형 UI
 
+### Mobile
+
+- **Capacitor** (Android) — 배포된 웹앱을 원격 URL 모드로 감싼 네이티브 셸 (`mobile/`)
+- 푸시 알림(FCM), 네이티브 스플래시/상태바
+
 ### Backend
+
 - **NestJS** + **TypeScript**
-- RESTful API
+- **GraphQL** (Apollo Server) 중심 API — 파일 업로드, 인증 쿠키, 공유 리포트 OG 응답처럼
+  GraphQL에 맞지 않는 소수 엔드포인트만 REST Controller로 유지
+- **Prisma** ORM
 
 ### Database
-- **PostgreSQL**
+
+- **PostgreSQL** (배포 환경은 AWS RDS)
 
 ### AI
+
 - **OpenAI Fine-tuned 모델**(`gpt-4o-mini` 기반, 반려동물 건강 데이터로 파인튜닝) 연동 완료 — 실제 건강 리포트 생성에 사용
 - Mock AI Service는 개발/테스트 환경용으로 유지 (교체 가능한 Provider 추상화 구조)
 
 ### 공유 모듈 (`libs/`)
-- 프론트엔드/백엔드 공통 타입, 유틸, 시드 데이터
+
+- 공통 타입·유틸·시드 데이터와, 외부 서비스 어댑터(`ai`, `mail`, `push`, `firebase`, `storage`)
+
+### 운영
+
+- **Sentry** — 프론트/백엔드 에러 및 트레이스 수집
 
 ### Infrastructure
+
 - **AWS** (ECS Fargate + ALB + CloudFront + RDS PostgreSQL + S3)
 - **CDKTF** (TypeScript 기반 IaC, `infra/`)
 - 커스텀 도메인 **petlog.quest** — 프론트엔드/백엔드(`/api/*`)가 같은 CloudFront 배포를 공유
@@ -62,11 +84,17 @@
 petlog/
 ├── frontend/          # Next.js 앱
 ├── backend/           # NestJS 앱
+├── mobile/            # Capacitor Android 셸 (Play Store 배포)
 ├── libs/
 │   ├── types/         # 공유 도메인 타입 (Pet, HealthRecord, Report 등)
 │   ├── utils/         # 공유 유틸리티 함수
+│   ├── ai/            # AI Provider 추상화 (OpenAI / Mock)
+│   ├── mail/          # 메일 발송 (AWS SES)
+│   ├── push/          # 푸시 발송
+│   ├── firebase/      # FCM 연동
+│   ├── storage/       # 이미지 스토리지 (S3)
 │   └── seed/          # 개발용 시드 데이터
-├── infra/             # 인프라 설정
+├── infra/             # CDKTF 인프라 코드
 ├── tsconfig.base.json
 └── tsconfig.json
 ```
@@ -79,7 +107,10 @@ User
       ├── HealthRecord    (체중, 식사, 활동량, 증상 등)
       ├── MedicalEvent    (병원 방문 기록)
       ├── Medication      (투약 정보)
+      ├── Vaccination     (예방접종 이력)
+      ├── Appointment     (병원 예약)
       └── Report          (주간/월간 AI 건강 리포트)
+           └── ReportShare (공유 링크)
 ```
 
 ---
@@ -116,6 +147,15 @@ cd backend && pnpm dev
 cd frontend && pnpm dev
 ```
 
+### Android 앱 실행
+
+```bash
+cp mobile/.env.example mobile/.env   # MOBILE_APP_URL 확인
+npm run run:android --workspace=mobile
+```
+
+자세한 내용(릴리즈 AAB 빌드, 서명, 에뮬레이터 주의사항)은 [`mobile/README.md`](mobile/README.md) 참고.
+
 ---
 
 ## AI 아키텍처
@@ -146,11 +186,12 @@ HealthReportGenerator (interface)
 
 계층마다 잡아내는 버그의 종류가 다르다는 전제로, 한 계층에 몰아넣지 않고 나눠서 쌓았습니다.
 
-| 계층 | 도구 | 대상 | 실행 시점 |
-|------|------|------|-----------|
-| Backend 유닛테스트 | Jest | 핵심 비즈니스 로직 (리포트 생성 정책, 건강 기록 검증, 인증/토큰 로테이션) | PR마다 |
-| E2E | Playwright | 인증 흐름 (httpOnly 쿠키는 Mock으로 재현 불가능해 실제 백엔드+DB 필요) | main push 시 |
-| Frontend Integration | Playwright + MSW | 나머지 화면 흐름 | 예정 |
+| 계층                 | 도구             | 대상                                                                      | 실행 시점    |
+| -------------------- | ---------------- | ------------------------------------------------------------------------- | ------------ |
+| Backend 유닛테스트   | Jest             | 핵심 비즈니스 로직 (리포트 생성 정책, 건강 기록 검증, 인증/토큰 로테이션) | PR마다       |
+| E2E                  | Playwright       | 인증 흐름 (httpOnly 쿠키는 Mock으로 재현 불가능해 실제 백엔드+DB 필요)    | main push 시 |
+| Frontend 유닛테스트  | Vitest           | 순수 함수 (날짜 계산, 리포트 기간, 홈 파생값, 이미지 압축)                | PR마다       |
+| Frontend Integration | Playwright + MSW | 나머지 화면 흐름 (홈, 반려동물, 기록, 리포트, 테마)                       | PR마다       |
 
 **왜 E2E만으로는 부족한가** — E2E는 실제로 화면 흐름 버그(Playwright strict-mode locator 충돌,
 신규 가입 시 온보딩 오버레이가 클릭을 가로막는 문제)를 잡아냈지만, "달력 날짜와 시각을 혼동해
@@ -183,7 +224,10 @@ HealthReportGenerator (interface)
 - [x] 배포 (AWS ECS Fargate + ALB, CDKTF로 관리 — Vercel/Railway 대체, 커스텀 도메인 petlog.quest 연결)
 - [x] 실제 AI 연동 (OpenAI Fine-tuned 모델)
 - [x] Backend 유닛테스트 + 인증 E2E (Jest/Playwright, CI 연동)
-- [ ] Frontend Integration 테스트 (MSW 기반)
+- [x] Frontend 유닛/Integration 테스트 (Vitest, Playwright + MSW)
+- [x] 푸시 알림 (FCM) 및 알림 설정
+- [x] Android 앱 Google Play 출시 (Capacitor)
+- [ ] 사용 지표 계측 및 리텐션 개선
 
 ---
 
