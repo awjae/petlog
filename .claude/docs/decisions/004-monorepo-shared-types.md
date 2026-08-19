@@ -1,5 +1,19 @@
 # Decision: 모노레포 + 공유 타입 레이어 (libs/)
 
+## Status
+
+`libs/types`, `libs/utils` 부분은 폐기됨 (2026-08-19). `011-graphql-code-first-migration.md`
+이후 백엔드 스키마에서 SDL이, 프론트엔드에서 graphql-codegen 타입이 각각 생성되면서
+"타입 단일 출처"를 GraphQL 스키마가 담당하게 됐고, 손으로 쓴 공유 타입은 어느 쪽에서도
+import되지 않는 채로 남았다. 값이 어긋난 중복 정의(`AppetiteLevel`이 libs/types와
+libs/ai에 서로 다른 값으로 존재)까지 생겨 오히려 혼란을 키웠다.
+
+모노레포 구조 자체와 `libs/`(현재 `ai`, `mail`, `push`, `firebase`, `storage`, `seed`)는
+유효하다 — 폐기된 것은 "도메인 타입을 손으로 정의해 공유한다"는 부분이다.
+아래 원문은 당시 판단 기록으로 남긴다.
+
+---
+
 ## Context
 
 프론트엔드(Next.js)와 백엔드(NestJS)가 동일한 도메인 타입을 다룬다.
@@ -67,6 +81,6 @@ libs/는 타입 정의만 포함한다.
 
 ---
 
-## Status
+## Status (원문)
 
 현재: libs/types/ 에 도메인 타입 정의 완료
