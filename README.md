@@ -64,7 +64,8 @@
 
 ### 공유 모듈 (`libs/`)
 
-- 공통 타입·유틸·시드 데이터와, 외부 서비스 어댑터(`ai`, `mail`, `push`, `firebase`, `storage`)
+- 외부 서비스 어댑터(`ai`, `mail`, `push`, `firebase`, `storage`)와 개발용 시드 데이터(`seed`)
+- 도메인 타입은 GraphQL codegen이 생성하므로 별도 공유 타입 패키지를 두지 않는다
 
 ### 운영
 
@@ -86,8 +87,6 @@ petlog/
 ├── backend/           # NestJS 앱
 ├── mobile/            # Capacitor Android 셸 (Play Store 배포)
 ├── libs/
-│   ├── types/         # 공유 도메인 타입 (Pet, HealthRecord, Report 등)
-│   ├── utils/         # 공유 유틸리티 함수
 │   ├── ai/            # AI Provider 추상화 (OpenAI / Mock)
 │   ├── mail/          # 메일 발송 (AWS SES)
 │   ├── push/          # 푸시 발송

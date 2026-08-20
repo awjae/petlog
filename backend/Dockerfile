@@ -1,8 +1,7 @@
 # Petlog Backend (NestJS) 프로덕션 Dockerfile
 #
 # 이 저장소는 npm workspaces 기반 모노레포이며, backend는
-# @petlog/ai, @petlog/storage, @petlog/types, @petlog/utils, @petlog/mail,
-# @petlog/push 워크스페이스 패키지에 의존한다. 따라서 반드시 "레포 루트"를
+# @petlog/ai, @petlog/storage, @petlog/mail, @petlog/push 워크스페이스 패키지에 의존한다. 따라서 반드시 "레포 루트"를
 # 빌드 컨텍스트로 사용해야 한다.
 #
 #   docker build -f backend/Dockerfile .
@@ -25,8 +24,6 @@ RUN apk add --no-cache python3 make g++
 # npm ci는 root package.json의 workspaces 목록에 있어도 package.json이 없는
 # 워크스페이스는 조용히 건너뛰므로 안전하다.
 COPY package.json package-lock.json ./
-COPY libs/types/package.json ./libs/types/package.json
-COPY libs/utils/package.json ./libs/utils/package.json
 COPY libs/ai/package.json ./libs/ai/package.json
 COPY libs/storage/package.json ./libs/storage/package.json
 COPY libs/mail/package.json ./libs/mail/package.json
@@ -53,7 +50,7 @@ COPY backend ./backend
 # 워크스페이스 라이브러리를 먼저 컴파일해 dist/를 생성한다.
 # backend가 @petlog/ai, @petlog/storage 등을 node_modules 심볼릭 링크를 통해
 # resolve하려면 이 dist/ 산출물(및 .d.ts)이 미리 존재해야 한다.
-RUN npx tsc --build libs/types libs/utils libs/ai libs/storage libs/mail libs/push
+RUN npx tsc --build libs/ai libs/storage libs/mail libs/push
 
 # Nest 빌드 (backend/dist 생성)
 RUN npm run build --workspace=backend
