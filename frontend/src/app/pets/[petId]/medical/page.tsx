@@ -15,7 +15,7 @@ import {
   useDeleteVaccination,
   useDeleteAppointment,
 } from '@/features/medical/hooks/useMedical';
-import { FAB } from '@/features/shared/components/FAB';
+import { FAB } from '@/shared/components/FAB';
 import type { MedicalHubTab } from '@/features/medical/types/medical.types';
 import styles from './page.module.css';
 

@@ -23,12 +23,12 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/providers/ThemeProvider';
 import { THEMES, THEME_MODES, type ThemeMode } from '@/shared/config/theme';
-import { BottomNav } from '@/features/shared/components/BottomNav';
+import { BottomNav } from '@/shared/components/BottomNav';
 import { EditProfileModal } from '@/features/settings/components/EditProfileModal';
 import { WithdrawInfoSheet } from '@/features/settings/components/WithdrawInfoSheet';
 import { useCurrentUser } from '@/features/settings/hooks/useCurrentUser';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
-import { useToast, ToastContainer } from '@/features/shared/components/Toast';
+import { useToast, ToastContainer } from '@/shared/components/Toast';
 import styles from './page.module.css';
 import { useSendTestPushNotification } from '@/features/notification/hooks/useSendTestPushNotification';
 import { useNotificationPreference } from '@/features/notification/hooks/useNotificationPreference';

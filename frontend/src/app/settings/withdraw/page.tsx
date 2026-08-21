@@ -6,8 +6,8 @@ import { useApolloClient } from '@apollo/client/react';
 import { ChevronLeft } from 'lucide-react';
 import { useWithdrawAccount } from '@/features/auth/hooks/useWithdrawAccount';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
-import { setPendingToast } from '@/features/shared/utils/pendingToast';
-import { useToast, ToastContainer } from '@/features/shared/components/Toast';
+import { setPendingToast } from '@/shared/utils/pendingToast';
+import { useToast, ToastContainer } from '@/shared/components/Toast';
 import styles from './page.module.css';
 
 export default function WithdrawAccountPage() {

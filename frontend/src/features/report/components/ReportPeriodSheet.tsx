@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
-import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import { BottomSheet } from '@/shared/components/BottomSheet';
 import { Check, ChevronLeft, LoaderCircle, X } from 'lucide-react';
 import { useGenerateReport } from '../hooks/useGenerateReport';
 import { useReportPeriodPreview } from '../hooks/useReportPeriodPreview';
@@ -43,10 +42,6 @@ export function ReportPeriodSheet({
   onGenerated,
   onGenerateError,
 }: ReportPeriodSheetProps) {
-  const { mounted, visible, close: handleClose } = useSheetTransition(isOpen, onClose);
-
-  useOverlayDismiss(isOpen, handleClose);
-
   const [view, setView] = useState<SheetView>('summary');
 
   const today = todayDateOnly();
@@ -57,13 +52,7 @@ export function ReportPeriodSheet({
   const [selectedPreset, setSelectedPreset] = useState<PeriodPresetKey | null>(null);
   const [debounceNext, setDebounceNext] = useState(false);
 
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const dragStartY = useRef(0);
-  const dragCurrentY = useRef(0);
-  const dragStartTime = useRef(0);
-
-  // 진입 시 "최근 30일" 프리셋을 기본 선택한다(전환 상태는 useSheetTransition이 관리).
+  // 진입 시 "최근 30일" 프리셋을 기본 선택한다(전환 상태는 BottomSheet이 관리).
   useEffect(() => {
     if (!isOpen) return;
 
@@ -80,41 +69,6 @@ export function ReportPeriodSheet({
     setView('summary');
     setDebounceNext(false);
   }, [isOpen, petCreatedAt]);
-
-  // ── 드래그 제스처(드래그 핸들 + 헤더 영역만) ──
-  function handleDragStart(e: React.TouchEvent) {
-    isDragging.current = true;
-    dragStartY.current = e.touches[0].clientY;
-    dragCurrentY.current = 0;
-    dragStartTime.current = Date.now();
-    if (sheetRef.current) sheetRef.current.style.transition = 'none';
-  }
-
-  function handleDragMove(e: React.TouchEvent) {
-    if (!isDragging.current) return;
-    const delta = e.touches[0].clientY - dragStartY.current;
-    if (delta < 0) return;
-    dragCurrentY.current = delta;
-    if (sheetRef.current) sheetRef.current.style.transform = `translateY(${delta}px)`;
-  }
-
-  function handleDragEnd() {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-
-    const delta = dragCurrentY.current;
-    const elapsed = Date.now() - dragStartTime.current;
-    const velocity = elapsed > 0 ? delta / elapsed : 0;
-
-    if (sheetRef.current) {
-      sheetRef.current.style.transition = '';
-      sheetRef.current.style.transform = '';
-    }
-
-    if (delta >= 80 || velocity >= 0.5) {
-      handleClose();
-    }
-  }
 
   function handlePresetClick(key: PeriodPresetKey) {
     if (!isPresetAvailable(key, minDate, today)) return;
@@ -170,178 +124,161 @@ export function ReportPeriodSheet({
 
   const anyPresetDisabled = PERIOD_PRESETS.some((p) => !isPresetAvailable(p.key, minDate, today));
 
-  async function handleSubmit() {
-    if (validityState !== 'valid' || generating) return;
-    const reportId = await generateReport(
-      petId,
-      toStartOfDayIso(periodStart),
-      toEndOfDayIso(periodEnd),
-    );
-    if (reportId) {
-      onGenerated(reportId);
-      handleClose();
-    }
-  }
-
-  if (!mounted) return null;
-
   const isCalendarView = view !== 'summary';
 
   return (
-    <div className={`${styles.root} ${visible ? styles.rootVisible : ''}`}>
-      <div className={styles.overlay} onClick={handleClose} aria-hidden="true" />
-      <div
-        ref={sheetRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="리포트 기간 선택"
-        className={`${styles.sheet} ${visible ? styles.sheetVisible : ''}`}
-      >
-        <div
-          className={styles.dragHandleArea}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-        >
-          <div className={styles.dragHandle} aria-hidden="true" />
-        </div>
+    <BottomSheet isOpen={isOpen} onClose={onClose} label="리포트 기간 선택" maxHeight="85dvh">
+      {({ close, drag }) => {
+        async function handleSubmit() {
+          if (validityState !== 'valid' || generating) return;
+          const reportId = await generateReport(
+            petId,
+            toStartOfDayIso(periodStart),
+            toEndOfDayIso(periodEnd),
+          );
+          if (reportId) {
+            onGenerated(reportId);
+            close();
+          }
+        }
 
-        <header
-          className={styles.header}
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-        >
-          {isCalendarView ? (
-            <button
-              type="button"
-              className={styles.backBtn}
-              onClick={() => setView('summary')}
-              aria-label="뒤로"
-            >
-              <ChevronLeft size={22} strokeWidth={2} aria-hidden="true" />
-            </button>
-          ) : (
-            <span className={styles.headerSpacer} aria-hidden="true" />
-          )}
-          <span className={styles.headerTitle}>
-            {view === 'calendar-start'
-              ? '시작일 선택'
-              : view === 'calendar-end'
-                ? '종료일 선택'
-                : '리포트 기간 선택'}
-          </span>
-          <button type="button" className={styles.closeBtn} onClick={handleClose} aria-label="닫기">
-            <X size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-        </header>
-
-        <div className={styles.body}>
-          <div key={view} className={styles.panel}>
-            {view === 'summary' ? (
-              <>
-                <div className={styles.presetGrid}>
-                  {PERIOD_PRESETS.map((preset) => {
-                    const available = isPresetAvailable(preset.key, minDate, today);
-                    const isSelected = selectedPreset === preset.key;
-                    return (
-                      <button
-                        key={preset.key}
-                        type="button"
-                        className={`${styles.presetChip} ${isSelected ? styles.presetChipSelected : ''} ${
-                          !available ? styles.presetChipDisabled : ''
-                        }`}
-                        disabled={!available}
-                        onClick={() => handlePresetClick(preset.key)}
-                      >
-                        {isSelected && (
-                          <Check
-                            size={14}
-                            strokeWidth={2.5}
-                            className={styles.presetCheck}
-                            aria-hidden="true"
-                          />
-                        )}
-                        {preset.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {anyPresetDisabled && (
-                  <p className={styles.presetCaption}>
-                    등록일 기준으로 아직 선택할 수 없는 기간은 비활성화돼 있어요
-                  </p>
-                )}
-
-                <p className={styles.customLabel}>직접 선택</p>
-                <div className={styles.customFields}>
-                  <button
-                    type="button"
-                    className={styles.fieldBtn}
-                    onClick={() => setView('calendar-start')}
-                  >
-                    <span className={styles.fieldLabel}>시작일</span>
-                    <span className={styles.fieldValue}>{formatDateLabel(periodStart)}</span>
-                  </button>
-                  <span className={styles.fieldSep}>~</span>
-                  <button
-                    type="button"
-                    className={styles.fieldBtn}
-                    onClick={() => setView('calendar-end')}
-                  >
-                    <span className={styles.fieldLabel}>종료일</span>
-                    <span className={styles.fieldValue}>{formatDateLabel(periodEnd)}</span>
-                  </button>
-                </div>
-
-                <p className={styles.summaryText}>{formatPeriodSummary(periodStart, periodEnd)}</p>
-
-                <PeriodValidityCard
-                  state={validityState}
-                  recordCount={preview?.recordCount}
-                  recordDays={preview?.recordDays}
-                  onRetry={refetchPreview}
-                />
-
-                <p className={styles.guidance}>최소 7일, 최대 90일까지 선택할 수 있어요</p>
-              </>
-            ) : (
-              <PeriodCalendar
-                selectedDate={view === 'calendar-start' ? periodStart : periodEnd}
-                referenceDate={view === 'calendar-end' ? periodStart : null}
-                minDate={minDate}
-                maxDate={today}
-                onSelect={view === 'calendar-start' ? handleSelectStart : handleSelectEnd}
-              />
-            )}
-          </div>
-        </div>
-
-        {!isCalendarView && (
-          <footer className={styles.footer}>
-            <button
-              type="button"
-              className={`${styles.ctaBtn} ${
-                validityState === 'valid' && !generating
-                  ? styles.ctaBtnActive
-                  : styles.ctaBtnDisabled
-              }`}
-              disabled={validityState !== 'valid' || generating}
-              onClick={handleSubmit}
-              aria-busy={generating}
-            >
-              {generating ? (
-                <>
-                  <LoaderCircle size={20} className={styles.spinner} aria-hidden="true" /> 생성
-                  중...
-                </>
+        return (
+          <>
+            <header className={styles.header} {...drag}>
+              {isCalendarView ? (
+                <button
+                  type="button"
+                  className={styles.backBtn}
+                  onClick={() => setView('summary')}
+                  aria-label="뒤로"
+                >
+                  <ChevronLeft size={22} strokeWidth={2} aria-hidden="true" />
+                </button>
               ) : (
-                '이 기간으로 리포트 생성하기'
+                <span className={styles.headerSpacer} aria-hidden="true" />
               )}
-            </button>
-          </footer>
-        )}
-      </div>
-    </div>
+              <span className={styles.headerTitle}>
+                {view === 'calendar-start'
+                  ? '시작일 선택'
+                  : view === 'calendar-end'
+                    ? '종료일 선택'
+                    : '리포트 기간 선택'}
+              </span>
+              <button type="button" className={styles.closeBtn} onClick={close} aria-label="닫기">
+                <X size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </header>
+
+            <div className={styles.body}>
+              <div key={view} className={styles.panel}>
+                {view === 'summary' ? (
+                  <>
+                    <div className={styles.presetGrid}>
+                      {PERIOD_PRESETS.map((preset) => {
+                        const available = isPresetAvailable(preset.key, minDate, today);
+                        const isSelected = selectedPreset === preset.key;
+                        return (
+                          <button
+                            key={preset.key}
+                            type="button"
+                            className={`${styles.presetChip} ${isSelected ? styles.presetChipSelected : ''} ${
+                              !available ? styles.presetChipDisabled : ''
+                            }`}
+                            disabled={!available}
+                            onClick={() => handlePresetClick(preset.key)}
+                          >
+                            {isSelected && (
+                              <Check
+                                size={14}
+                                strokeWidth={2.5}
+                                className={styles.presetCheck}
+                                aria-hidden="true"
+                              />
+                            )}
+                            {preset.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {anyPresetDisabled && (
+                      <p className={styles.presetCaption}>
+                        등록일 기준으로 아직 선택할 수 없는 기간은 비활성화돼 있어요
+                      </p>
+                    )}
+
+                    <p className={styles.customLabel}>직접 선택</p>
+                    <div className={styles.customFields}>
+                      <button
+                        type="button"
+                        className={styles.fieldBtn}
+                        onClick={() => setView('calendar-start')}
+                      >
+                        <span className={styles.fieldLabel}>시작일</span>
+                        <span className={styles.fieldValue}>{formatDateLabel(periodStart)}</span>
+                      </button>
+                      <span className={styles.fieldSep}>~</span>
+                      <button
+                        type="button"
+                        className={styles.fieldBtn}
+                        onClick={() => setView('calendar-end')}
+                      >
+                        <span className={styles.fieldLabel}>종료일</span>
+                        <span className={styles.fieldValue}>{formatDateLabel(periodEnd)}</span>
+                      </button>
+                    </div>
+
+                    <p className={styles.summaryText}>
+                      {formatPeriodSummary(periodStart, periodEnd)}
+                    </p>
+
+                    <PeriodValidityCard
+                      state={validityState}
+                      recordCount={preview?.recordCount}
+                      recordDays={preview?.recordDays}
+                      onRetry={refetchPreview}
+                    />
+
+                    <p className={styles.guidance}>최소 7일, 최대 90일까지 선택할 수 있어요</p>
+                  </>
+                ) : (
+                  <PeriodCalendar
+                    selectedDate={view === 'calendar-start' ? periodStart : periodEnd}
+                    referenceDate={view === 'calendar-end' ? periodStart : null}
+                    minDate={minDate}
+                    maxDate={today}
+                    onSelect={view === 'calendar-start' ? handleSelectStart : handleSelectEnd}
+                  />
+                )}
+              </div>
+            </div>
+
+            {!isCalendarView && (
+              <footer className={styles.footer}>
+                <button
+                  type="button"
+                  className={`${styles.ctaBtn} ${
+                    validityState === 'valid' && !generating
+                      ? styles.ctaBtnActive
+                      : styles.ctaBtnDisabled
+                  }`}
+                  disabled={validityState !== 'valid' || generating}
+                  onClick={handleSubmit}
+                  aria-busy={generating}
+                >
+                  {generating ? (
+                    <>
+                      <LoaderCircle size={20} className={styles.spinner} aria-hidden="true" /> 생성
+                      중...
+                    </>
+                  ) : (
+                    '이 기간으로 리포트 생성하기'
+                  )}
+                </button>
+              </footer>
+            )}
+          </>
+        );
+      }}
+    </BottomSheet>
   );
 }

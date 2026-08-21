@@ -1,0 +1,238 @@
+'use client';
+
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+  type TouchEvent,
+} from 'react';
+import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
+import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
+import styles from './BottomSheet.module.css';
+
+/**
+ * 바텀시트 껍데기 — 오버레이, 시트 박스, 드래그 핸들, 열림·닫힘 전환, 뒤로 가기 처리.
+ *
+ * useSheetTransition이 전환 로직을 걷어낸 뒤에도 시트 9종은 그 위의 껍데기를
+ * 그대로 복제하고 있었다. root/overlay/sheet/dragHandle 네 규칙(약 60줄)이 CSS
+ * 모듈 9개에, 아래로 끌어 닫는 제스처(refs 4개 + 핸들러 3개)가 3곳에 있었다.
+ * 그래서 max-height 하나만 서로 달랐는데도 z-index와 safe-area 처리가 시트마다
+ * 갈렸다.
+ *
+ * 아래로 끌어 닫기는 옵션이 아니라 기본이다. 핸들바는 9종 전부가 그리는데 반응하는
+ * 건 3종뿐이었다 — 잡아당기라고 생긴 막대가 아무 일도 안 하는 쪽이 버그다. 오버레이
+ * 탭과 Escape로 이미 전부 닫히니 드래그가 새로 여는 닫힘 경로도 없다.
+ *
+ * 헤더는 여기 넣지 않는다. 뒤로 가기 버튼, 취소/확인, 제목+닫기로 시트마다 구성이
+ * 달라 공통화하면 분기만 늘어난다. 대신 children을 함수로 받아 닫기 동작과 드래그
+ * 핸들러를 넘겨준다 — 헤더에도 드래그를 걸어야 하기 때문이다.
+ */
+
+// 아래로 끌어 닫는 임계값. 80px 이상 끌었거나, 짧고 빠르게 튕겼을 때(0.5px/ms).
+const DRAG_CLOSE_PX = 80;
+const DRAG_CLOSE_VELOCITY = 0.5;
+
+const FOCUSABLE = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+/** 시트 안에서 실제로 포커스를 받을 수 있는 요소. 숨겨진 것은 뺀다. */
+function focusableIn(sheet: HTMLElement): HTMLElement[] {
+  return Array.from(sheet.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null || el === document.activeElement,
+  );
+}
+
+export interface SheetDragHandlers {
+  onTouchStart: (e: TouchEvent) => void;
+  onTouchMove: (e: TouchEvent) => void;
+  onTouchEnd: () => void;
+  onTouchCancel: () => void;
+}
+
+export interface BottomSheetControls {
+  /** 닫는 애니메이션을 재생한 뒤 onClose를 호출한다 */
+  close: () => void;
+  /** 닫는 애니메이션을 재생한 뒤 지정한 동작으로 넘어간다 */
+  closeWith: (action: () => void) => void;
+  /** 헤더처럼 핸들 밖의 영역에도 드래그로 닫기를 걸 때 펼친다 */
+  drag: SheetDragHandlers;
+}
+
+interface BottomSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  /** 시트의 aria-label */
+  label: string;
+  children: ReactNode | ((controls: BottomSheetControls) => ReactNode);
+  /** 예: '85dvh'. 없으면 내용 높이를 그대로 따른다 */
+  maxHeight?: string;
+  /** 기본값 200(시트 계층). 확인 다이얼로그 계층은 300이다 */
+  zIndex?: number;
+  /** 시트 박스에 추가로 붙일 클래스 */
+  sheetClassName?: string;
+  /** 시트 DOM이 필요한 경우(예: 키보드 팝업 대응) */
+  sheetRef?: RefObject<HTMLDivElement | null>;
+}
+
+export function BottomSheet({
+  isOpen,
+  onClose,
+  label,
+  children,
+  maxHeight,
+  zIndex,
+  sheetClassName,
+  sheetRef,
+}: BottomSheetProps) {
+  const { mounted, visible, close, closeWith } = useSheetTransition(isOpen, onClose);
+
+  useOverlayDismiss(isOpen, close);
+
+  const innerRef = useRef<HTMLDivElement | null>(null);
+
+  // aria-modal="true"를 붙였으면 포커스도 실제로 시트 안에 있어야 한다. 시트는 포털이
+  // 아니라 페이지 트리 안에 그대로 렌더되므로, 배경을 inert로 만드는 방법은 쓸 수 없다.
+  // 열릴 때 시트로 포커스를 옮기고, 닫힐 때 열기 전 요소로 돌려준다.
+  useEffect(() => {
+    if (!visible) return;
+    const sheet = innerRef.current;
+    if (!sheet) return;
+
+    const opener = document.activeElement as HTMLElement | null;
+    // 시트 자체에 먼저 포커스를 준다. 개별 시트가 입력으로 포커스를 옮기더라도(예:
+    // 프로필 편집) 그쪽이 나중에 실행돼 덮어쓰므로 순서가 어긋나지 않는다.
+    sheet.focus();
+
+    return () => opener?.focus();
+  }, [visible]);
+
+  // Tab이 시트 밖으로 나가지 않게 양 끝에서 되감는다. 전역 리스너 대신 시트 엘리먼트의
+  // onKeyDown에 거는 이유는 등록/해제가 필요 없어서다. 지금은 시트 안에 시트를 띄우는
+  // 화면이 없지만, 생기더라도 안쪽이 먼저 처리하고 stopPropagation으로 바깥을 막는다.
+  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'Tab') return;
+    const sheet = innerRef.current;
+    if (!sheet) return;
+    e.stopPropagation();
+
+    const items = focusableIn(sheet);
+    if (items.length === 0) {
+      // 포커스 갈 곳이 없으면 배경으로 새어 나가지 않게 시트에 묶어둔다.
+      e.preventDefault();
+      return;
+    }
+
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+
+    if (!sheet.contains(active)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    } else if (e.shiftKey && (active === first || active === sheet)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragCurrentY = useRef(0);
+  const dragStartTime = useRef(0);
+
+  function handleDragStart(e: TouchEvent) {
+    isDragging.current = true;
+    dragStartY.current = e.touches[0].clientY;
+    dragCurrentY.current = 0;
+    dragStartTime.current = Date.now();
+    // 손가락을 따라가는 동안에는 CSS 트랜지션을 끈다.
+    if (innerRef.current) innerRef.current.style.transition = 'none';
+  }
+
+  function handleDragMove(e: TouchEvent) {
+    if (!isDragging.current) return;
+    const delta = e.touches[0].clientY - dragStartY.current;
+    // 위로 끄는 건 무시한다(아래로만 닫힌다).
+    if (delta < 0) return;
+    dragCurrentY.current = delta;
+    if (innerRef.current) innerRef.current.style.transform = `translateY(${delta}px)`;
+  }
+
+  // 손가락을 따라가느라 덮어썼던 인라인 스타일을 걷어낸다. 이것만으로 CSS 트랜지션이
+  // 시트를 제자리로 되돌린다.
+  function resetDrag() {
+    isDragging.current = false;
+    if (innerRef.current) {
+      innerRef.current.style.transition = '';
+      innerRef.current.style.transform = '';
+    }
+  }
+
+  function handleDragEnd() {
+    if (!isDragging.current) return;
+
+    const delta = dragCurrentY.current;
+    const elapsed = Date.now() - dragStartTime.current;
+    const velocity = elapsed > 0 ? delta / elapsed : 0;
+
+    resetDrag();
+
+    if (delta >= DRAG_CLOSE_PX || velocity >= DRAG_CLOSE_VELOCITY) close();
+  }
+
+  if (!mounted) return null;
+
+  const drag: SheetDragHandlers = {
+    onTouchStart: handleDragStart,
+    onTouchMove: handleDragMove,
+    onTouchEnd: handleDragEnd,
+    // touchcancel은 브라우저가 제스처를 가져갈 때 온다 — 헤더처럼 touch-action: none이
+    // 없는 영역에서 스크롤로 넘어가는 경우가 대표적이다. touchend가 오지 않으므로 여기서
+    // 되돌리지 않으면 시트가 끌린 자리에 transition: none인 채로 멈춘다. 사용자가 놓은 게
+    // 아니라 뺏긴 것이니 임계값과 무관하게 닫지 않고 되돌리기만 한다.
+    onTouchCancel: resetDrag,
+  };
+
+  const rootStyle = {
+    ...(zIndex !== undefined && { '--sheet-z': zIndex }),
+    ...(maxHeight && { '--sheet-max-h': maxHeight }),
+  } as CSSProperties;
+
+  return (
+    <div className={`${styles.root} ${visible ? styles.rootVisible : ''}`} style={rootStyle}>
+      <div className={styles.overlay} onClick={close} aria-hidden="true" />
+
+      <div
+        ref={(node) => {
+          innerRef.current = node;
+          if (sheetRef) sheetRef.current = node;
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        // 시트 자체가 포커스를 받을 수 있어야 열자마자 포커스를 옮길 수 있다.
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className={`${styles.sheet} ${visible ? styles.sheetVisible : ''} ${sheetClassName ?? ''}`}
+      >
+        <div className={styles.dragHandleArea} {...drag}>
+          <div className={styles.dragHandle} aria-hidden="true" />
+        </div>
+
+        {typeof children === 'function' ? children({ close, closeWith, drag }) : children}
+      </div>
+    </div>
+  );
+}

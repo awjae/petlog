@@ -1,0 +1,70 @@
+/* 바텀시트 껍데기. 시트별로 달라지는 값은 커스텀 프로퍼티로만 열어 둔다. */
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sheet-z, 200);
+  pointer-events: none;
+}
+
+.rootVisible {
+  pointer-events: auto;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--color-scrim);
+  opacity: 0;
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.rootVisible .overlay {
+  opacity: 1;
+}
+
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 500px;
+  max-height: var(--sheet-max-h, none);
+  margin: 0 auto;
+  background: var(--color-surface);
+  border-radius: 20px 20px 0 0;
+  box-shadow: var(--shadow-lg);
+  /* max-height를 쓰는 시트가 본문에 `flex: 1; min-height: 0; overflow-y: auto`로
+     스크롤을 거는 구조라 세로 flex는 껍데기가 보장해야 한다. */
+  display: flex;
+  flex-direction: column;
+  /* 닫힌 상태: 아래로 숨김 */
+  transform: translateY(100%);
+  opacity: 0;
+  transition:
+    transform 300ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheetVisible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.dragHandleArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 8px;
+  flex-shrink: 0;
+  cursor: grab;
+  /* 핸들을 끄는 동안 브라우저 스크롤/당겨서 새로고침이 가로채지 않게 한다. */
+  touch-action: none;
+}
+
+.dragHandle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}

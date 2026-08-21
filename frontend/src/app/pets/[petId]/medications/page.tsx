@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { MedicationList } from '@/features/medication/components/MedicationList';
 import { useMedications, useDeleteMedication } from '@/features/medication/hooks/useMedication';
-import { FAB } from '@/features/shared/components/FAB';
+import { FAB } from '@/shared/components/FAB';
 import styles from './page.module.css';
 
 export default function MedicationsPage({ params }: { params: Promise<{ petId: string }> }) {

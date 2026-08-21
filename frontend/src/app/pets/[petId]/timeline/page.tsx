@@ -6,7 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { HealthRecordTimeline } from '@/features/health-record/components/HealthRecordTimeline';
 import { RecordBottomSheet } from '@/features/health-record/components/RecordBottomSheet';
-import { FAB } from '@/features/shared/components/FAB';
+import { FAB } from '@/shared/components/FAB';
 import { useState } from 'react';
 import styles from './page.module.css';
 
