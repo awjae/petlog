@@ -14,6 +14,10 @@ import styles from './BottomSheet.module.css';
  * 그래서 max-height 하나만 서로 달랐는데도 z-index와 safe-area 처리가 시트마다
  * 갈렸다.
  *
+ * 아래로 끌어 닫기는 옵션이 아니라 기본이다. 핸들바는 9종 전부가 그리는데 반응하는
+ * 건 3종뿐이었다 — 잡아당기라고 생긴 막대가 아무 일도 안 하는 쪽이 버그다. 오버레이
+ * 탭과 Escape로 이미 전부 닫히니 드래그가 새로 여는 닫힘 경로도 없다.
+ *
  * 헤더는 여기 넣지 않는다. 뒤로 가기 버튼, 취소/확인, 제목+닫기로 시트마다 구성이
  * 달라 공통화하면 분기만 늘어난다. 대신 children을 함수로 받아 닫기 동작과 드래그
  * 핸들러를 넘겨준다 — 헤더에도 드래그를 걸어야 하기 때문이다.
@@ -34,7 +38,7 @@ export interface BottomSheetControls {
   close: () => void;
   /** 닫는 애니메이션을 재생한 뒤 지정한 동작으로 넘어간다 */
   closeWith: (action: () => void) => void;
-  /** 드래그로 닫을 영역에 펼친다. draggable이 false면 아무것도 하지 않는다 */
+  /** 헤더처럼 핸들 밖의 영역에도 드래그로 닫기를 걸 때 펼친다 */
   drag: SheetDragHandlers;
 }
 
@@ -48,8 +52,6 @@ interface BottomSheetProps {
   maxHeight?: string;
   /** 기본값 200(시트 계층). 확인 다이얼로그 계층은 300이다 */
   zIndex?: number;
-  /** 핸들·헤더를 아래로 끌어 닫을 수 있게 한다 */
-  draggable?: boolean;
   /** 시트 박스에 추가로 붙일 클래스 */
   sheetClassName?: string;
   /** 시트 DOM이 필요한 경우(예: 키보드 팝업 대응) */
@@ -63,7 +65,6 @@ export function BottomSheet({
   children,
   maxHeight,
   zIndex,
-  draggable = false,
   sheetClassName,
   sheetRef,
 }: BottomSheetProps) {
@@ -79,7 +80,6 @@ export function BottomSheet({
   const dragStartTime = useRef(0);
 
   function handleDragStart(e: TouchEvent) {
-    if (!draggable) return;
     isDragging.current = true;
     dragStartY.current = e.touches[0].clientY;
     dragCurrentY.current = 0;
@@ -141,10 +141,7 @@ export function BottomSheet({
         aria-label={label}
         className={`${styles.sheet} ${visible ? styles.sheetVisible : ''} ${sheetClassName ?? ''}`}
       >
-        <div
-          className={`${styles.dragHandleArea} ${draggable ? styles.dragHandleAreaDraggable : ''}`}
-          {...(draggable ? drag : {})}
-        >
+        <div className={styles.dragHandleArea} {...drag}>
           <div className={styles.dragHandle} aria-hidden="true" />
         </div>
 

@@ -57,10 +57,8 @@
   justify-content: center;
   padding: 12px 0 8px;
   flex-shrink: 0;
-}
-
-.dragHandleAreaDraggable {
   cursor: grab;
+  /* 핸들을 끄는 동안 브라우저 스크롤/당겨서 새로고침이 가로채지 않게 한다. */
   touch-action: none;
 }
 

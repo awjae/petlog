@@ -61,7 +61,6 @@ export function RecordBottomSheet({
       onClose={onClose}
       label="기록 남기기"
       maxHeight="85dvh"
-      draggable
       sheetRef={sheetRef}
     >
       {({ close, drag }) => (

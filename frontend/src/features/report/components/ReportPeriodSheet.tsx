@@ -127,13 +127,7 @@ export function ReportPeriodSheet({
   const isCalendarView = view !== 'summary';
 
   return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      label="리포트 기간 선택"
-      maxHeight="85dvh"
-      draggable
-    >
+    <BottomSheet isOpen={isOpen} onClose={onClose} label="리포트 기간 선택" maxHeight="85dvh">
       {({ close, drag }) => {
         async function handleSubmit() {
           if (validityState !== 'valid' || generating) return;

@@ -170,13 +170,7 @@ export function ShareReportSheet({
 
   return (
     <>
-      <BottomSheet
-        isOpen={isOpen}
-        onClose={onClose}
-        label="리포트 공유하기"
-        maxHeight="88dvh"
-        draggable
-      >
+      <BottomSheet isOpen={isOpen} onClose={onClose} label="리포트 공유하기" maxHeight="88dvh">
         {({ close, drag }) => (
           <>
             <header className={styles.header} {...drag}>
