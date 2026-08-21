@@ -1,6 +1,14 @@
 'use client';
 
-import { useRef, type CSSProperties, type ReactNode, type RefObject, type TouchEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+  type TouchEvent,
+} from 'react';
 import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import { useSheetTransition } from '@/shared/hooks/useSheetTransition';
 import styles from './BottomSheet.module.css';
@@ -26,6 +34,22 @@ import styles from './BottomSheet.module.css';
 // 아래로 끌어 닫는 임계값. 80px 이상 끌었거나, 짧고 빠르게 튕겼을 때(0.5px/ms).
 const DRAG_CLOSE_PX = 80;
 const DRAG_CLOSE_VELOCITY = 0.5;
+
+const FOCUSABLE = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+/** 시트 안에서 실제로 포커스를 받을 수 있는 요소. 숨겨진 것은 뺀다. */
+function focusableIn(sheet: HTMLElement): HTMLElement[] {
+  return Array.from(sheet.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (el) => el.offsetParent !== null || el === document.activeElement,
+  );
+}
 
 export interface SheetDragHandlers {
   onTouchStart: (e: TouchEvent) => void;
@@ -74,6 +98,54 @@ export function BottomSheet({
   useOverlayDismiss(isOpen, close);
 
   const innerRef = useRef<HTMLDivElement | null>(null);
+
+  // aria-modal="true"를 붙였으면 포커스도 실제로 시트 안에 있어야 한다. 시트는 포털이
+  // 아니라 페이지 트리 안에 그대로 렌더되므로, 배경을 inert로 만드는 방법은 쓸 수 없다.
+  // 열릴 때 시트로 포커스를 옮기고, 닫힐 때 열기 전 요소로 돌려준다.
+  useEffect(() => {
+    if (!visible) return;
+    const sheet = innerRef.current;
+    if (!sheet) return;
+
+    const opener = document.activeElement as HTMLElement | null;
+    // 시트 자체에 먼저 포커스를 준다. 개별 시트가 입력으로 포커스를 옮기더라도(예:
+    // 프로필 편집) 그쪽이 나중에 실행돼 덮어쓰므로 순서가 어긋나지 않는다.
+    sheet.focus();
+
+    return () => opener?.focus();
+  }, [visible]);
+
+  // Tab이 시트 밖으로 나가지 않게 양 끝에서 되감는다. 전역 리스너 대신 시트 엘리먼트의
+  // onKeyDown에 거는 이유는 등록/해제가 필요 없어서다. 지금은 시트 안에 시트를 띄우는
+  // 화면이 없지만, 생기더라도 안쪽이 먼저 처리하고 stopPropagation으로 바깥을 막는다.
+  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'Tab') return;
+    const sheet = innerRef.current;
+    if (!sheet) return;
+    e.stopPropagation();
+
+    const items = focusableIn(sheet);
+    if (items.length === 0) {
+      // 포커스 갈 곳이 없으면 배경으로 새어 나가지 않게 시트에 묶어둔다.
+      e.preventDefault();
+      return;
+    }
+
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+
+    if (!sheet.contains(active)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    } else if (e.shiftKey && (active === first || active === sheet)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
   const isDragging = useRef(false);
   const dragStartY = useRef(0);
@@ -150,6 +222,9 @@ export function BottomSheet({
         role="dialog"
         aria-modal="true"
         aria-label={label}
+        // 시트 자체가 포커스를 받을 수 있어야 열자마자 포커스를 옮길 수 있다.
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
         className={`${styles.sheet} ${visible ? styles.sheetVisible : ''} ${sheetClassName ?? ''}`}
       >
         <div className={styles.dragHandleArea} {...drag}>

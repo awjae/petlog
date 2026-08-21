@@ -156,3 +156,77 @@ test.describe('바텀시트 드래그 @integration', () => {
     await expect(sheet).toBeVisible();
   });
 });
+
+// ── 포커스 ──
+//
+// aria-modal="true"를 붙였으면 포커스도 실제로 시트 안에 있어야 한다. 시트는 포털이
+// 아니라 페이지 트리 안에 그대로 렌더되므로 배경을 inert로 만들 수 없고, 껍데기가 직접
+// Tab을 되감는다. 배선이 끊겨도 화면은 멀쩡해 보이므로 테스트로만 드러난다.
+test.describe('바텀시트 포커스 @integration', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/register');
+  });
+
+  const focusInSheet = () =>
+    !!document.querySelector('[role=dialog]')?.contains(document.activeElement);
+
+  test('열면 포커스가 시트 안으로 들어온다', async ({ page }) => {
+    await openTermsSheet(page);
+    expect(await page.evaluate(focusInSheet)).toBe(true);
+  });
+
+  test('Tab을 반복해도 시트를 벗어나지 않는다', async ({ page }) => {
+    await openTermsSheet(page);
+    // 시트 안 포커스 가능 요소보다 넉넉히 눌러 양 끝을 모두 넘겨본다.
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab');
+      expect(await page.evaluate(focusInSheet), `Tab ${i + 1}회 후 밖으로 나감`).toBe(true);
+    }
+  });
+
+  test('Shift+Tab을 반복해도 시트를 벗어나지 않는다', async ({ page }) => {
+    await openTermsSheet(page);
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Shift+Tab');
+      expect(await page.evaluate(focusInSheet), `Shift+Tab ${i + 1}회 후 밖으로 나감`).toBe(true);
+    }
+  });
+
+  test('닫으면 열기 전 요소로 포커스가 돌아간다', async ({ page }) => {
+    const opener = page.getByRole('button', { name: '보기' }).first();
+    await opener.focus();
+    const before = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80));
+
+    await openTermsSheet(page);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: '이용약관' })).toBeHidden();
+
+    expect(await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80))).toBe(before);
+  });
+});
+
+// 껍데기가 여는 순간 시트로 포커스를 옮기므로, 개별 시트가 그 뒤에 입력으로 포커스를
+// 다시 옮기는 흐름이 살아있는지 확인한다. 깨져도 화면은 멀쩡하고 키보드만 안 뜬다.
+test.describe('바텀시트 포커스 — 개별 시트 우선 @integration', () => {
+  test('프로필 편집은 입력에 포커스가 남는다', async ({ page }, testInfo) => {
+    const baseURL = testInfo.project.use.baseURL ?? 'http://localhost:3000';
+    await page
+      .context()
+      .addCookies([
+        { name: 'access_token', value: 'mock-access-token-for-integration-test', url: baseURL },
+      ]);
+    await page.goto('/settings');
+
+    await page
+      .getByRole('button', { name: /프로필 편집|편집/ })
+      .first()
+      .click();
+    await expect(page.getByRole('dialog', { name: '프로필 편집' })).toHaveCSS('opacity', '1');
+
+    // 개별 시트는 열림 애니메이션과 겹치지 않게 50ms 뒤에 포커스를 옮긴다.
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => (document.activeElement as HTMLElement)?.id)).toBe(
+      'profile-name',
+    );
+  });
+});
