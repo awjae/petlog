@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useDeletePet } from '../hooks/useDeletePet';
-import { setPendingToast } from '@/features/shared/utils/pendingToast';
+import { setPendingToast } from '@/shared/utils/pendingToast';
 import { useOverlayDismiss } from '@/shared/hooks/useOverlayDismiss';
 import styles from './DeletePetConfirmDialog.module.css';
 

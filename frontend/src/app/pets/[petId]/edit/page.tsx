@@ -8,7 +8,7 @@ import { useUpdatePet } from '@/features/pet/hooks/useUpdatePet';
 import { useImageSelection } from '@/features/pet/hooks/useImageSelection';
 import { BREEDS_BY_SPECIES, BREED_SELECT_HINT } from '@/features/pet/types/breeds';
 import { DeletePetConfirmDialog } from '@/features/pet/components/DeletePetConfirmDialog';
-import { useToast, ToastContainer } from '@/features/shared/components/Toast';
+import { useToast, ToastContainer } from '@/shared/components/Toast';
 import { useLocalToday } from '@/shared/hooks/useLocalToday';
 import styles from './page.module.css';
 

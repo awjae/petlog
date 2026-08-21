@@ -6,9 +6,9 @@ import { WeeklyCalendar } from '@/features/calendar/components/WeeklyCalendar';
 import { MonthlyCalendar } from '@/features/calendar/components/MonthlyCalendar';
 import { EventList } from '@/features/calendar/components/EventList';
 import { CalendarSkeleton } from '@/features/calendar/components/CalendarSkeleton';
-import { BottomNav } from '@/features/shared/components/BottomNav';
-import { FAB } from '@/features/shared/components/FAB';
-import { RecordTypeSelectSheet } from '@/features/shared/components/RecordTypeSelectSheet';
+import { BottomNav } from '@/shared/components/BottomNav';
+import { FAB } from '@/shared/components/FAB';
+import { RecordTypeSelectSheet } from '@/shared/components/RecordTypeSelectSheet';
 import { toDateString } from '@/features/calendar/types/calendar.types';
 import styles from './page.module.css';
 

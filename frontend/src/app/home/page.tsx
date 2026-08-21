@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { LoaderCircle } from 'lucide-react';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
-import { consumePendingToast } from '@/features/shared/utils/pendingToast';
+import { consumePendingToast } from '@/shared/utils/pendingToast';
 import { useReportStatus } from '@/features/report/hooks/useReportStatus';
 import { hasCompletedOnboarding } from '@/features/onboarding/utils/onboardingStorage';
 import { PetSelector } from '@/features/home/components/PetSelector';
@@ -17,9 +17,9 @@ import { HomeSkeleton } from '@/features/home/components/HomeSkeleton';
 import { HomeNoPetContent } from '@/features/home/components/HomeNoPetContent';
 import { HomePhase1Content } from '@/features/home/components/HomePhase1Content';
 import { HomeAIUnlockBanner } from '@/features/home/components/HomeAIUnlockBanner';
-import { BottomNav } from '@/features/shared/components/BottomNav';
-import { FAB } from '@/features/shared/components/FAB';
-import { useToast, ToastContainer } from '@/features/shared/components/Toast';
+import { BottomNav } from '@/shared/components/BottomNav';
+import { FAB } from '@/shared/components/FAB';
+import { useToast, ToastContainer } from '@/shared/components/Toast';
 import styles from './page.module.css';
 
 // 온보딩을 이미 완료한 대다수 사용자에게는 전혀 필요 없는 화면이다(hasCompletedOnboarding
