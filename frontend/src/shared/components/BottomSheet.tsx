@@ -31,6 +31,7 @@ export interface SheetDragHandlers {
   onTouchStart: (e: TouchEvent) => void;
   onTouchMove: (e: TouchEvent) => void;
   onTouchEnd: () => void;
+  onTouchCancel: () => void;
 }
 
 export interface BottomSheetControls {
@@ -97,20 +98,25 @@ export function BottomSheet({
     if (innerRef.current) innerRef.current.style.transform = `translateY(${delta}px)`;
   }
 
+  // 손가락을 따라가느라 덮어썼던 인라인 스타일을 걷어낸다. 이것만으로 CSS 트랜지션이
+  // 시트를 제자리로 되돌린다.
+  function resetDrag() {
+    isDragging.current = false;
+    if (innerRef.current) {
+      innerRef.current.style.transition = '';
+      innerRef.current.style.transform = '';
+    }
+  }
+
   function handleDragEnd() {
     if (!isDragging.current) return;
-    isDragging.current = false;
 
     const delta = dragCurrentY.current;
     const elapsed = Date.now() - dragStartTime.current;
     const velocity = elapsed > 0 ? delta / elapsed : 0;
 
-    if (innerRef.current) {
-      innerRef.current.style.transition = '';
-      innerRef.current.style.transform = '';
-    }
+    resetDrag();
 
-    // 임계값에 못 미치면 위 초기화만으로 CSS 트랜지션이 제자리로 되돌린다.
     if (delta >= DRAG_CLOSE_PX || velocity >= DRAG_CLOSE_VELOCITY) close();
   }
 
@@ -120,6 +126,11 @@ export function BottomSheet({
     onTouchStart: handleDragStart,
     onTouchMove: handleDragMove,
     onTouchEnd: handleDragEnd,
+    // touchcancel은 브라우저가 제스처를 가져갈 때 온다 — 헤더처럼 touch-action: none이
+    // 없는 영역에서 스크롤로 넘어가는 경우가 대표적이다. touchend가 오지 않으므로 여기서
+    // 되돌리지 않으면 시트가 끌린 자리에 transition: none인 채로 멈춘다. 사용자가 놓은 게
+    // 아니라 뺏긴 것이니 임계값과 무관하게 닫지 않고 되돌리기만 한다.
+    onTouchCancel: resetDrag,
   };
 
   const rootStyle = {
