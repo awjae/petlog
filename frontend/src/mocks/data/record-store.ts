@@ -1,9 +1,10 @@
+import type { HealthRecordType } from '@/generated/graphql';
 import { localToday } from '@/shared/utils/date';
 
 type StoredRecord = {
   id: string;
   petId: string;
-  type: string;
+  type: HealthRecordType;
   recordedAt: string;
   numValue?: number;
   textValue?: string;
