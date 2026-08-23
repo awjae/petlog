@@ -17,28 +17,24 @@ export interface UpdatePetFormInput {
 }
 
 export function useUpdatePet() {
-  const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
 
   const [mutate, { loading: mutating }] = useMutation(UPDATE_PET_MUTATION, {
     refetchQueries: ['HomeQuery'],
-    onError: () => setError('정보를 저장하지 못했어요. 다시 시도해주세요.'),
   });
 
   const loading = uploading || mutating;
 
-  async function updatePet(petId: string, input: UpdatePetFormInput): Promise<boolean> {
-    setError('');
-
+  /** 성공하면 null, 실패하면 사용자에게 보여줄 사유를 돌려준다. */
+  async function updatePet(petId: string, input: UpdatePetFormInput): Promise<string | null> {
     let profileImageUrl: string | undefined | null = input.existingProfileImageUrl;
     if (input.imageFile) {
       setUploading(true);
       try {
         profileImageUrl = await uploadImage(input.imageFile);
       } catch (err) {
-        setError(err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요');
         setUploading(false);
-        return false;
+        return err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요';
       }
       setUploading(false);
     }
@@ -60,8 +56,8 @@ export function useUpdatePet() {
       },
     }).catch(() => null);
 
-    return result?.data?.updatePet != null;
+    return result?.data?.updatePet != null ? null : '정보를 저장하지 못했어요. 다시 시도해주세요.';
   }
 
-  return { updatePet, loading, error };
+  return { updatePet, loading };
 }

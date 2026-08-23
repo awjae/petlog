@@ -4,15 +4,18 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
 import { PetForm, type PetFormValues } from '@/features/pet/components/PetForm';
+import { useToast, ToastContainer } from '@/shared/components/Toast';
 import styles from './page.module.css';
 
 export default function NewPetPage() {
   const router = useRouter();
-  const { createPet, loading, error } = useCreatePet();
+  const { createPet, loading } = useCreatePet();
+  const { toasts, addToast, dismiss } = useToast();
 
   async function handleSubmit(values: PetFormValues) {
-    const ok = await createPet(values);
-    if (ok) router.push('/home');
+    const failure = await createPet(values);
+    if (failure) addToast(failure, 'error');
+    else router.push('/home');
   }
 
   return (
@@ -35,9 +38,10 @@ export default function NewPetPage() {
         submitLabel="등록하기"
         submittingLabel="등록 중..."
         submitting={loading}
-        error={error}
         onSubmit={handleSubmit}
       />
+
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </main>
   );
 }

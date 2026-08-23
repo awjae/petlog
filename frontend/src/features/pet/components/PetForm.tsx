@@ -52,8 +52,6 @@ interface PetFormProps {
   submitLabel: string;
   submittingLabel: string;
   submitting: boolean;
-  /** 제출 실패 안내 (등록 화면) */
-  error?: string;
   /** 제출 버튼 위에 덧붙일 것 — 수정 화면의 삭제 링크 */
   children?: ReactNode;
   onSubmit: (values: PetFormValues) => void;
@@ -76,7 +74,6 @@ export function PetForm({
   submitLabel,
   submittingLabel,
   submitting,
-  error,
   children,
   onSubmit,
 }: PetFormProps) {
@@ -304,12 +301,6 @@ export function PetForm({
           </button>
         </div>
       </div>
-
-      {error && (
-        <p className={styles.errorMsg} role="alert">
-          {error}
-        </p>
-      )}
 
       {children}
 

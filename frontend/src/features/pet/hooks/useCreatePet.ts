@@ -16,28 +16,24 @@ export interface CreatePetFormInput {
 }
 
 export function useCreatePet() {
-  const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
 
   const [mutate, { loading: mutating }] = useMutation(CREATE_PET_MUTATION, {
     refetchQueries: ['HomeQuery'],
-    onError: () => setError('등록에 실패했어요. 다시 시도해주세요'),
   });
 
   const loading = uploading || mutating;
 
-  async function createPet(input: CreatePetFormInput): Promise<boolean> {
-    setError('');
-
+  /** 성공하면 null, 실패하면 사용자에게 보여줄 사유를 돌려준다. */
+  async function createPet(input: CreatePetFormInput): Promise<string | null> {
     let profileImageUrl: string | undefined;
     if (input.imageFile) {
       setUploading(true);
       try {
         profileImageUrl = await uploadImage(input.imageFile);
       } catch (err) {
-        setError(err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요');
         setUploading(false);
-        return false;
+        return err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요';
       }
       setUploading(false);
     }
@@ -58,8 +54,8 @@ export function useCreatePet() {
       },
     }).catch(() => null);
 
-    return result?.data?.createPet != null;
+    return result?.data?.createPet != null ? null : '등록에 실패했어요. 다시 시도해주세요';
   }
 
-  return { createPet, loading, error };
+  return { createPet, loading };
 }

@@ -21,17 +21,17 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // 값이 도착하기 전에는 입력을 잠근다 — 폼과 삭제 링크가 같은 기준을 쓴다.
+  const fieldsLocked = fetchLoading && !pet;
+
   async function handleSubmit(values: PetFormValues) {
-    const ok = await updatePet(petId, {
+    const failure = await updatePet(petId, {
       ...values,
       existingProfileImageUrl: pet?.profileImageUrl ?? null,
     });
 
-    if (ok) {
-      router.push(`/pets/${petId}`);
-    } else {
-      addToast('정보를 저장하지 못했어요. 다시 시도해주세요.', 'error');
-    }
+    if (failure) addToast(failure, 'error');
+    else router.push(`/pets/${petId}`);
   }
 
   /* ── 반려동물을 찾을 수 없음 ── */
@@ -75,7 +75,7 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
 
       <PetForm
         initialValues={pet}
-        disabled={fetchLoading && !pet}
+        disabled={fieldsLocked}
         avatarHint="사진 변경"
         submitLabel="저장"
         submittingLabel="저장 중..."
@@ -86,7 +86,7 @@ export default function EditPetPage({ params }: { params: Promise<{ petId: strin
           type="button"
           className={styles.deleteLink}
           onClick={() => setShowDeleteDialog(true)}
-          disabled={fetchLoading && !pet}
+          disabled={fieldsLocked}
         >
           반려동물 삭제
         </button>
