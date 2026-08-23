@@ -223,10 +223,10 @@ test.describe('바텀시트 포커스 — 개별 시트 우선 @integration', ()
       .click();
     await expect(page.getByRole('dialog', { name: '프로필 편집' })).toHaveCSS('opacity', '1');
 
-    // 개별 시트는 열림 애니메이션과 겹치지 않게 50ms 뒤에 포커스를 옮긴다.
-    await page.waitForTimeout(300);
-    expect(await page.evaluate(() => (document.activeElement as HTMLElement)?.id)).toBe(
-      'profile-name',
-    );
+    // 개별 시트는 열림 애니메이션과 겹치지 않게 50ms 뒤에 포커스를 옮긴다. 고정 대기 뒤
+    // 한 번만 보면 부하가 걸린 병렬 실행에서 아직 안 옮겨진 순간을 찍어 깨진다.
+    await expect
+      .poll(() => page.evaluate(() => (document.activeElement as HTMLElement)?.id))
+      .toBe('profile-name');
   });
 });

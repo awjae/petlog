@@ -107,10 +107,14 @@ export function BottomSheet({
     const sheet = innerRef.current;
     if (!sheet) return;
 
-    const opener = document.activeElement as HTMLElement | null;
-    // 시트 자체에 먼저 포커스를 준다. 개별 시트가 입력으로 포커스를 옮기더라도(예:
-    // 프로필 편집) 그쪽이 나중에 실행돼 덮어쓰므로 순서가 어긋나지 않는다.
-    sheet.focus();
+    const active = document.activeElement as HTMLElement | null;
+    // 시트 자체에 포커스를 준다. 단, 개별 시트가 이미 시트 안 요소로 포커스를 옮겼다면
+    // 빼앗지 않는다 — visible은 rAF 두 번 뒤에 켜지므로(useSheetTransition), 부하가
+    // 걸리면 개별 시트의 타이머(예: 프로필 편집의 50ms)가 먼저 실행될 수 있다. 그때
+    // 시트가 포커스를 되가져가면 입력에 커서가 없어 모바일 키보드가 뜨지 않는다.
+    const alreadyInside = !!active && sheet.contains(active);
+    const opener = alreadyInside ? null : active;
+    if (!alreadyInside) sheet.focus();
 
     return () => opener?.focus();
   }, [visible]);
