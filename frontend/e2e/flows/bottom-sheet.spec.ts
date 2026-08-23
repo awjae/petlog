@@ -207,7 +207,7 @@ test.describe('바텀시트 포커스 @integration', () => {
 
 // 껍데기가 여는 순간 시트로 포커스를 옮기므로, 개별 시트가 그 뒤에 입력으로 포커스를
 // 다시 옮기는 흐름이 살아있는지 확인한다. 깨져도 화면은 멀쩡하고 키보드만 안 뜬다.
-test.describe('바텀시트 포커스 — 개별 시트 우선 @integration', () => {
+test.describe('바텀시트 포커스 — 개별 시트 우선 @integration @mock', () => {
   test('프로필 편집은 입력에 포커스가 남는다', async ({ page }, testInfo) => {
     const baseURL = testInfo.project.use.baseURL ?? 'http://localhost:3000';
     await page

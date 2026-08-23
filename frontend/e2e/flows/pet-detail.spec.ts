@@ -11,7 +11,7 @@ import { test, expect } from '@playwright/test';
 const MOCK_PET_ID = 'pet-1';
 const MOCK_PET_NAME = '초코';
 
-test.describe('목업 모드 반려동물 상세 @integration', () => {
+test.describe('목업 모드 반려동물 상세 @integration @mock', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await page
       .context()
