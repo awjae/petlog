@@ -55,6 +55,12 @@ async function stubGraphql(page: import('@playwright/test').Page, pet: Record<st
 }
 
 test.describe('반려동물 정보 수정 @integration', () => {
+  // NEXT_PUBLIC_USE_MOCK=true로 띄운 빌드(CI가 그렇다)에서는 MSW 서비스워커가 fetch를
+  // 가로채는데, Playwright의 page.route는 서비스워커에서 나가는 요청을 보지 못한다.
+  // MSW에 pet 핸들러가 없어 bypass되더라도 그 요청은 워커가 보내므로 아래 stub이
+  // 걸리지 않는다. 이 파일은 응답 내용 자체가 검증 대상이라 워커를 끄고 stub을 쓴다.
+  test.use({ serviceWorkers: 'block' });
+
   test.beforeEach(async ({ page, baseURL }) => {
     await page
       .context()
