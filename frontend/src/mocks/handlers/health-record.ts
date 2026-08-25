@@ -1,9 +1,10 @@
 import { graphql, HttpResponse } from 'msw';
+import type { HealthRecordType } from '@/generated/graphql';
 import { addMockRecord, getAllMockRecords } from '../data/record-store';
 
 type CreateHealthRecordInput = {
   petId: string;
-  type: string;
+  type: HealthRecordType;
   recordedAt: string;
   numValue?: number;
   textValue?: string;
@@ -12,7 +13,7 @@ type CreateHealthRecordInput = {
 const SEED_RECORDS: Array<{
   id: string;
   petId: string;
-  type: string;
+  type: HealthRecordType;
   recordedAt: string;
   numValue: number | null;
   textValue: string | null;

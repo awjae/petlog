@@ -42,7 +42,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('AI 리포트 @integration', () => {
+test.describe('AI 리포트 @integration @mock', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     // frontend/src/proxy.ts의 엣지 라우트 가드(access_token 쿠키 존재 여부만 검사)를
     // 통과시키기 위한 더미 쿠키. 실제 백엔드 발급 쿠키가 아니어도, 이후 모든 GraphQL

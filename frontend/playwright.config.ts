@@ -1,4 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 // 결정 문서: .claude/docs/decisions/013-e2e-vs-frontend-integration-test.md
 //
@@ -11,6 +13,26 @@ import { defineConfig, devices } from '@playwright/test';
 // 두 프로젝트 모두 같은 spec 파일(e2e/flows/*.spec.ts)을 대상으로 하되, 테스트 제목에
 // 붙인 @integration / @e2e 태그로 grep 필터링해 분리한다.
 const BASE_URL = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
+
+// 두 프로젝트는 서로 배타적인 서버 설정을 요구한다 — integration은 목업 모드(MSW)로 띄운
+// 프론트를, e2e는 실제 백엔드에 붙는 비목업 프론트를 전제로 한다. 그래서 지금 떠 있는
+// 서버가 어느 모드인지에 따라 실행 대상을 갈라준다. 그러지 않으면 `npx playwright test`가
+// 어느 모드에서든 반드시 한쪽을 실패시킨다.
+//
+// Next dev 서버는 .env.local을 읽지만 Playwright 러너는 읽지 않으므로 같은 파일을 직접
+// 본다. 셸/CI 환경변수가 있으면 그쪽이 우선이다(CI는 ci.yml에서 명시적으로 넘긴다).
+function readUseMock(): boolean {
+  const fromEnv = process.env.NEXT_PUBLIC_USE_MOCK;
+  if (fromEnv !== undefined) return fromEnv === 'true';
+  try {
+    const envFile = readFileSync(path.join(__dirname, '.env.local'), 'utf8');
+    return /^NEXT_PUBLIC_USE_MOCK\s*=\s*true\s*$/m.test(envFile);
+  } catch {
+    return false;
+  }
+}
+
+const USE_MOCK = readUseMock();
 
 export default defineConfig({
   testDir: './e2e',
@@ -44,13 +66,24 @@ export default defineConfig({
     {
       name: 'integration',
       grep: /@integration/,
+      // @mock은 stub 없이 MSW 핸들러 자체를 검증하는 스펙이다. 목업 모드가 아니면 요청이
+      // 실제 백엔드로 새어 나가 404 화면/무한 로딩으로 깨지므로 아예 제외한다.
+      grepInvert: USE_MOCK ? undefined : /@mock/,
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'e2e',
-      grep: /@e2e/,
-      use: { ...devices['Desktop Chrome'] },
-    },
+    // 목업 모드에서는 MSW가 auth 요청까지 가로채므로(src/mocks/handlers/auth.ts) 실제
+    // 백엔드가 심는 httpOnly 쿠키를 검증할 수 없다 — 이 모드에서는 프로젝트를 통째로 뺀다.
+    // 이때 `npm run test:e2e`는 `Project(s) "e2e" not found`로 거부된다. 의도된 동작이다 —
+    // 목업 모드로 떠 있는 프론트에 대고 e2e를 돌려봐야 의미가 없다.
+    ...(USE_MOCK
+      ? []
+      : [
+          {
+            name: 'e2e',
+            grep: /@e2e/,
+            use: { ...devices['Desktop Chrome'] },
+          },
+        ]),
   ],
 
   // 프론트/백엔드 dev 서버는 여기서 자동 기동하지 않는다. integration 프로젝트는
