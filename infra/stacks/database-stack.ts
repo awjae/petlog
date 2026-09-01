@@ -1,9 +1,22 @@
 import { Construct } from 'constructs';
-import { TerraformStack, TerraformVariable, TerraformOutput, S3Backend } from 'cdktf';
+import {
+  TerraformStack,
+  TerraformVariable,
+  TerraformOutput,
+  TerraformCount,
+  S3Backend,
+  Token,
+  Op,
+  Fn,
+  conditional,
+} from 'cdktf';
 
 import { AwsProvider } from '../.gen/providers/aws/provider';
 import { DbSubnetGroup } from '../.gen/providers/aws/db-subnet-group';
 import { DbInstance } from '../.gen/providers/aws/db-instance';
+import { DbEventSubscription } from '../.gen/providers/aws/db-event-subscription';
+import { SnsTopic } from '../.gen/providers/aws/sns-topic';
+import { SnsTopicSubscription } from '../.gen/providers/aws/sns-topic-subscription';
 
 import {
   DEFAULT_AWS_REGION,
@@ -111,6 +124,46 @@ export class DatabaseStack extends TerraformStack {
       applyImmediately: environment === 'dev',
     });
     this.instance = instance;
+
+    // --- 장애 알림 ---
+    // 2026-08-31, RDS가 KMS 키에 접근하지 못해 스스로 정지했는데(availability 이벤트)
+    // 알림이 없어 로그인 전체가 24시간 마비된 것을 아무도 몰랐다. RDS가 상태 변화를
+    // 직접 SNS로 밀어주게 한다 — CloudWatch 지표 기반 알람은 인스턴스가 멈추면 지표
+    // 자체가 끊겨서 "장애"와 "조용함"을 구분하지 못한다.
+    const alertEmail = new TerraformVariable(this, 'alert_email', {
+      type: 'string',
+      default: '',
+      description:
+        'RDS 장애 알림을 받을 이메일 주소. TF_VAR_alert_email로 주입. ' +
+        '비어 있으면 구독을 만들지 않는다(토픽과 이벤트 구독은 그대로 생성된다).',
+    });
+
+    const alertTopic = new SnsTopic(this, 'db-alert-topic', {
+      name: `petlog-db-alerts-${environment}`,
+    });
+
+    // apply 직후 AWS가 보내는 확인 메일의 링크를 눌러야 구독이 활성화된다(SNS 사양).
+    // 확인 전까지는 상태가 pending confirmation이고 알림이 오지 않는다.
+    new SnsTopicSubscription(this, 'db-alert-email', {
+      // Op.eq에 TS 빈 문자열을 그대로 넘기면 HCL에 `== undefined`로 직렬화되어
+      // 조건이 항상 거짓이 된다. Fn.rawString('')으로 HCL 리터럴 ""를 만들어 비교한다.
+      count: TerraformCount.of(
+        Token.asNumber(conditional(Op.eq(alertEmail.stringValue, Fn.rawString('')), 0, 1)),
+      ),
+      topicArn: alertTopic.arn,
+      protocol: 'email',
+      endpoint: alertEmail.stringValue,
+    });
+
+    // failure: 인스턴스가 기동/복구에 실패한 경우.
+    // availability: 정지/재시작 등 접속 가능 여부가 바뀐 경우 — 이번 사고가 여기 해당한다.
+    new DbEventSubscription(this, 'db-event-subscription', {
+      name: `petlog-db-events-${environment}`,
+      snsTopic: alertTopic.arn,
+      sourceType: 'db-instance',
+      sourceIds: [instance.identifier],
+      eventCategories: ['failure', 'availability'],
+    });
 
     // --- Outputs ---
     new TerraformOutput(this, 'db_endpoint', {
