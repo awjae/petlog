@@ -113,22 +113,13 @@ const SEED_RECORDS: Array<{
 
 export const healthRecordHandlers = [
   graphql.query('HealthRecords', ({ variables }) => {
-    const { petId, type, limit } = variables as {
-      petId: string;
-      type?: HealthRecordType | null;
-      limit?: number | null;
-    };
+    const { petId, type } = variables as { petId: string; type?: HealthRecordType | null };
     const newRecords = getAllMockRecords(petId);
     const seedRecords = SEED_RECORDS.filter((r) => r.petId === petId);
 
     const newIds = new Set(newRecords.map((r) => r.id));
     const merged = [...newRecords, ...seedRecords.filter((r) => !newIds.has(r.id))];
-    const filtered = type ? merged.filter((r) => r.type === type) : merged;
-
-    // 서버처럼 최신 limit건을 돌려준다. 시드 배열은 날짜순이 아니라 정렬 후 자른다.
-    const healthRecords = limit
-      ? [...filtered].sort((a, b) => b.recordedAt.localeCompare(a.recordedAt)).slice(0, limit)
-      : filtered;
+    const healthRecords = type ? merged.filter((r) => r.type === type) : merged;
 
     return HttpResponse.json({ data: { healthRecords } });
   }),

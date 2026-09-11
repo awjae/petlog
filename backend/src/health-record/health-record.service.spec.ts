@@ -56,34 +56,25 @@ describe('HealthRecordService', () => {
       expect(result[1].numValue).toBeNull();
     });
 
-    it('type과 limit을 주면 해당 유형의 최신 기록만 limit건 조회한다', async () => {
+    it('type을 주면 해당 유형의 기록만 조회한다', async () => {
       prisma.healthRecord.findMany.mockResolvedValue([]);
 
-      await service.findAll(USER_ID, PET_ID, { type: HealthRecordType.weight, limit: 10 });
+      await service.findAll(USER_ID, PET_ID, { type: HealthRecordType.weight });
 
       expect(prisma.healthRecord.findMany).toHaveBeenCalledWith({
         where: { petId: PET_ID, deletedAt: null, type: HealthRecordType.weight },
         orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
-        take: 10,
       });
     });
 
     // GraphQL 선택 인자는 명시적 null로 올 수 있다. 그대로 넘기면 Prisma가 요청을 거부한다.
-    it('null로 넘어온 인자는 조건에서 뺀다', async () => {
+    it('null로 넘어온 type은 조건에서 뺀다', async () => {
       prisma.healthRecord.findMany.mockResolvedValue([]);
 
-      await service.findAll(USER_ID, PET_ID, { type: null, limit: null });
+      await service.findAll(USER_ID, PET_ID, { type: null });
 
       const args = prisma.healthRecord.findMany.mock.calls[0][0];
       expect(args.where.type).toBeUndefined();
-      expect(args.take).toBeUndefined();
-    });
-
-    it.each([0, -5])('limit이 %s이면 조회하지 않고 거부한다', async (limit) => {
-      await expect(service.findAll(USER_ID, PET_ID, { limit })).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(prisma.healthRecord.findMany).not.toHaveBeenCalled();
     });
   });
 

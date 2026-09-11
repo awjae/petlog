@@ -19,7 +19,7 @@ export default function PetDetailPage({ params }: { params: Promise<{ petId: str
   const { petId } = use(params);
   const router = useRouter();
   const { pet, loading, error, notFound, refetch } = usePetDetail(petId);
-  // 그래프는 최근 90일 기준이라 개수(limit)로는 자를 수 없다. 체중 기록만 받아 날짜로 거른다.
+  // 그래프는 체중 기록만 받아 최근 90일로 거른다 (toWeightTrend).
   const {
     records,
     loading: recordsLoading,
