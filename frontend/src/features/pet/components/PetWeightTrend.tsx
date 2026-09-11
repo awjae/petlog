@@ -47,12 +47,7 @@ function TrendChart({ trend }: { trend: WeightTrend }) {
   const { points } = trend;
   const first = points[0];
   const last = points[points.length - 1];
-  const coords = toChartCoords(
-    points.map((point) => point.value),
-    WIDTH,
-    HEIGHT,
-    PADDING,
-  );
+  const coords = toChartCoords(points, WIDTH, HEIGHT, PADDING);
 
   return (
     <>
@@ -66,8 +61,9 @@ function TrendChart({ trend }: { trend: WeightTrend }) {
           className={styles.line}
           points={coords.map(({ x, y }) => `${x},${y}`).join(' ')}
         />
+        {/* 같은 날 기록은 recordedAt이 같아 키로 쓰면 중복된다. 점 목록은 순서만 있는 정적 렌더라 인덱스로 충분하다. */}
         {coords.map(({ x, y }, index) => (
-          <circle key={points[index].recordedAt} className={styles.dot} cx={x} cy={y} r={3} />
+          <circle key={index} className={styles.dot} cx={x} cy={y} r={3} />
         ))}
       </svg>
       <div className={styles.axis} aria-hidden="true">
