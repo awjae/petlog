@@ -67,15 +67,63 @@ describe('toWeightTrend', () => {
 
 describe('toChartCoords', () => {
   it('큰 값이 위, 작은 값이 아래에 온다', () => {
-    const [low, high] = toChartCoords([3.0, 3.2], 100, 50, 5);
+    const [low, high] = toChartCoords(
+      [point('2026-09-01T03:00:00.000Z', 3.0), point('2026-09-02T03:00:00.000Z', 3.2)],
+      100,
+      50,
+      5,
+    );
 
     expect(low).toEqual({ x: 5, y: 45 });
     expect(high).toEqual({ x: 95, y: 5 });
   });
 
+  it('점 사이 가로 간격이 실제 날짜 간격에 비례한다', () => {
+    // 9/1 → 9/2(1일) → 9/11(9일). 순번 간격이었다면 가운데 점이 x=50에 온다.
+    const coords = toChartCoords(
+      [
+        point('2026-09-01T03:00:00.000Z', 3.0),
+        point('2026-09-02T03:00:00.000Z', 3.1),
+        point('2026-09-11T03:00:00.000Z', 3.2),
+      ],
+      100,
+      50,
+      5,
+    );
+
+    expect(coords[0].x).toBe(5);
+    expect(coords[1].x).toBeCloseTo(14);
+    expect(coords[2].x).toBe(95);
+  });
+
   it('값이 모두 같아도 NaN 없이 가운데 수평선이 된다', () => {
-    const coords = toChartCoords([3.1, 3.1, 3.1], 100, 50, 5);
+    const coords = toChartCoords(
+      [
+        point('2026-09-01T03:00:00.000Z', 3.1),
+        point('2026-09-02T03:00:00.000Z', 3.1),
+        point('2026-09-03T03:00:00.000Z', 3.1),
+      ],
+      100,
+      50,
+      5,
+    );
 
     expect(coords.map((c) => c.y)).toEqual([25, 25, 25]);
   });
+
+  // 기록 시각은 날짜 + 정오로 저장돼 같은 날 기록끼리는 recordedAt이 같다.
+  it('모두 같은 날 기록이어도 NaN 없이 가운데에 모인다', () => {
+    const coords = toChartCoords(
+      [point('2026-09-01T03:00:00.000Z', 3.0), point('2026-09-01T03:00:00.000Z', 3.2)],
+      100,
+      50,
+      5,
+    );
+
+    expect(coords.map((c) => c.x)).toEqual([50, 50]);
+  });
 });
+
+function point(recordedAt: string, value: number) {
+  return { recordedAt, value };
+}
