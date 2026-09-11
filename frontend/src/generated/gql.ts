@@ -33,8 +33,8 @@ type Documents = {
   '\n  query Medications($petId: ID!) {\n    medications(petId: $petId) {\n      id\n      petId\n      name\n      dosage\n      frequency\n      startDate\n      endDate\n      createdAt\n      updatedAt\n    }\n  }\n': typeof types.MedicationsDocument;
   '\n  mutation RegisterPushToken($token: String!) {\n    registerPushToken(token: $token)\n  }\n': typeof types.RegisterPushTokenDocument;
   '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n': typeof types.SendTestPushNotificationDocument;
-  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n': typeof types.NotificationPreferenceDocument;
-  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n': typeof types.UpdateNotificationPreferenceDocument;
+  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n': typeof types.NotificationPreferenceDocument;
+  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n': typeof types.UpdateNotificationPreferenceDocument;
   '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n': typeof types.NotificationAuthCheckDocument;
   '\n  mutation CreatePet($input: CreatePetInput!) {\n    createPet(input: $input) {\n      id\n      name\n      species\n    }\n  }\n': typeof types.CreatePetDocument;
   '\n    mutation UpdatePet($id: ID!, $input: UpdatePetInput!) {\n      updatePet(id: $id, input: $input) {\n        id\n        name\n        species\n        breed\n        birthDate\n        gender\n        isNeutered\n        profileImageUrl\n      }\n    }\n  ': typeof types.UpdatePetDocument;
@@ -96,9 +96,9 @@ const documents: Documents = {
     types.RegisterPushTokenDocument,
   '\n  mutation SendTestPushNotification {\n    sendTestPushNotification\n  }\n':
     types.SendTestPushNotificationDocument,
-  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n':
+  '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n':
     types.NotificationPreferenceDocument,
-  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n':
+  '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n':
     types.UpdateNotificationPreferenceDocument,
   '\n  query NotificationAuthCheck {\n    me {\n      id\n    }\n  }\n':
     types.NotificationAuthCheckDocument,
@@ -275,14 +275,14 @@ export function gql(
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n',
-): (typeof documents)['\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n'];
+  source: '\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n',
+): (typeof documents)['\n  query NotificationPreference {\n    notificationPreference {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(
-  source: '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n',
-): (typeof documents)['\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n    }\n  }\n'];
+  source: '\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n',
+): (typeof documents)['\n  mutation UpdateNotificationPreference($input: UpdateNotificationPreferenceInput!) {\n    updateNotificationPreference(input: $input) {\n      vaccinationDueEnabled\n      appointmentReminderEnabled\n      weeklyCheckinEnabled\n      medicationReminderEnabled\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -10,6 +10,7 @@ const DEFAULT_PREFERENCE: NotificationPreference = {
   vaccinationDueEnabled: true,
   appointmentReminderEnabled: true,
   weeklyCheckinEnabled: true,
+  medicationReminderEnabled: true,
 };
 
 // 탈퇴를 요청한 계정은 30일 그레이스 기간 동안 데이터가 그대로 남아 있지만, 알림 대상에서는
@@ -75,6 +76,7 @@ export class NotificationService {
       vaccinationDueEnabled: pref.vaccinationDueEnabled,
       appointmentReminderEnabled: pref.appointmentReminderEnabled,
       weeklyCheckinEnabled: pref.weeklyCheckinEnabled,
+      medicationReminderEnabled: pref.medicationReminderEnabled,
     };
   }
 
@@ -91,6 +93,7 @@ export class NotificationService {
       vaccinationDueEnabled: pref.vaccinationDueEnabled,
       appointmentReminderEnabled: pref.appointmentReminderEnabled,
       weeklyCheckinEnabled: pref.weeklyCheckinEnabled,
+      medicationReminderEnabled: pref.medicationReminderEnabled,
     };
   }
 
@@ -185,6 +188,52 @@ export class NotificationService {
     }
 
     this.logger.log(`병원 방문 알림 스캔 완료: ${dueAppointments.length}건 대상`);
+  }
+
+  // 투약 종료일(endDate) 당일 스캔. 접종과 동일하게 당일 구간 조회 + referenceId 기준
+  // 발송 이력 체크로 중복 발송을 방지한다. 종료일이 없는(기한 없는) 투약은 구간 조건에
+  // 걸리지 않아 자연히 제외된다.
+  async scanAndSendMedicationEnd(): Promise<void> {
+    const { start, end } = kstDayRange();
+
+    const endingMedications = await this.prisma.medication.findMany({
+      where: {
+        deletedAt: null,
+        endDate: { gte: start, lt: end },
+        pet: { user: ACTIVE_USER },
+      },
+      include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
+    });
+
+    for (const medication of endingMedications) {
+      if (medication.pet.deletedAt) continue;
+
+      const preference = await this.getPreference(medication.pet.userId);
+      if (!preference.medicationReminderEnabled) continue;
+
+      const alreadySent = await this.prisma.notification.findFirst({
+        where: {
+          type: NotificationType.medicationReminder,
+          referenceId: medication.id,
+          referenceType: NotificationReferenceType.medication,
+          sentAt: { not: null },
+        },
+      });
+      if (alreadySent) continue;
+
+      // name은 선택 입력이라 비어 있을 수 있다.
+      const medicationName = medication.name ? `${medication.name} ` : '';
+      await this.sendAndLog({
+        userId: medication.pet.userId,
+        type: NotificationType.medicationReminder,
+        title: `[Petlog] ${medication.pet.name} 투약 종료 알림`,
+        body: `오늘은 ${medicationName}투약 마지막 날이에요.`,
+        referenceId: medication.id,
+        referenceType: NotificationReferenceType.medication,
+      });
+    }
+
+    this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);
   }
 
   // 건강기록 권장 알림. pet의 최신 HealthRecord.recordedAt이 7일 이상 경과하면 발송한다.
