@@ -70,3 +70,5 @@ mobile/libs/*.keystore
 # Firebase 서비스 계정 키 — 실제 프라이빗 키가 들어있어 절대 커밋하지 않는다.
 # backend는 이 파일을 직접 읽지 않고 backend/.env의 FIREBASE_* 값으로 동작한다.
 libs/firebase/serviceAccountKey.json
+# Android 에뮬레이터 버그리포트 (adb bugreport 산출물)
+bugreport-*.zip
