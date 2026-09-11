@@ -1,8 +1,7 @@
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
 
-// ponytail: 최근 10회 고정. 기간 선택(1개월/3개월)은 사용자가 원하면 그때 추가
-// 서버 조회에도 같은 값을 limit으로 넘긴다.
-export const TREND_LIMIT = 10;
+// ponytail: 최근 90일 고정. 기간 선택(30일/1년)은 사용자가 원하면 그때 추가
+export const TREND_DAYS = 90;
 
 export interface WeightPoint {
   recordedAt: string;
@@ -17,18 +16,27 @@ export interface WeightTrend {
 }
 
 /**
- * 체중 기록만 골라 최근 기록들을 오래된 순으로 돌려준다.
+ * 오늘을 포함한 최근 90일의 체중 기록을 오래된 순으로 돌려준다.
  * 점이 2개 미만이면 변화를 그릴 수 없으므로 null.
+ *
+ * 개수가 아니라 기간으로 자른다. 가로축이 날짜 간격이라 오래된 기록 하나가 섞이면
+ * 최근 기록들이 오른쪽 끝에 몰려 보이지 않는다.
  */
-export function toWeightTrend(records: HealthRecord[]): WeightTrend | null {
+export function toWeightTrend(records: HealthRecord[], now: Date = new Date()): WeightTrend | null {
+  // 기록 시각은 로컬 날짜의 정오로 저장되므로 경계도 로컬 0시로 잡는다.
+  const windowStart = new Date(now);
+  windowStart.setHours(0, 0, 0, 0);
+  windowStart.setDate(windowStart.getDate() - (TREND_DAYS - 1));
+
   const points = records
     .filter(
       (record): record is HealthRecord & { numValue: number } =>
-        record.type === 'weight' && record.numValue != null,
+        record.type === 'weight' &&
+        record.numValue != null &&
+        new Date(record.recordedAt).getTime() >= windowStart.getTime(),
     )
     .map((record) => ({ recordedAt: record.recordedAt, value: record.numValue }))
-    .sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime())
-    .slice(-TREND_LIMIT);
+    .sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
 
   if (points.length < 2) return null;
 

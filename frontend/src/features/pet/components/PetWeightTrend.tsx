@@ -1,4 +1,4 @@
-import { toChartCoords, type WeightTrend } from '../utils/weightTrend';
+import { TREND_DAYS, toChartCoords, type WeightTrend } from '../utils/weightTrend';
 import { formatShortDate } from '../utils/petMeta';
 import styles from './PetWeightTrend.module.css';
 
@@ -25,7 +25,7 @@ export function PetWeightTrend({ trend, error }: PetWeightTrendProps) {
         <h3 className={styles.title}>체중 변화</h3>
         {trend && (
           <span className={styles.change}>
-            최근 {trend.points.length}회 {formatChange(trend.change)}
+            최근 {TREND_DAYS}일 {formatChange(trend.change)}
           </span>
         )}
       </div>
@@ -34,7 +34,9 @@ export function PetWeightTrend({ trend, error }: PetWeightTrendProps) {
         {error ? (
           <p className={styles.message}>체중 기록을 불러오지 못했어요</p>
         ) : !trend ? (
-          <p className={styles.message}>체중을 2번 이상 기록하면 변화를 볼 수 있어요</p>
+          <p className={styles.message}>
+            최근 {TREND_DAYS}일 동안 체중을 2번 이상 기록하면 변화를 볼 수 있어요
+          </p>
         ) : (
           <TrendChart trend={trend} />
         )}

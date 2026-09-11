@@ -8,7 +8,7 @@ import { usePetDetail } from '@/features/pet/hooks/usePet';
 import { PetProfileSummary } from '@/features/pet/components/PetProfileSummary';
 import { PetStatCards } from '@/features/pet/components/PetStatCards';
 import { PetWeightTrend } from '@/features/pet/components/PetWeightTrend';
-import { TREND_LIMIT, toWeightTrend } from '@/features/pet/utils/weightTrend';
+import { toWeightTrend } from '@/features/pet/utils/weightTrend';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { PetRecentRecords } from '@/features/pet/components/PetRecentRecords';
 import { PetQuickLinks } from '@/features/pet/components/PetQuickLinks';
@@ -19,11 +19,12 @@ export default function PetDetailPage({ params }: { params: Promise<{ petId: str
   const { petId } = use(params);
   const router = useRouter();
   const { pet, loading, error, notFound, refetch } = usePetDetail(petId);
+  // 그래프는 최근 90일 기준이라 개수(limit)로는 자를 수 없다. 체중 기록만 받아 날짜로 거른다.
   const {
     records,
     loading: recordsLoading,
     error: recordsError,
-  } = useHealthRecords(petId, { type: 'weight', limit: TREND_LIMIT });
+  } = useHealthRecords(petId, { type: 'weight' });
 
   /* ── 반려동물을 찾을 수 없음 (헤더 없이 중앙 정렬) ── */
   if (notFound) {

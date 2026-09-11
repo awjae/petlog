@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
 import { toChartCoords, toWeightTrend } from './weightTrend';
 
+// TZ=Asia/Seoul 고정 (vitest.config.ts의 test.env). 기간 경계가 실제 날짜에 따라 흔들리지
+// 않도록 "오늘"을 고정해서 넘긴다.
+const NOW = new Date('2026-09-11T15:00:00+09:00');
+
 function record(overrides: Partial<HealthRecord>): HealthRecord {
   return {
     id: 'hr',
@@ -14,52 +18,93 @@ function record(overrides: Partial<HealthRecord>): HealthRecord {
   };
 }
 
+// 앱은 기록 시각을 선택한 날짜의 로컬 정오로 저장한다 (useCreateHealthRecord).
+function localNoon(date: string): string {
+  return new Date(`${date}T12:00:00`).toISOString();
+}
+
 describe('toWeightTrend', () => {
   it('체중 기록만 오래된 순으로 모은다', () => {
     // 서버는 최신순으로 내려준다.
-    const trend = toWeightTrend([
-      record({ id: 'a', recordedAt: '2026-09-03T03:00:00.000Z', numValue: 3.2 }),
-      record({ id: 'b', type: 'activity', recordedAt: '2026-09-02T03:00:00.000Z', numValue: 30 }),
-      record({ id: 'c', recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
-    ]);
+    const trend = toWeightTrend(
+      [
+        record({ id: 'a', recordedAt: '2026-09-03T03:00:00.000Z', numValue: 3.2 }),
+        record({ id: 'b', type: 'activity', recordedAt: '2026-09-02T03:00:00.000Z', numValue: 30 }),
+        record({ id: 'c', recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
+      ],
+      NOW,
+    );
 
     expect(trend?.points.map((p) => p.value)).toEqual([3.0, 3.2]);
   });
 
   it('값이 없는 체중 기록은 건너뛴다', () => {
-    const trend = toWeightTrend([
-      record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
-      record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: null }),
-    ]);
+    const trend = toWeightTrend(
+      [
+        record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
+        record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: null }),
+      ],
+      NOW,
+    );
 
     expect(trend).toBeNull();
   });
 
   it('점이 2개 미만이면 null이다', () => {
-    expect(toWeightTrend([])).toBeNull();
-    expect(toWeightTrend([record({})])).toBeNull();
+    expect(toWeightTrend([], NOW)).toBeNull();
+    expect(toWeightTrend([record({})], NOW)).toBeNull();
   });
 
-  it('최근 10회만 남긴다', () => {
+  it('오늘을 포함한 최근 90일 기록만 쓴다', () => {
+    // 9/11 기준 90일은 6/14 ~ 9/11이다. 6/13 기록은 빠진다.
+    const trend = toWeightTrend(
+      [
+        record({ id: 'out', recordedAt: localNoon('2026-06-13'), numValue: 2.8 }),
+        record({ id: 'first', recordedAt: localNoon('2026-06-14'), numValue: 3.0 }),
+        record({ id: 'today', recordedAt: localNoon('2026-09-11'), numValue: 3.4 }),
+      ],
+      NOW,
+    );
+
+    expect(trend?.points.map((p) => p.recordedAt)).toEqual([
+      localNoon('2026-06-14'),
+      localNoon('2026-09-11'),
+    ]);
+  });
+
+  it('90일 안이면 10건이 넘어도 모두 쓴다', () => {
     const records = Array.from({ length: 12 }, (_, i) =>
       record({
         id: `hr-${i}`,
-        recordedAt: new Date(Date.UTC(2026, 8, i + 1, 3)).toISOString(),
+        recordedAt: localNoon(`2026-08-${String(20 + i).padStart(2, '0')}`),
         numValue: 3 + i / 10,
       }),
     );
 
-    const trend = toWeightTrend(records);
+    expect(toWeightTrend(records, NOW)?.points).toHaveLength(12);
+  });
 
-    expect(trend?.points).toHaveLength(10);
-    expect(trend?.points[0].recordedAt).toBe('2026-09-03T03:00:00.000Z');
+  it('오래된 기록이 있어도 90일 안에 2건 미만이면 null이다', () => {
+    // 빈 상태 문구가 "최근 90일" 기준인 이유다. 전체 기록 수로는 2건이다.
+    const trend = toWeightTrend(
+      [
+        record({ recordedAt: localNoon('2026-05-01'), numValue: 3.0 }),
+        record({ recordedAt: localNoon('2026-09-10'), numValue: 3.2 }),
+      ],
+      NOW,
+    );
+
+    expect(trend).toBeNull();
   });
 
   it('변화량의 부동소수 오차를 반올림한다', () => {
-    const trend = toWeightTrend([
-      record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
-      record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: 3.2 }),
-    ]);
+    const trend = toWeightTrend(
+      [
+        record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
+        record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: 3.2 }),
+      ],
+      NOW,
+    );
 
     expect(trend?.change).toBe(0.2);
   });
