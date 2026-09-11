@@ -14,12 +14,14 @@ describe('NotificationService 당일 스캔 구간', () => {
   let prisma: {
     vaccination: { findMany: jest.Mock };
     appointment: { findMany: jest.Mock };
+    medication: { findMany: jest.Mock };
   };
 
   beforeEach(() => {
     prisma = {
       vaccination: { findMany: jest.fn().mockResolvedValue([]) },
       appointment: { findMany: jest.fn().mockResolvedValue([]) },
+      medication: { findMany: jest.fn().mockResolvedValue([]) },
     };
     service = new NotificationService(
       prisma as unknown as PrismaService,
@@ -52,6 +54,16 @@ describe('NotificationService 당일 스캔 구간', () => {
     const { where } = prisma.appointment.findMany.mock.calls[0][0];
     expect(where.scheduledAt.gte.toISOString()).toBe(KST_DAY_START);
     expect(where.scheduledAt.lt.toISOString()).toBe(KST_DAY_END);
+  });
+
+  it('투약 종료 스캔이 서울 새벽에도 서울 기준 당일 구간을 쓴다', async () => {
+    jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
+
+    await service.scanAndSendMedicationEnd();
+
+    const { where } = prisma.medication.findMany.mock.calls[0][0];
+    expect(where.endDate.gte.toISOString()).toBe(KST_DAY_START);
+    expect(where.endDate.lt.toISOString()).toBe(KST_DAY_END);
   });
 
   // 크론이 서울 09시로 옮겨진 뒤의 실제 실행 시각. 이때 UTC 날짜는 아직 07-29다.
@@ -114,5 +126,81 @@ describe('NotificationService 탈퇴 계정 제외', () => {
     expect(where.deletedAt).toBeNull();
     expect(where.user.deletionRequestedAt).toBeNull();
     expect(where.user.anonymizedAt).toBeNull();
+  });
+});
+
+describe('NotificationService 투약 종료 알림', () => {
+  const ENDING_MEDICATION = {
+    id: 'med-1',
+    name: '심장사상충약',
+    pet: { id: 'pet-1', name: '초코', userId: 'user-1', deletedAt: null },
+  };
+
+  let service: NotificationService;
+  let push: { send: jest.Mock };
+  let prisma: {
+    medication: { findMany: jest.Mock };
+    notificationPreference: { findUnique: jest.Mock };
+    notification: { findFirst: jest.Mock; create: jest.Mock };
+    pushToken: { findMany: jest.Mock };
+  };
+
+  beforeEach(() => {
+    prisma = {
+      medication: { findMany: jest.fn().mockResolvedValue([ENDING_MEDICATION]) },
+      notificationPreference: { findUnique: jest.fn().mockResolvedValue(null) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
+      pushToken: { findMany: jest.fn().mockResolvedValue([{ token: 'token-1' }]) },
+    };
+    push = { send: jest.fn() };
+    service = new NotificationService(
+      prisma as unknown as PrismaService,
+      push as unknown as PushSender,
+    );
+  });
+
+  it('종료일 당일인 투약을 medication 참조로 기록하고 발송한다', async () => {
+    await service.scanAndSendMedicationEnd();
+
+    expect(prisma.notification.create.mock.calls[0][0].data).toMatchObject({
+      userId: 'user-1',
+      type: 'medicationReminder',
+      referenceId: 'med-1',
+      referenceType: 'medication',
+    });
+    expect(push.send).toHaveBeenCalledWith(
+      'token-1',
+      '[Petlog] 초코 투약 종료 알림',
+      '오늘은 심장사상충약 투약 마지막 날이에요.',
+    );
+  });
+
+  it('투약 종료 알림을 끈 사용자에게는 보내지 않는다', async () => {
+    prisma.notificationPreference.findUnique.mockResolvedValue({
+      vaccinationDueEnabled: true,
+      appointmentReminderEnabled: true,
+      weeklyCheckinEnabled: true,
+      medicationReminderEnabled: false,
+    });
+
+    await service.scanAndSendMedicationEnd();
+
+    expect(push.send).not.toHaveBeenCalled();
+  });
+
+  it('이미 보낸 투약은 다시 보내지 않는다', async () => {
+    prisma.notification.findFirst.mockResolvedValue({ id: 'noti-1' });
+
+    await service.scanAndSendMedicationEnd();
+
+    expect(push.send).not.toHaveBeenCalled();
+  });
+
+  it('탈퇴 요청한 계정의 pet을 조회하지 않는다', async () => {
+    await service.scanAndSendMedicationEnd();
+
+    const { where } = prisma.medication.findMany.mock.calls[0][0];
+    expect(where.pet.user.deletionRequestedAt).toBeNull();
+    expect(where.pet.user.anonymizedAt).toBeNull();
   });
 });
