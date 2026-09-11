@@ -200,6 +200,7 @@ type Mutation {
 
 type NotificationPreference {
   appointmentReminderEnabled: Boolean!
+  medicationReminderEnabled: Boolean!
   vaccinationDueEnabled: Boolean!
   weeklyCheckinEnabled: Boolean!
 }
@@ -360,6 +361,7 @@ input UpdateMedicationInput {
 
 input UpdateNotificationPreferenceInput {
   appointmentReminderEnabled: Boolean
+  medicationReminderEnabled: Boolean
   vaccinationDueEnabled: Boolean
   weeklyCheckinEnabled: Boolean
 }

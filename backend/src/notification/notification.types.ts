@@ -10,6 +10,9 @@ export class NotificationPreference {
 
   @Field()
   weeklyCheckinEnabled!: boolean;
+
+  @Field()
+  medicationReminderEnabled!: boolean;
 }
 
 @InputType()
@@ -22,4 +25,7 @@ export class UpdateNotificationPreferenceInput {
 
   @Field({ nullable: true })
   weeklyCheckinEnabled?: boolean;
+
+  @Field({ nullable: true })
+  medicationReminderEnabled?: boolean;
 }
