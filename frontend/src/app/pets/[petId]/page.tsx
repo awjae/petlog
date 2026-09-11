@@ -8,7 +8,7 @@ import { usePetDetail } from '@/features/pet/hooks/usePet';
 import { PetProfileSummary } from '@/features/pet/components/PetProfileSummary';
 import { PetStatCards } from '@/features/pet/components/PetStatCards';
 import { PetWeightTrend } from '@/features/pet/components/PetWeightTrend';
-import { toWeightTrend } from '@/features/pet/utils/weightTrend';
+import { TREND_LIMIT, toWeightTrend } from '@/features/pet/utils/weightTrend';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { PetRecentRecords } from '@/features/pet/components/PetRecentRecords';
 import { PetQuickLinks } from '@/features/pet/components/PetQuickLinks';
@@ -19,7 +19,11 @@ export default function PetDetailPage({ params }: { params: Promise<{ petId: str
   const { petId } = use(params);
   const router = useRouter();
   const { pet, loading, error, notFound, refetch } = usePetDetail(petId);
-  const { records, loading: recordsLoading, error: recordsError } = useHealthRecords(petId);
+  const {
+    records,
+    loading: recordsLoading,
+    error: recordsError,
+  } = useHealthRecords(petId, { type: 'weight', limit: TREND_LIMIT });
 
   /* ── 반려동물을 찾을 수 없음 (헤더 없이 중앙 정렬) ── */
   if (notFound) {

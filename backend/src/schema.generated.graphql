@@ -228,7 +228,7 @@ type Query {
   activeMedications(petId: ID!): [Medication!]!
   appointments(petId: ID!): [Appointment!]!
   consentStatus: ConsentStatus!
-  healthRecords(petId: ID!): [HealthRecord!]!
+  healthRecords(limit: Int, petId: ID!, type: HealthRecordType): [HealthRecord!]!
   me: User!
   medicalEvents(petId: ID!): [MedicalEvent!]!
   medications(petId: ID!): [Medication!]!

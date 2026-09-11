@@ -13,11 +13,24 @@ export class HealthRecordService {
     private readonly petService: PetService,
   ) {}
 
-  async findAll(userId: string, petId: string) {
+  // type·limit을 주지 않으면 전체를 돌려준다(타임라인). GraphQL은 선택 인자를 null로 넘길 수
+  // 있는데 Prisma는 enum 필드의 null 조건과 take: null을 거부하므로 undefined로 바꾼다.
+  async findAll(
+    userId: string,
+    petId: string,
+    filter: { type?: HealthRecordType | null; limit?: number | null } = {},
+  ) {
+    // Prisma는 음수 take를 "뒤에서부터"로 해석해 가장 오래된 기록을 돌려준다. 최신 N건을
+    // 기대한 호출자가 조용히 틀린 데이터를 받지 않도록 거부한다.
+    if (filter.limit != null && filter.limit < 1) {
+      throw new BadRequestException('limit은 1 이상이어야 합니다.');
+    }
+
     await this.petService.assertOwnership(userId, petId);
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId, deletedAt: null },
+      where: { petId, deletedAt: null, type: filter.type ?? undefined },
       orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
+      take: filter.limit ?? undefined,
     });
     return records.map(this.serialize);
   }

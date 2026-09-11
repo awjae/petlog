@@ -1,7 +1,8 @@
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
 
 // ponytail: 최근 10회 고정. 기간 선택(1개월/3개월)은 사용자가 원하면 그때 추가
-const TREND_LIMIT = 10;
+// 서버 조회에도 같은 값을 limit으로 넘긴다.
+export const TREND_LIMIT = 10;
 
 export interface WeightPoint {
   recordedAt: string;
