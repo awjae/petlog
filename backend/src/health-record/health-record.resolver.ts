@@ -1,5 +1,6 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
+import { HealthRecordType } from '@prisma/client';
 import { HealthRecordService } from './health-record.service';
 import {
   HealthRecord,
@@ -16,8 +17,12 @@ export class HealthRecordResolver {
   constructor(private readonly healthRecordService: HealthRecordService) {}
 
   @Query(() => [HealthRecord])
-  healthRecords(@CurrentUser() user: AuthUser, @Args('petId', { type: () => ID }) petId: string) {
-    return this.healthRecordService.findAll(user.id, petId);
+  healthRecords(
+    @CurrentUser() user: AuthUser,
+    @Args('petId', { type: () => ID }) petId: string,
+    @Args('type', { type: () => HealthRecordType, nullable: true }) type?: HealthRecordType | null,
+  ) {
+    return this.healthRecordService.findAll(user.id, petId, { type });
   }
 
   @Mutation(() => HealthRecord)

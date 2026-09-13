@@ -123,6 +123,7 @@ export type CreateHealthRecordMutation = {
 
 export type HealthRecordsQueryVariables = Exact<{
   petId: string | number;
+  type?: HealthRecordType | null | undefined;
 }>;
 
 export type HealthRecordsQuery = {
@@ -685,6 +686,11 @@ export const HealthRecordsDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'type' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'HealthRecordType' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -697,6 +703,11 @@ export const HealthRecordsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'petId' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'petId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'type' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'type' } },
               },
             ],
             selectionSet: {

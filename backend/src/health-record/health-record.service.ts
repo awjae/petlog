@@ -13,10 +13,12 @@ export class HealthRecordService {
     private readonly petService: PetService,
   ) {}
 
-  async findAll(userId: string, petId: string) {
+  // type을 주지 않으면 전체를 돌려준다(타임라인). GraphQL은 선택 인자를 null로 넘길 수
+  // 있는데 Prisma는 enum 필드의 null 조건을 거부하므로 undefined로 바꾼다.
+  async findAll(userId: string, petId: string, filter: { type?: HealthRecordType | null } = {}) {
     await this.petService.assertOwnership(userId, petId);
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId, deletedAt: null },
+      where: { petId, deletedAt: null, type: filter.type ?? undefined },
       orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
     });
     return records.map(this.serialize);

@@ -113,14 +113,15 @@ const SEED_RECORDS: Array<{
 
 export const healthRecordHandlers = [
   graphql.query('HealthRecords', ({ variables }) => {
-    const { petId } = variables as { petId: string };
+    const { petId, type } = variables as { petId: string; type?: HealthRecordType | null };
     const newRecords = getAllMockRecords(petId);
     const seedRecords = SEED_RECORDS.filter((r) => r.petId === petId);
 
     const newIds = new Set(newRecords.map((r) => r.id));
     const merged = [...newRecords, ...seedRecords.filter((r) => !newIds.has(r.id))];
+    const healthRecords = type ? merged.filter((r) => r.type === type) : merged;
 
-    return HttpResponse.json({ data: { healthRecords: merged } });
+    return HttpResponse.json({ data: { healthRecords } });
   }),
 
   graphql.mutation('CreateHealthRecord', ({ variables }) => {

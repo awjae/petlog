@@ -55,6 +55,27 @@ describe('HealthRecordService', () => {
       expect(result[0].numValue).toBe(5.2);
       expect(result[1].numValue).toBeNull();
     });
+
+    it('type을 주면 해당 유형의 기록만 조회한다', async () => {
+      prisma.healthRecord.findMany.mockResolvedValue([]);
+
+      await service.findAll(USER_ID, PET_ID, { type: HealthRecordType.weight });
+
+      expect(prisma.healthRecord.findMany).toHaveBeenCalledWith({
+        where: { petId: PET_ID, deletedAt: null, type: HealthRecordType.weight },
+        orderBy: [{ recordedAt: 'desc' }, { createdAt: 'desc' }],
+      });
+    });
+
+    // GraphQL 선택 인자는 명시적 null로 올 수 있다. 그대로 넘기면 Prisma가 요청을 거부한다.
+    it('null로 넘어온 type은 조건에서 뺀다', async () => {
+      prisma.healthRecord.findMany.mockResolvedValue([]);
+
+      await service.findAll(USER_ID, PET_ID, { type: null });
+
+      const args = prisma.healthRecord.findMany.mock.calls[0][0];
+      expect(args.where.type).toBeUndefined();
+    });
   });
 
   describe('create — 타입별 필드 검증', () => {

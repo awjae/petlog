@@ -6,8 +6,8 @@ export const HEALTH_RECORDS_QUERY: TypedDocumentNode<
   HealthRecordsQuery,
   HealthRecordsQueryVariables
 > = gql`
-  query HealthRecords($petId: ID!) {
-    healthRecords(petId: $petId) {
+  query HealthRecords($petId: ID!, $type: HealthRecordType) {
+    healthRecords(petId: $petId, type: $type) {
       id
       type
       recordedAt
