@@ -34,6 +34,7 @@ export interface NotificationPreference {
   vaccinationDueEnabled: boolean;
   appointmentReminderEnabled: boolean;
   weeklyCheckinEnabled: boolean;
+  medicationReminderEnabled: boolean;
 }
 
 interface NotificationPreferenceData {
@@ -49,6 +50,7 @@ export const NOTIFICATION_PREFERENCE_QUERY: TypedDocumentNode<
       vaccinationDueEnabled
       appointmentReminderEnabled
       weeklyCheckinEnabled
+      medicationReminderEnabled
     }
   }
 `;
@@ -57,6 +59,7 @@ export interface UpdateNotificationPreferenceInput {
   vaccinationDueEnabled?: boolean;
   appointmentReminderEnabled?: boolean;
   weeklyCheckinEnabled?: boolean;
+  medicationReminderEnabled?: boolean;
 }
 
 interface UpdateNotificationPreferenceData {
@@ -75,6 +78,7 @@ export const UPDATE_NOTIFICATION_PREFERENCE_MUTATION: TypedDocumentNode<
       vaccinationDueEnabled
       appointmentReminderEnabled
       weeklyCheckinEnabled
+      medicationReminderEnabled
     }
   }
 `;
