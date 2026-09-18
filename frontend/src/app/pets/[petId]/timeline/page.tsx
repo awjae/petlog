@@ -2,7 +2,8 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, FileDown } from 'lucide-react';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { HealthRecordTimeline } from '@/features/health-record/components/HealthRecordTimeline';
 import { RecordBottomSheet } from '@/features/health-record/components/RecordBottomSheet';
@@ -33,7 +34,15 @@ export default function TimelinePage({ params }: Props) {
           <ChevronLeft size={24} strokeWidth={2} />
         </button>
         <h1 className={styles.title}>건강 기록</h1>
-        <div className={styles.headerRight} />
+        <div className={styles.headerRight}>
+          <Link
+            href={`/pets/${petId}/export`}
+            className={styles.exportButton}
+            aria-label="기록 내보내기"
+          >
+            <FileDown size={20} strokeWidth={2} />
+          </Link>
+        </div>
       </header>
 
       {/* ── 로딩 ── */}
