@@ -66,10 +66,13 @@ export type Gender = 'female' | 'male' | 'unknown';
 export type HealthRecordType =
   | 'activity'
   | 'appetite'
+  | 'glucose'
   | 'mood'
   | 'stool'
   | 'symptom'
+  | 'temperature'
   | 'vomit'
+  | 'waterIntake'
   | 'weight';
 
 export type ReportGeneratedBy = 'ai' | 'mock';

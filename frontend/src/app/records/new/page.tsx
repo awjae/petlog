@@ -8,11 +8,14 @@ import {
   COUNT_OPTIONS,
   DAILY_TYPES,
   HEALTH_TYPES,
+  NUMERIC_FIELDS,
   SEVERITY_OPTIONS,
   STOOL_TYPES,
   SYMPTOM_OPTIONS,
   VOMIT_CONTENTS,
+  isNumericField,
 } from '@/features/health-record/constants/recordOptions';
+import { TYPE_LABEL } from '@/features/health-record/types/health-record.types';
 import { useNewRecordForm } from '@/features/health-record/hooks/useNewRecordForm';
 import styles from './page.module.css';
 
@@ -49,6 +52,8 @@ function NewRecordContent() {
     setVomitContent,
     vomitCount,
     setVomitCount,
+    numericValue,
+    setNumericValue,
     isValid,
     handleSubmit,
     submitting,
@@ -189,6 +194,29 @@ function NewRecordContent() {
                 required
               />
               <span className={styles.unit}>kg</span>
+            </div>
+          </section>
+        )}
+
+        {/* ── 혈당 · 체온 · 음수량 ──
+            셋 다 "숫자 하나 + 단위"라 명세(NUMERIC_FIELDS)만 바꿔 끼우고 블록은 하나만 둔다. */}
+        {isNumericField(recordType) && (
+          <section className={styles.section}>
+            <h2 className={styles.sectionLabel}>{TYPE_LABEL[recordType]}</h2>
+            <div className={styles.inputRow}>
+              <input
+                type="number"
+                className={styles.numberInput}
+                value={numericValue}
+                onChange={(e) => setNumericValue(e.target.value)}
+                placeholder={NUMERIC_FIELDS[recordType].placeholder}
+                step={NUMERIC_FIELDS[recordType].step}
+                min={NUMERIC_FIELDS[recordType].min}
+                max={NUMERIC_FIELDS[recordType].max}
+                aria-label={`${TYPE_LABEL[recordType]} (${NUMERIC_FIELDS[recordType].unit})`}
+                required
+              />
+              <span className={styles.unit}>{NUMERIC_FIELDS[recordType].unit}</span>
             </div>
           </section>
         )}
@@ -482,7 +510,10 @@ function NewRecordContent() {
         )}
 
         {/* 비일상 기록 추가 메모 */}
-        {(recordType === 'weight' || recordType === 'appetite' || recordType === 'activity') && (
+        {(recordType === 'weight' ||
+          recordType === 'appetite' ||
+          recordType === 'activity' ||
+          isNumericField(recordType)) && (
           <section className={styles.section}>
             <h2 className={styles.sectionLabel}>
               추가 메모 <span className={styles.optional}>(선택)</span>

@@ -108,6 +108,18 @@ export class HealthRecordService {
         if (input.numValue == null)
           throw new BadRequestException('구토 기록에는 numValue(횟수)가 필요합니다.');
         break;
+      case HealthRecordType.glucose:
+        if (input.numValue == null)
+          throw new BadRequestException('혈당 기록에는 numValue(mg/dL)가 필요합니다.');
+        break;
+      case HealthRecordType.temperature:
+        if (input.numValue == null)
+          throw new BadRequestException('체온 기록에는 numValue(°C)가 필요합니다.');
+        break;
+      case HealthRecordType.waterIntake:
+        if (input.numValue == null)
+          throw new BadRequestException('음수량 기록에는 numValue(mL)가 필요합니다.');
+        break;
     }
   }
 

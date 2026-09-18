@@ -389,6 +389,11 @@ enum HealthRecordType {
   stool
   vomit
   mood
+  // 만성질환(당뇨·신부전·감염) 관리용 수치 기록. 셋 다 numValue 하나만 쓰므로
+  // 컬럼 추가 없이 enum만 늘린다. 단위는 glucose=mg/dL, temperature=°C, waterIntake=mL.
+  glucose
+  temperature
+  waterIntake
 }
 
 enum ReportStatus {

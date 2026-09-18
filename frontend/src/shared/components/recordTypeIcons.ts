@@ -4,7 +4,10 @@ import {
   Footprints,
   NotebookPen,
   Thermometer,
+  ThermometerSun,
+  Droplet,
   Droplets,
+  GlassWater,
   Waves,
   Stethoscope,
   Syringe,
@@ -33,6 +36,9 @@ export type RecordIconKey =
   | 'symptom'
   | 'stool'
   | 'vomit'
+  | 'glucose'
+  | 'temperature'
+  | 'waterIntake'
   // 의료 기록
   | 'hospital'
   | 'vaccination'
@@ -49,6 +55,9 @@ export const RECORD_TYPE_ICONS: Record<RecordIconKey, LucideIcon> = {
   symptom: Thermometer,
   stool: Droplets,
   vomit: Waves,
+  glucose: Droplet,
+  temperature: ThermometerSun,
+  waterIntake: GlassWater,
   hospital: Stethoscope,
   vaccination: Syringe,
   appointment: CalendarClock,

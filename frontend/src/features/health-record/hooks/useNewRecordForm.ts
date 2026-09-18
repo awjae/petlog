@@ -49,6 +49,9 @@ export function useNewRecordForm() {
   const [stoolCount, setStoolCount] = useState<1 | 2 | 3 | null>(null);
   const [vomitContent, setVomitContent] = useState<string | null>(null);
   const [vomitCount, setVomitCount] = useState<1 | 2 | 3 | null>(null);
+  // 혈당·체온·음수량이 공유하는 입력값. 유형을 바꿀 때 반드시 비운다 —
+  // 안 비우면 혈당 320(mg/dL)이 체온 320(°C)으로 넘어간다.
+  const [numericValue, setNumericValue] = useState('');
 
   const [showToast, setShowToast] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -79,6 +82,7 @@ export function useNewRecordForm() {
     setStoolCount(null);
     setVomitContent(null);
     setVomitCount(null);
+    setNumericValue('');
   }
 
   function handleSymptomToggle(symptom: string) {
@@ -108,6 +112,10 @@ export function useNewRecordForm() {
         return stoolType !== null;
       case 'vomit':
         return vomitCount !== null;
+      case 'glucose':
+      case 'temperature':
+      case 'waterIntake':
+        return numericValue.trim() !== '';
       default:
         return true;
     }
@@ -132,6 +140,7 @@ export function useNewRecordForm() {
       stoolCount: stoolCount ?? undefined,
       vomitContent: vomitContent ?? undefined,
       vomitCount: vomitCount ?? undefined,
+      numericValue,
     });
 
     if (ok) {
@@ -140,18 +149,27 @@ export function useNewRecordForm() {
     }
   }
 
+  // 체온은 종·나이와 무관하게 정상 범위가 거의 같은 유일한 수치라 임계값을 둘 수 있다.
+  // 혈당·음수량은 기저질환(당뇨 관리 중이면 200도 일상)과 체중에 따라 달라져서 두지 않는다.
+  const temperatureC = recordType === 'temperature' ? parseFloat(numericValue) : NaN;
+  const abnormalTemperature =
+    !Number.isNaN(temperatureC) && (temperatureC >= 39.5 || temperatureC <= 37.5);
+
   // 수의사 상담을 권해야 하는 입력 조합.
   const showWarning =
     (recordType === 'symptom' && (symptoms.includes('구토') || symptoms.includes('설사'))) ||
     (recordType === 'stool' && stoolType === '혈변') ||
-    (recordType === 'vomit' && vomitContent === '피가 섞임');
+    (recordType === 'vomit' && vomitContent === '피가 섞임') ||
+    abnormalTemperature;
 
   const warningText =
     recordType === 'stool'
       ? '혈변이 보일 경우 수의사 상담을 권장해요.'
       : recordType === 'vomit'
         ? '피가 섞인 구토가 보일 경우 수의사 상담을 권장해요.'
-        : '해당 증상이 심각하다면 수의사 상담을 권장해요.';
+        : recordType === 'temperature'
+          ? '개·고양이 정상 체온은 38.0~39.2°C예요. 범위를 크게 벗어나면 수의사 상담을 권장해요.'
+          : '해당 증상이 심각하다면 수의사 상담을 권장해요.';
 
   return {
     pets,
@@ -185,6 +203,8 @@ export function useNewRecordForm() {
     setVomitContent,
     vomitCount,
     setVomitCount,
+    numericValue,
+    setNumericValue,
 
     isValid,
     handleSubmit,
