@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HealthRecordType } from '@prisma/client';
 import { PetService } from '../pet/pet.service';
 import { HealthRecordService } from '../health-record/health-record.service';
 import { VaccinationService } from '../vaccination/vaccination.service';
@@ -9,7 +10,11 @@ import { CalendarEvent, CalendarEventType, ScheduleType, UpcomingSchedule } from
 
 // 캘린더에 찍히는 건강 기록의 표시 라벨. 값 자체(체중 4.2kg 등)의 표기는 프론트가
 // recordType/numValue/textValue로 조립하므로 여기서는 종류 이름만 정한다.
-const HEALTH_RECORD_LABEL: Record<string, string> = {
+//
+// Record<string, string>이 아니라 Record<HealthRecordType, string>으로 둔다. 전자는
+// 유형이 늘어도 컴파일러가 안 잡아서 캘린더에만 raw enum 값('waterIntake')이 찍힌다 —
+// health-record.types.ts의 HEALTH_RECORD_VALUE_KIND와 같은 이유다.
+const HEALTH_RECORD_LABEL: Record<HealthRecordType, string> = {
   weight: '체중',
   appetite: '식사',
   activity: '활동',
@@ -17,6 +22,9 @@ const HEALTH_RECORD_LABEL: Record<string, string> = {
   stool: '대변',
   vomit: '구토',
   mood: '기분',
+  glucose: '혈당',
+  temperature: '체온',
+  waterIntake: '음수량',
 };
 
 const toDateStr = (d: Date) => d.toISOString().slice(0, 10);

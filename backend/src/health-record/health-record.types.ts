@@ -10,6 +10,9 @@ export const HEALTH_RECORD_VALUE_KIND: Record<HealthRecordType, 'numeric' | 'tex
   [HealthRecordType.stool]: 'text',
   [HealthRecordType.vomit]: 'text',
   [HealthRecordType.mood]: 'text',
+  [HealthRecordType.glucose]: 'numeric',
+  [HealthRecordType.temperature]: 'numeric',
+  [HealthRecordType.waterIntake]: 'numeric',
 };
 
 @ObjectType()

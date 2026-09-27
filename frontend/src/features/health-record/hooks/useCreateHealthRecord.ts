@@ -35,6 +35,8 @@ export interface CreateHealthRecordFormInput {
   // vomit
   vomitContent?: string;
   vomitCount?: 1 | 2 | 3;
+  // glucose / temperature / waterIntake — 셋 다 숫자 하나만 쓰므로 한 필드를 공유한다
+  numericValue?: string;
 }
 
 function buildVariables(input: CreateHealthRecordFormInput) {
@@ -78,6 +80,14 @@ function buildVariables(input: CreateHealthRecordFormInput) {
         ...base,
         textValue: input.vomitContent || undefined,
         numValue: input.vomitCount,
+        note: input.memo || undefined,
+      };
+    case 'glucose':
+    case 'temperature':
+    case 'waterIntake':
+      return {
+        ...base,
+        numValue: parseFloat(input.numericValue ?? '0'),
         note: input.memo || undefined,
       };
     default:

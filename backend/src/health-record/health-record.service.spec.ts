@@ -94,6 +94,9 @@ describe('HealthRecordService', () => {
       ],
       ['stool — textValue 누락', { type: HealthRecordType.stool }, 'textValue'],
       ['vomit — numValue 누락', { type: HealthRecordType.vomit }, 'numValue'],
+      ['glucose — numValue 누락', { type: HealthRecordType.glucose }, 'numValue'],
+      ['temperature — numValue 누락', { type: HealthRecordType.temperature }, 'numValue'],
+      ['waterIntake — numValue 누락', { type: HealthRecordType.waterIntake }, 'numValue'],
     ];
 
     it.each(invalidCases)('%s → BadRequestException', async (_label, partialInput) => {
@@ -111,6 +114,9 @@ describe('HealthRecordService', () => {
       ['symptom', { type: HealthRecordType.symptom, textValue: '구토', numValue: 3 }],
       ['stool', { type: HealthRecordType.stool, textValue: '정상' }],
       ['vomit', { type: HealthRecordType.vomit, numValue: 1 }],
+      ['glucose', { type: HealthRecordType.glucose, numValue: 320 }],
+      ['temperature', { type: HealthRecordType.temperature, numValue: 38.5 }],
+      ['waterIntake', { type: HealthRecordType.waterIntake, numValue: 450 }],
     ];
 
     it.each(validCases)('%s — 필수 필드가 있으면 생성한다', async (_label, partialInput) => {

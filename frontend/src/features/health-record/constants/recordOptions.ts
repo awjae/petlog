@@ -21,7 +21,32 @@ const TYPE_GROUP: Record<HealthRecordType, 'daily' | 'health'> = {
   symptom: 'health',
   stool: 'health',
   vomit: 'health',
+  glucose: 'health',
+  temperature: 'health',
+  // 음수량은 증상이 아니라 매일 남기는 값이라 일상 묶음에 둔다. 신부전·당뇨의
+  // 초기 신호가 음수량 증가지만, 그건 리포트가 판단할 일이지 입력 분류가 할 일은 아니다.
+  waterIntake: 'daily',
 };
+
+// 혈당·체온·음수량은 셋 다 "숫자 하나 + 단위"라 입력 UI가 같다. 유형마다 JSX를
+// 복사하는 대신 명세만 두고 화면은 한 번만 그린다.
+//
+// 체중은 기존 입력 블록을 그대로 둔다 — weight/setWeight 상태 이름이 화면·훅·뮤테이션에
+// 걸쳐 있어 여기로 합치려면 이 변경의 범위를 벗어난다.
+//
+// min/max는 입력 실수를 막는 범위일 뿐 정상 범위가 아니다. 정상 범위 판정은 종·나이·
+// 기저질환에 따라 달라서 앱이 할 일이 아니다(Product Positioning: 의료 판단을 하지 않는다).
+export const NUMERIC_FIELDS = {
+  glucose: { unit: 'mg/dL', step: '1', min: '0', max: '800', placeholder: '0' },
+  temperature: { unit: '°C', step: '0.1', min: '30', max: '45', placeholder: '38.5' },
+  waterIntake: { unit: 'mL', step: '10', min: '0', max: '5000', placeholder: '0' },
+} as const;
+
+export type NumericFieldType = keyof typeof NUMERIC_FIELDS;
+
+export function isNumericField(type: HealthRecordType): type is NumericFieldType {
+  return type in NUMERIC_FIELDS;
+}
 
 function typesInGroup(group: 'daily' | 'health') {
   return (Object.keys(TYPE_GROUP) as HealthRecordType[])

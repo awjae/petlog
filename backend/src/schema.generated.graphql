@@ -135,10 +135,13 @@ type HealthRecordSummary {
 enum HealthRecordType {
   activity
   appetite
+  glucose
   mood
   stool
   symptom
+  temperature
   vomit
+  waterIntake
   weight
 }
 

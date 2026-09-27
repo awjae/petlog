@@ -22,6 +22,9 @@ export const TYPE_LABEL: Record<HealthRecordType, string> = {
   symptom: '증상',
   stool: '배변',
   vomit: '구토',
+  glucose: '혈당',
+  temperature: '체온',
+  waterIntake: '음수량',
 };
 
 /**
@@ -71,6 +74,12 @@ export function buildSummary(
       if (count) return count;
       return textValue ?? '';
     }
+    case 'glucose':
+      return numValue != null ? `${numValue} mg/dL` : '';
+    case 'temperature':
+      return numValue != null ? `${numValue}°C` : '';
+    case 'waterIntake':
+      return numValue != null ? `${numValue} mL` : '';
     default:
       return textValue ?? '';
   }
