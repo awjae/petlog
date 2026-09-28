@@ -313,13 +313,13 @@ describe('NotificationService 투약 알림', () => {
     expect(push.send).not.toHaveBeenCalled();
   });
 
-  it('저녁에는 "하루 2회" 약만, 종료일 당일까지 조회한다', async () => {
+  it('저녁에는 "하루 2회"·"하루 3회" 약만, 종료일 당일까지 조회한다', async () => {
     jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
 
     await service.scanAndSendMedicationReminder('evening');
 
     const { where } = prisma.medication.findMany.mock.calls[0][0];
-    expect(where.frequency).toBe('하루 2회');
+    expect(where.frequency).toEqual({ in: ['하루 2회', '하루 3회'] });
     expect(where.OR).toEqual([{ endDate: null }, { endDate: { gte: new Date(KST_DAY_START) } }]);
   });
 
