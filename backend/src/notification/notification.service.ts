@@ -236,26 +236,30 @@ export class NotificationService {
     this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);
   }
 
-  // 복용 중인 약 알림. 오늘(KST)이 복용 기간(startDate ~ endDate)에 걸친 약을 pet별로 묶어
-  // 하루 1회 보낸다. 약마다 따로 보내면 여러 약을 먹는 pet의 보호자가 아침마다 알림 여러 개를
-  // 받게 되므로 묶는다. 종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을
-  // 따로 보내므로 여기서는 뺀다 — 같은 약으로 같은 아침에 알림 두 개가 가지 않게 한다.
+  // 복용 중인 약 알림. 오늘(KST) 복용 중인 약을 pet별로 묶어 슬롯마다 1회 보낸다. 약마다
+  // 따로 보내면 여러 약을 먹는 pet의 보호자가 알림 여러 개를 받게 되므로 묶는다.
   //
-  // 주기가 "하루 N회"인 약만 대상이다. 투약 폼의 선택지(frontend medication.types.ts
-  // FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
-  // "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
+  // - morning(09시): 주기가 "하루 N회"인 약 전부. 투약 폼의 선택지(frontend medication.types.ts
+  //   FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
+  //   "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
+  //   종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을 같은 아침에 따로 보내므로 뺀다.
+  // - evening(18시): "하루 2회" 약의 두 번째 복용. 종료일 당일도 저녁 복용은 남아 있으므로 포함한다.
   //
   // referenceId에는 petId를 담는다(weeklyCheckin과 동일). 약 여러 개를 묶은 알림이라
-  // 특정 medication.id를 가리킬 수 없기 때문이다. 같은 pet에 오늘 이미 보냈으면 건너뛴다.
-  async scanAndSendMedicationReminder(): Promise<void> {
+  // 특정 medication.id를 가리킬 수 없기 때문이다. 중복 발송은 슬롯 구간(KST 0~12시 /
+  // 12~24시) 안에 같은 pet으로 보낸 이력이 있는지로 막는다 — 하루 단위로 막으면 아침에
+  // 보낸 이력 때문에 저녁 알림이 막힌다.
+  async scanAndSendMedicationReminder(slot: 'morning' | 'evening'): Promise<void> {
     const { start, end } = kstDayRange();
+    const noon = new Date(start.getTime() + 12 * 60 * 60 * 1000);
+    const isMorning = slot === 'morning';
 
     const activeMedications = await this.prisma.medication.findMany({
       where: {
         deletedAt: null,
-        frequency: { startsWith: '하루' },
+        frequency: isMorning ? { startsWith: '하루' } : '하루 2회',
         startDate: { lt: end },
-        OR: [{ endDate: null }, { endDate: { gte: end } }],
+        OR: [{ endDate: null }, { endDate: { gte: isMorning ? end : start } }],
         pet: { deletedAt: null, user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true } } },
@@ -279,7 +283,7 @@ export class NotificationService {
         where: {
           type: NotificationType.medicationReminder,
           referenceId: pet.id,
-          sentAt: { gte: start, lt: end },
+          sentAt: isMorning ? { gte: start, lt: noon } : { gte: noon, lt: end },
         },
       });
       if (alreadySent) continue;
@@ -289,14 +293,16 @@ export class NotificationService {
         userId: pet.userId,
         type: NotificationType.medicationReminder,
         title: `[Petlog] ${pet.name} 투약 알림`,
-        body: `오늘도 ${summary} 잊지 말고 챙겨주세요.`,
+        body: isMorning
+          ? `오늘도 ${summary} 잊지 말고 챙겨주세요.`
+          : `저녁 투약 시간이에요. ${summary} 챙겨주세요.`,
         referenceId: pet.id,
         referenceType: null,
       });
       sentCount += 1;
     }
 
-    this.logger.log(`투약 알림 스캔 완료: ${sentCount}건 발송`);
+    this.logger.log(`투약 알림(${slot}) 스캔 완료: ${sentCount}건 발송`);
   }
 
   // 건강기록 권장 알림. pet의 최신 HealthRecord.recordedAt이 7일 이상 경과하면 발송한다.
