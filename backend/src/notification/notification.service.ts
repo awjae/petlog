@@ -236,6 +236,69 @@ export class NotificationService {
     this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);
   }
 
+  // 복용 중인 약 알림. 오늘(KST)이 복용 기간(startDate ~ endDate)에 걸친 약을 pet별로 묶어
+  // 하루 1회 보낸다. 약마다 따로 보내면 여러 약을 먹는 pet의 보호자가 아침마다 알림 여러 개를
+  // 받게 되므로 묶는다. 종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을
+  // 따로 보내므로 여기서는 뺀다 — 같은 약으로 같은 아침에 알림 두 개가 가지 않게 한다.
+  //
+  // 주기가 "하루 N회"인 약만 대상이다. 투약 폼의 선택지(frontend medication.types.ts
+  // FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
+  // "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
+  //
+  // referenceId에는 petId를 담는다(weeklyCheckin과 동일). 약 여러 개를 묶은 알림이라
+  // 특정 medication.id를 가리킬 수 없기 때문이다. 같은 pet에 오늘 이미 보냈으면 건너뛴다.
+  async scanAndSendMedicationReminder(): Promise<void> {
+    const { start, end } = kstDayRange();
+
+    const activeMedications = await this.prisma.medication.findMany({
+      where: {
+        deletedAt: null,
+        frequency: { startsWith: '하루' },
+        startDate: { lt: end },
+        OR: [{ endDate: null }, { endDate: { gte: end } }],
+        pet: { deletedAt: null, user: ACTIVE_USER },
+      },
+      include: { pet: { select: { id: true, name: true, userId: true } } },
+      orderBy: { startDate: 'asc' },
+    });
+
+    const byPet = new Map<string, typeof activeMedications>();
+    for (const medication of activeMedications) {
+      byPet.set(medication.petId, [...(byPet.get(medication.petId) ?? []), medication]);
+    }
+
+    let sentCount = 0;
+
+    for (const medications of byPet.values()) {
+      const { pet } = medications[0];
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.medicationReminderEnabled) continue;
+
+      const alreadySent = await this.prisma.notification.findFirst({
+        where: {
+          type: NotificationType.medicationReminder,
+          referenceId: pet.id,
+          sentAt: { gte: start, lt: end },
+        },
+      });
+      if (alreadySent) continue;
+
+      const summary = medications.map((m) => `${m.name ?? '약'}(${m.frequency})`).join(', ');
+      await this.sendAndLog({
+        userId: pet.userId,
+        type: NotificationType.medicationReminder,
+        title: `[Petlog] ${pet.name} 투약 알림`,
+        body: `오늘도 ${summary} 잊지 말고 챙겨주세요.`,
+        referenceId: pet.id,
+        referenceType: null,
+      });
+      sentCount += 1;
+    }
+
+    this.logger.log(`투약 알림 스캔 완료: ${sentCount}건 발송`);
+  }
+
   // 건강기록 권장 알림. pet의 최신 HealthRecord.recordedAt이 7일 이상 경과하면 발송한다.
   // NotificationReferenceType에는 healthRecord 값이 없으므로 referenceType은 null로 저장하고,
   // referenceId에는 petId를 담아 "어떤 pet에 대한 알림인지"를 식별한다.

@@ -221,12 +221,12 @@ export default function SettingsPage() {
             <div className={styles.divider} />
             <div className={styles.listItem}>
               <Pill size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
-              <span className={styles.listLabel}>투약 종료 알림</span>
+              <span className={styles.listLabel}>투약 알림</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={preference?.medicationReminderEnabled ?? true}
-                aria-label="투약 종료 알림"
+                aria-label="투약 알림"
                 className={`${styles.switch} ${(preference?.medicationReminderEnabled ?? true) ? styles.switchOn : ''}`}
                 disabled={preferenceLoading || preferenceUpdating}
                 onClick={() =>
