@@ -1,8 +1,14 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
-import { AppointmentStatus, NotificationReferenceType, NotificationType } from '@prisma/client';
+import {
+  AppointmentStatus,
+  MedicationFrequency,
+  NotificationReferenceType,
+  NotificationType,
+} from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { kstDayRange } from '../common/utils/date';
+import { MEDICATION_FREQUENCY_LABEL } from '../medication/medication.types';
 import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
 
 // 알림 설정 행이 없는 사용자(설정 화면을 아직 안 연 경우)는 전부 활성화된 것으로 간주한다.
@@ -22,6 +28,19 @@ const DEFAULT_PREFERENCE: NotificationPreference = {
 // 세팅하면서 deletionRequestedAt을 정리하는 방식으로 짜이면 익명화된 계정이 다시 알림
 // 대상으로 돌아온다. 배치 구현 방식과 무관하게 안전하도록 두 조건을 모두 건다.
 const ACTIVE_USER = { deletionRequestedAt: null, anonymizedAt: null } as const;
+
+// 매일 복용 알림 대상. asNeeded(필요시)는 복용 여부를 보호자가 판단하는 약이라 뺀다.
+const DAILY_FREQUENCIES: MedicationFrequency[] = [
+  MedicationFrequency.onceDaily,
+  MedicationFrequency.twiceDaily,
+  MedicationFrequency.threeTimesDaily,
+];
+
+// 저녁 복용 알림 대상. 하루 3회 약의 점심 복용은 알리지 않는다.
+const EVENING_FREQUENCIES: MedicationFrequency[] = [
+  MedicationFrequency.twiceDaily,
+  MedicationFrequency.threeTimesDaily,
+];
 
 interface SendAndLogParams {
   userId: string;
@@ -239,9 +258,8 @@ export class NotificationService {
   // 복용 중인 약 알림. 오늘(KST) 복용 중인 약을 pet별로 묶어 슬롯마다 1회 보낸다. 약마다
   // 따로 보내면 여러 약을 먹는 pet의 보호자가 알림 여러 개를 받게 되므로 묶는다.
   //
-  // - morning(09시): 주기가 "하루 N회"인 약 전부. 투약 폼의 선택지(frontend medication.types.ts
-  //   FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
-  //   "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
+  // - morning(09시): 매일 복용하는 약(DAILY_FREQUENCIES) 전부. "필요시"나 주기를 비워둔 약에
+  //   매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
   //   종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을 같은 아침에 따로 보내므로 뺀다.
   // - evening(18시): "하루 2회"·"하루 3회" 약의 저녁 복용. 3회 약의 점심 복용은 알리지 않는다.
   //   종료일 당일도 저녁 복용은 남아 있으므로 포함한다.
@@ -258,7 +276,7 @@ export class NotificationService {
     const activeMedications = await this.prisma.medication.findMany({
       where: {
         deletedAt: null,
-        frequency: isMorning ? { startsWith: '하루' } : { in: ['하루 2회', '하루 3회'] },
+        frequency: { in: isMorning ? DAILY_FREQUENCIES : EVENING_FREQUENCIES },
         startDate: { lt: end },
         OR: [{ endDate: null }, { endDate: { gte: isMorning ? end : start } }],
         pet: { deletedAt: null, user: ACTIVE_USER },
@@ -289,7 +307,10 @@ export class NotificationService {
       });
       if (alreadySent) continue;
 
-      const summary = medications.map((m) => `${m.name ?? '약'}(${m.frequency})`).join(', ');
+      // 조회 조건이 frequency를 지정하므로 여기서 null일 수 없다.
+      const summary = medications
+        .map((m) => `${m.name ?? '약'}(${MEDICATION_FREQUENCY_LABEL[m.frequency!]})`)
+        .join(', ');
       await this.sendAndLog({
         userId: pet.userId,
         type: NotificationType.medicationReminder,
