@@ -26,7 +26,7 @@ export class NotificationScheduler {
     this.logger.log('일일 알림 스캔 종료');
   }
 
-  // "하루 2회" 약의 두 번째 복용 알림. 복용 시각을 입력받지 않으므로 저녁 18시로 고정한다.
+  // "하루 2회"·"하루 3회" 약의 저녁 복용 알림. 복용 시각을 입력받지 않으므로 저녁 18시로 고정한다.
   @Cron(CronExpression.EVERY_DAY_AT_6PM, { timeZone: 'Asia/Seoul' })
   async handleEveningScan(): Promise<void> {
     await this.notificationService.scanAndSendMedicationReminder('evening');
