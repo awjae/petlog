@@ -1,9 +1,11 @@
+import type { MedicationFrequency } from '@/generated/graphql';
+
 export interface Medication {
   id: string;
   petId: string;
   name: string;
   dosage: string;
-  frequency: string;
+  frequency: MedicationFrequency | null;
   startDate: string;
   endDate?: string;
   createdAt: string;
@@ -13,16 +15,18 @@ export interface Medication {
 export interface CreateMedicationFormInput {
   petId: string;
   name?: string;
-  frequency?: string;
+  frequency?: MedicationFrequency;
   startDate: string;
   endDate?: string;
 }
 
-export const FREQUENCY_OPTIONS = [
-  { value: '하루 1회', label: '하루 1회' },
-  { value: '하루 2회', label: '하루 2회' },
-  { value: '하루 3회', label: '하루 3회' },
-  { value: '필요시', label: '필요시' },
-] as const;
+export const FREQUENCY_LABEL: Record<MedicationFrequency, string> = {
+  onceDaily: '하루 1회',
+  twiceDaily: '하루 2회',
+  threeTimesDaily: '하루 3회',
+  asNeeded: '필요시',
+};
 
-export type FrequencyOption = (typeof FREQUENCY_OPTIONS)[number]['value'];
+export const FREQUENCY_OPTIONS = (Object.keys(FREQUENCY_LABEL) as MedicationFrequency[]).map(
+  (value) => ({ value, label: FREQUENCY_LABEL[value] }),
+);

@@ -113,7 +113,7 @@ model Medication {
   petId     String    @map("pet_id")
   name      String?
   dosage    String?
-  frequency String?
+  frequency MedicationFrequency?
   startDate DateTime  @map("start_date")
   endDate   DateTime? @map("end_date")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -395,6 +395,15 @@ enum HealthRecordType {
   glucose
   temperature
   waterIntake
+}
+
+// 투약 주기. 폼 선택지와 1:1이다. 알림 스캔이 "매일 복용하는 약"과 "하루 2회 약"을
+// 골라야 해서 자유 문자열 대신 enum으로 둔다 — 표시 문구는 클라이언트가 붙인다.
+enum MedicationFrequency {
+  onceDaily
+  twiceDaily
+  threeTimesDaily
+  asNeeded
 }
 
 enum ReportStatus {
