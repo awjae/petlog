@@ -1,0 +1,322 @@
+.main {
+  min-height: 100dvh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 헤더 ── */
+.header {
+  display: flex;
+  align-items: center;
+  height: calc(56px + env(safe-area-inset-top));
+  padding: 0 4px;
+  padding-top: env(safe-area-inset-top);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.backButton,
+.printButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.backButton:active,
+.printButton:active {
+  background: var(--color-primary-light);
+}
+
+.title {
+  flex: 1;
+  text-align: center;
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.headerRight {
+  width: 44px;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* ── 기간 선택 ── */
+.periodBar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+
+.periodChip {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: var(--font-caption);
+  cursor: pointer;
+}
+
+.periodChipActive {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ── 상태 ── */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.skeletonRow {
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-track);
+}
+
+.errorState {
+  padding: 40px 16px;
+  text-align: center;
+}
+
+.errorText {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.retryButton {
+  padding: 10px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: var(--font-caption);
+  cursor: pointer;
+}
+
+/* ── 인쇄 대상 ── */
+.sheet {
+  margin: 0 16px 24px;
+  padding: 20px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.petHeader {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.petName {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.petMeta {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 4px 0 0;
+}
+
+.period {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 8px 0 0;
+}
+
+.summary {
+  margin-bottom: 16px;
+}
+
+.weightLine {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+}
+
+.weightChange {
+  color: var(--color-text-secondary);
+  margin-left: 6px;
+}
+
+.countList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.countItem {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font: var(--font-label);
+}
+
+/* ── 표 ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--font-caption);
+  color: var(--color-text-primary);
+}
+
+.table th {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font: var(--font-label);
+}
+
+.table td {
+  padding: 8px 6px;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+/* 날짜가 바뀌는 행에만 구분선을 둔다 — 같은 날 기록은 한 덩어리로 읽힌다. */
+.dateStart td {
+  border-top: 1px solid var(--color-border);
+}
+
+.dateCol {
+  width: 76px;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+}
+
+.typeCol {
+  width: 58px;
+  white-space: nowrap;
+}
+
+.note {
+  display: block;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.empty {
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.disclaimer {
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.printHint {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+  margin: 0 16px 24px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── 인쇄 ──
+   화면 크롬(헤더·기간 칩·안내)을 걷어내고 시트만 종이에 남긴다.
+
+   색은 클래스마다 덮지 않고 토큰을 인쇄용으로 재정의한다. 클래스를 열거하면
+   반드시 하나를 빠뜨리는데, 다크 모드에서 인쇄하면 그 하나가 흰 종이에 흰 글씨로
+   나간다(실제로 .empty가 그랬다). 토큰을 바꾸면 새로 추가한 요소까지 따라온다. */
+@media print {
+  :global(html),
+  :global(body) {
+    --color-bg: #fff;
+    --color-surface: #fff;
+    --color-text-primary: #000;
+    --color-text-secondary: #333;
+    --color-border: #999;
+
+    background: #fff;
+    color: #000;
+  }
+
+  .header,
+  .periodBar,
+  .printHint,
+  .loadingState,
+  .errorState {
+    display: none;
+  }
+
+  .main {
+    min-height: auto;
+  }
+
+  .sheet {
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* 배지 면을 없애고 가운뎃점으로 잇는다 — 잉크만 먹고 표보다 눈에 띄면 안 된다. */
+  .countItem {
+    background: none;
+    padding: 0;
+  }
+
+  .countItem:not(:last-child)::after {
+    content: ' ·';
+  }
+
+  /* 표가 페이지를 넘어갈 때 머리글을 다시 찍고, 한 기록이 두 장에 걸치지 않게 한다. */
+  .table thead {
+    display: table-header-group;
+  }
+
+  .table tr {
+    break-inside: avoid;
+  }
+}
+
+@page {
+  margin: 14mm;
+}
