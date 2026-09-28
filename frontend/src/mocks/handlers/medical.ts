@@ -145,7 +145,7 @@ const mockMedications: MockMedication[] = [
     petId: 'pet-1',
     name: '심장사상충 예방약',
     dosage: '-',
-    frequency: '하루 1회',
+    frequency: 'onceDaily',
     startDate: '2026-06-01T12:00:00.000Z',
     endDate: null,
     createdAt: '2026-06-01T12:00:00.000Z',
