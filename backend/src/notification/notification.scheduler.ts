@@ -21,6 +21,7 @@ export class NotificationScheduler {
     await this.notificationService.scanAndSendVaccinationDue();
     await this.notificationService.scanAndSendAppointmentReminder();
     await this.notificationService.scanAndSendMedicationEnd();
+    await this.notificationService.scanAndSendMedicationReminder();
     await this.notificationService.scanAndSendWeeklyCheckin();
     this.logger.log('일일 알림 스캔 종료');
   }
