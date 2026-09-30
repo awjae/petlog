@@ -51,6 +51,15 @@ Petlog에서 날짜·시간을 다룰 때 읽는 문서다.
 | `HealthRecord.recordedAt` | 순간 (사용자가 고른 날짜의 정오 앵커) | — |
 | `Appointment.scheduledAt` | **벽시계** | **병원**의 시계 |
 | `Vaccination.nextDueAt` | 벽시계 (날짜만 의미 있음) | 사용자 |
+| `Medication.startDate` / `endDate` | 순간 (사용자가 고른 날짜의 정오 앵커, `useMedication.ts`) | — |
+
+**앵커는 폼이 아니라 API로 보내기 직전에 정해진다.** 폼 컴포넌트는 `YYYY-MM-DD`를 넘기지만
+`useCreateMedication`이 `T12:00:00`을 붙여 보낸다. 폼과 스칼라만 보고 "UTC 자정 저장"이라고
+단정했다가 리뷰·테스트 픽스처·PR 본문을 전부 다시 고친 적이 있다. 저장 앵커를 전제로 판단할
+때는 둘 중 하나로 확인하고, 그 근거(파일:라인 또는 조회 결과)를 함께 적는다.
+
+- 쓰기 경로 전체를 읽는다: 컴포넌트 → **hook의 변환** → mutation → 스칼라
+- 로컬 DB에서 실제 값을 본다: `SELECT start_date, end_date FROM medications LIMIT 5;`
 
 `Appointment`가 함정이다. "3시에 오세요"는 **병원 벽시계 3시**다. 사용자가 해외에
 있다고 그 예약이 "새벽 1시"로 보이면 안 된다. 즉 여기 기준은 사용자가 아니라 병원이다.
