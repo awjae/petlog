@@ -66,6 +66,17 @@ describe('NotificationService 당일 스캔 구간', () => {
     expect(where.endDate.lt.toISOString()).toBe(KST_DAY_END);
   });
 
+  // 투약 날짜는 로컬 정오(KST 12:00 = 03:00Z)로 저장된다. 07-30 하루만 먹는 약은 시작일도 07-30이다.
+  it('투약 종료 스캔이 오늘 시작한 약(하루만 먹는 약)은 조회하지 않는다', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-07-30T00:00:00Z')); // 서울 09:00
+
+    await service.scanAndSendMedicationEnd();
+
+    const { where } = prisma.medication.findMany.mock.calls[0][0];
+    expect(new Date('2026-07-30T03:00:00Z') < where.startDate.lt).toBe(false);
+    expect(new Date('2026-07-29T03:00:00Z') < where.startDate.lt).toBe(true);
+  });
+
   // 크론이 서울 09시로 옮겨진 뒤의 실제 실행 시각. 이때 UTC 날짜는 아직 07-29다.
   it('서울 09시(크론 실행 시각)에 실행해도 그날 예정 건을 조회한다', async () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-07-30T00:00:00Z')); // 서울 09:00

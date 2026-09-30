@@ -192,13 +192,15 @@ export class NotificationService {
 
   // 투약 종료일(endDate) 당일 스캔. 접종과 동일하게 당일 구간 조회 + referenceId 기준
   // 발송 이력 체크로 중복 발송을 방지한다. 종료일이 없는(기한 없는) 투약은 구간 조건에
-  // 걸리지 않아 자연히 제외된다.
+  // 걸리지 않아 자연히 제외된다. 오늘 시작한 약(하루만 먹는 약)은 먹기 시작하는 날
+  // "마지막 날" 알림을 받게 되므로 뺀다.
   async scanAndSendMedicationEnd(): Promise<void> {
     const { start, end } = kstDayRange();
 
     const endingMedications = await this.prisma.medication.findMany({
       where: {
         deletedAt: null,
+        startDate: { lt: start },
         endDate: { gte: start, lt: end },
         pet: { user: ACTIVE_USER },
       },
