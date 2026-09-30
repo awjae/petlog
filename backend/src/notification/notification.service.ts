@@ -207,32 +207,62 @@ export class NotificationService {
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
 
+    // 같은 pet의 약이 같은 날 여러 개 끝나면 푸시 하나로 묶는다(scanAndSendMedicationReminder와 동일).
+    const byPet = new Map<string, typeof endingMedications>();
     for (const medication of endingMedications) {
       if (medication.pet.deletedAt) continue;
+      byPet.set(medication.pet.id, [...(byPet.get(medication.pet.id) ?? []), medication]);
+    }
 
-      const preference = await this.getPreference(medication.pet.userId);
+    for (const medications of byPet.values()) {
+      const { pet } = medications[0];
+
+      const preference = await this.getPreference(pet.userId);
       if (!preference.medicationReminderEnabled) continue;
 
-      const alreadySent = await this.prisma.notification.findFirst({
-        where: {
-          type: NotificationType.medicationReminder,
-          referenceId: medication.id,
-          referenceType: NotificationReferenceType.medication,
-          sentAt: { not: null },
-        },
-      });
-      if (alreadySent) continue;
+      // 중복 방지는 약 단위로 유지한다. referenceId를 petId로 바꾸면 같은 오전 구간의
+      // 복용 알림(referenceId = petId) 중복 방지에 걸려 그날 아침 복용 알림이 막힌다.
+      const unsent: typeof medications = [];
+      for (const medication of medications) {
+        const alreadySent = await this.prisma.notification.findFirst({
+          where: {
+            type: NotificationType.medicationReminder,
+            referenceId: medication.id,
+            referenceType: NotificationReferenceType.medication,
+            sentAt: { not: null },
+          },
+        });
+        if (!alreadySent) unsent.push(medication);
+      }
+      if (unsent.length === 0) continue;
 
-      // name은 선택 입력이라 비어 있을 수 있다.
-      const medicationName = medication.name ? `${medication.name} ` : '';
+      // name은 선택 입력이라 비어 있을 수 있다. 여러 개를 나열할 때는 "약"으로 채운다.
+      const label =
+        unsent.length === 1 ? (unsent[0].name ?? '') : unsent.map((m) => m.name ?? '약').join(', ');
+      const title = `[Petlog] ${pet.name} 투약 종료 알림`;
+      const body = `오늘은 ${label ? `${label} ` : ''}투약 마지막 날이에요.`;
       await this.sendAndLog({
-        userId: medication.pet.userId,
+        userId: pet.userId,
         type: NotificationType.medicationReminder,
-        title: `[Petlog] ${medication.pet.name} 투약 종료 알림`,
-        body: `오늘은 ${medicationName}투약 마지막 날이에요.`,
-        referenceId: medication.id,
+        title,
+        body,
+        referenceId: unsent[0].id,
         referenceType: NotificationReferenceType.medication,
       });
+      // 푸시는 하나지만 나머지 약에도 발송 이력을 남겨 다음 스캔에서 다시 보내지 않게 한다.
+      for (const medication of unsent.slice(1)) {
+        await this.prisma.notification.create({
+          data: {
+            userId: pet.userId,
+            type: NotificationType.medicationReminder,
+            title,
+            body,
+            referenceId: medication.id,
+            referenceType: NotificationReferenceType.medication,
+            sentAt: new Date(),
+          },
+        });
+      }
     }
 
     this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);

@@ -189,6 +189,24 @@ describe('NotificationService 투약 종료 알림', () => {
     );
   });
 
+  it('같은 pet의 약이 같은 날 여러 개 끝나면 푸시 하나로 묶고 약마다 이력을 남긴다', async () => {
+    prisma.medication.findMany.mockResolvedValue([
+      ENDING_MEDICATION,
+      { ...ENDING_MEDICATION, id: 'med-2', name: null },
+    ]);
+
+    await service.scanAndSendMedicationEnd();
+
+    expect(push.send).toHaveBeenCalledTimes(1);
+    expect(push.send).toHaveBeenCalledWith(
+      'token-1',
+      '[Petlog] 초코 투약 종료 알림',
+      '오늘은 심장사상충약, 약 투약 마지막 날이에요.',
+    );
+    const referenceIds = prisma.notification.create.mock.calls.map(([arg]) => arg.data.referenceId);
+    expect(referenceIds).toEqual(['med-1', 'med-2']);
+  });
+
   it('투약 종료 알림을 끈 사용자에게는 보내지 않는다', async () => {
     prisma.notificationPreference.findUnique.mockResolvedValue({
       vaccinationDueEnabled: true,
