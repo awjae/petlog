@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Trash2, ChevronDown, Pill } from 'lucide-react';
 import type { Medication } from '../types/medication.types';
+import { isMedicationActive } from '../utils/medicationStatus';
 import styles from './MedicationList.module.css';
 
 interface MedicationListProps {
@@ -13,14 +14,6 @@ interface MedicationListProps {
 function formatDate(isoStr: string): string {
   const d = new Date(isoStr);
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
-function isActive(item: Medication): boolean {
-  const now = new Date();
-  const start = new Date(item.startDate);
-  if (start > now) return false;
-  if (!item.endDate) return true;
-  return new Date(item.endDate) >= now;
 }
 
 interface MedicationItemProps {
@@ -61,7 +54,7 @@ function MedicationItem({ item, onDelete }: MedicationItemProps) {
     }
   }
 
-  const active = isActive(item);
+  const active = isMedicationActive(item);
 
   return (
     <div className={styles.itemWrapper}>
