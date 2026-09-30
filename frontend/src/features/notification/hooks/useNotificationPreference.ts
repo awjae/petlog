@@ -15,6 +15,7 @@ export function useNotificationPreference() {
         vaccinationDueEnabled: data?.notificationPreference.vaccinationDueEnabled ?? true,
         appointmentReminderEnabled: data?.notificationPreference.appointmentReminderEnabled ?? true,
         weeklyCheckinEnabled: data?.notificationPreference.weeklyCheckinEnabled ?? true,
+        medicationReminderEnabled: data?.notificationPreference.medicationReminderEnabled ?? true,
         ...vars.input,
       },
     }),

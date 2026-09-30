@@ -85,6 +85,7 @@ export type Species = 'cat' | 'dog';
 
 export type UpdateNotificationPreferenceInput = {
   appointmentReminderEnabled?: boolean | null | undefined;
+  medicationReminderEnabled?: boolean | null | undefined;
   vaccinationDueEnabled?: boolean | null | undefined;
   weeklyCheckinEnabled?: boolean | null | undefined;
 };
@@ -320,6 +321,7 @@ export type NotificationPreferenceQuery = {
     vaccinationDueEnabled: boolean;
     appointmentReminderEnabled: boolean;
     weeklyCheckinEnabled: boolean;
+    medicationReminderEnabled: boolean;
   };
 };
 
@@ -332,6 +334,7 @@ export type UpdateNotificationPreferenceMutation = {
     vaccinationDueEnabled: boolean;
     appointmentReminderEnabled: boolean;
     weeklyCheckinEnabled: boolean;
+    medicationReminderEnabled: boolean;
   };
 };
 
@@ -1429,6 +1432,7 @@ export const NotificationPreferenceDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'vaccinationDueEnabled' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'appointmentReminderEnabled' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'weeklyCheckinEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'medicationReminderEnabled' } },
               ],
             },
           },
@@ -1476,6 +1480,7 @@ export const UpdateNotificationPreferenceDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'vaccinationDueEnabled' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'appointmentReminderEnabled' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'weeklyCheckinEnabled' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'medicationReminderEnabled' } },
               ],
             },
           },
