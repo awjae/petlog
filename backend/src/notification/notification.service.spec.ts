@@ -9,6 +9,8 @@ const SEOUL_DAWN = new Date('2026-07-29T15:30:00Z');
 const KST_DAY_START = '2026-07-29T15:00:00.000Z';
 const KST_DAY_END = '2026-07-30T15:00:00.000Z';
 const KST_NOON = '2026-07-30T03:00:00.000Z';
+// 서울 07-30 18:00 — 저녁 크론이 실제로 도는 시각.
+const SEOUL_EVENING = new Date('2026-07-30T09:00:00Z');
 
 describe('NotificationService 당일 스캔 구간', () => {
   let service: NotificationService;
@@ -314,7 +316,7 @@ describe('NotificationService 투약 알림', () => {
   });
 
   it('저녁에는 "하루 2회"·"하루 3회" 약만, 종료일 당일까지 조회한다', async () => {
-    jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
+    jest.useFakeTimers().setSystemTime(SEOUL_EVENING);
 
     await service.scanAndSendMedicationReminder('evening');
 
@@ -325,7 +327,7 @@ describe('NotificationService 투약 알림', () => {
 
   // 하루 단위로 중복을 막으면 아침에 보낸 이력 때문에 저녁 알림이 나가지 않는다.
   it('저녁 중복 방지는 오후 구간만 보므로 아침 발송 이력에 막히지 않는다', async () => {
-    jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
+    jest.useFakeTimers().setSystemTime(SEOUL_EVENING);
     prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', '하루 2회')]);
 
     await service.scanAndSendMedicationReminder('evening');
@@ -335,5 +337,21 @@ describe('NotificationService 투약 알림', () => {
     expect(where.sentAt.lt.toISOString()).toBe(KST_DAY_END);
     const [log] = prisma.notification.create.mock.calls[0];
     expect(log.data.body).toBe('저녁 투약 시간이에요. 심장약(하루 2회) 챙겨주세요.');
+  });
+
+  // useCreateMedication이 고른 날짜에 T12:00:00(로컬 정오)을 붙여 보내므로 종료일은
+  // KST 12:00(= 03:00Z)으로 저장된다. where 절 모양이 아니라 이 실제 저장값이 걸리는지를 본다.
+  it('종료일 당일 약은 아침 알림에서 빠지고 저녁 알림에는 포함된다', async () => {
+    const storedEndDate = new Date('2026-07-30T03:00:00Z');
+    const endDateMatches = () =>
+      prisma.medication.findMany.mock.calls.at(-1)[0].where.OR[1].endDate.gte <= storedEndDate;
+
+    jest.useFakeTimers().setSystemTime(new Date('2026-07-30T00:00:00Z')); // 서울 07-30 09:00
+    await service.scanAndSendMedicationReminder('morning');
+    expect(endDateMatches()).toBe(false);
+
+    jest.setSystemTime(SEOUL_EVENING);
+    await service.scanAndSendMedicationReminder('evening');
+    expect(endDateMatches()).toBe(true);
   });
 });
