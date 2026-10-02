@@ -1,37 +1,40 @@
+import type { HealthRecordType } from '@/generated/graphql';
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
+import { periodStart } from '@/features/health-record/utils/exportRecords';
 
 // ponytail: 최근 90일 고정. 기간 선택(30일/1년)은 사용자가 원하면 그때 추가
 export const TREND_DAYS = 90;
 
-export interface WeightPoint {
+export interface TrendPoint {
   recordedAt: string;
   value: number;
 }
 
-export interface WeightTrend {
+export interface RecordTrend {
   /** 오래된 순 */
-  points: WeightPoint[];
-  /** 마지막 값 - 첫 값 (kg, 소수 둘째 자리) */
+  points: TrendPoint[];
+  /** 마지막 값 - 첫 값 (기록 단위, 소수 둘째 자리) */
   change: number;
 }
 
 /**
- * 오늘을 포함한 최근 90일의 체중 기록을 오래된 순으로 돌려준다.
+ * 오늘을 포함한 최근 90일의 type 수치 기록을 오래된 순으로 돌려준다.
  * 점이 2개 미만이면 변화를 그릴 수 없으므로 null.
  *
  * 개수가 아니라 기간으로 자른다. 가로축이 날짜 간격이라 오래된 기록 하나가 섞이면
  * 최근 기록들이 오른쪽 끝에 몰려 보이지 않는다.
  */
-export function toWeightTrend(records: HealthRecord[], now: Date = new Date()): WeightTrend | null {
-  // 기록 시각은 로컬 날짜의 정오로 저장되므로 경계도 로컬 0시로 잡는다.
-  const windowStart = new Date(now);
-  windowStart.setHours(0, 0, 0, 0);
-  windowStart.setDate(windowStart.getDate() - (TREND_DAYS - 1));
+export function toRecordTrend(
+  records: HealthRecord[],
+  type: HealthRecordType,
+  now: Date = new Date(),
+): RecordTrend | null {
+  const windowStart = periodStart(TREND_DAYS, now);
 
   const points = records
     .filter(
       (record): record is HealthRecord & { numValue: number } =>
-        record.type === 'weight' &&
+        record.type === type &&
         record.numValue != null &&
         new Date(record.recordedAt).getTime() >= windowStart.getTime(),
     )
@@ -47,10 +50,10 @@ export function toWeightTrend(records: HealthRecord[], now: Date = new Date()): 
 
 /**
  * 점을 SVG 좌표로 옮긴다. x는 기록 날짜 간격에 비례하고, 큰 값이 위(작은 y)로 간다.
- * points는 2개 이상이어야 한다 (toWeightTrend가 보장).
+ * points는 2개 이상이어야 한다 (toRecordTrend가 보장).
  */
 export function toChartCoords(
-  points: WeightPoint[],
+  points: TrendPoint[],
   width: number,
   height: number,
   padding: number,

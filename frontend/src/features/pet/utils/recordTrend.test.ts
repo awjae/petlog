@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
-import { toChartCoords, toWeightTrend } from './weightTrend';
+import { toChartCoords, toRecordTrend } from './recordTrend';
 
 // TZ=Asia/Seoul 고정 (vitest.config.ts의 test.env). 기간 경계가 실제 날짜에 따라 흔들리지
 // 않도록 "오늘"을 고정해서 넘긴다.
@@ -23,27 +23,42 @@ function localNoon(date: string): string {
   return new Date(`${date}T12:00:00`).toISOString();
 }
 
-describe('toWeightTrend', () => {
+describe('toRecordTrend', () => {
   it('체중 기록만 오래된 순으로 모은다', () => {
     // 서버는 최신순으로 내려준다.
-    const trend = toWeightTrend(
+    const trend = toRecordTrend(
       [
         record({ id: 'a', recordedAt: '2026-09-03T03:00:00.000Z', numValue: 3.2 }),
         record({ id: 'b', type: 'activity', recordedAt: '2026-09-02T03:00:00.000Z', numValue: 30 }),
         record({ id: 'c', recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
       ],
+      'weight',
       NOW,
     );
 
     expect(trend?.points.map((p) => p.value)).toEqual([3.0, 3.2]);
   });
 
+  it('요청한 유형의 수치만 모은다', () => {
+    const records = [
+      record({ id: 'w', recordedAt: '2026-09-03T03:00:00.000Z', numValue: 3.2 }),
+      record({ id: 'g1', type: 'glucose', recordedAt: '2026-09-02T03:00:00.000Z', numValue: 320 }),
+      record({ id: 'g2', type: 'glucose', recordedAt: '2026-09-01T03:00:00.000Z', numValue: 280 }),
+    ];
+
+    const trend = toRecordTrend(records, 'glucose', NOW);
+
+    expect(trend?.points.map((p) => p.value)).toEqual([280, 320]);
+    expect(trend?.change).toBe(40);
+  });
+
   it('값이 없는 체중 기록은 건너뛴다', () => {
-    const trend = toWeightTrend(
+    const trend = toRecordTrend(
       [
         record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
         record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: null }),
       ],
+      'weight',
       NOW,
     );
 
@@ -51,18 +66,19 @@ describe('toWeightTrend', () => {
   });
 
   it('점이 2개 미만이면 null이다', () => {
-    expect(toWeightTrend([], NOW)).toBeNull();
-    expect(toWeightTrend([record({})], NOW)).toBeNull();
+    expect(toRecordTrend([], 'weight', NOW)).toBeNull();
+    expect(toRecordTrend([record({})], 'weight', NOW)).toBeNull();
   });
 
   it('오늘을 포함한 최근 90일 기록만 쓴다', () => {
     // 9/11 기준 90일은 6/14 ~ 9/11이다. 6/13 기록은 빠진다.
-    const trend = toWeightTrend(
+    const trend = toRecordTrend(
       [
         record({ id: 'out', recordedAt: localNoon('2026-06-13'), numValue: 2.8 }),
         record({ id: 'first', recordedAt: localNoon('2026-06-14'), numValue: 3.0 }),
         record({ id: 'today', recordedAt: localNoon('2026-09-11'), numValue: 3.4 }),
       ],
+      'weight',
       NOW,
     );
 
@@ -81,16 +97,17 @@ describe('toWeightTrend', () => {
       }),
     );
 
-    expect(toWeightTrend(records, NOW)?.points).toHaveLength(12);
+    expect(toRecordTrend(records, 'weight', NOW)?.points).toHaveLength(12);
   });
 
   it('오래된 기록이 있어도 90일 안에 2건 미만이면 null이다', () => {
     // 빈 상태 문구가 "최근 90일" 기준인 이유다. 전체 기록 수로는 2건이다.
-    const trend = toWeightTrend(
+    const trend = toRecordTrend(
       [
         record({ recordedAt: localNoon('2026-05-01'), numValue: 3.0 }),
         record({ recordedAt: localNoon('2026-09-10'), numValue: 3.2 }),
       ],
+      'weight',
       NOW,
     );
 
@@ -98,11 +115,12 @@ describe('toWeightTrend', () => {
   });
 
   it('변화량의 부동소수 오차를 반올림한다', () => {
-    const trend = toWeightTrend(
+    const trend = toRecordTrend(
       [
         record({ recordedAt: '2026-09-01T03:00:00.000Z', numValue: 3.0 }),
         record({ recordedAt: '2026-09-02T03:00:00.000Z', numValue: 3.2 }),
       ],
+      'weight',
       NOW,
     );
 
