@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PetService } from '../pet/pet.service';
 import { findOwnedOrThrow } from '../common/ownership';
+import { kstDayRange } from '../common/utils/date';
 import { CreateMedicationInput, UpdateMedicationInput } from './medication.types';
 
 @Injectable()
@@ -19,14 +20,16 @@ export class MedicationService {
     });
   }
 
+  // 시작일·종료일은 날짜만 의미 있는 값(로컬 정오 = KST 12:00 저장)이라 지금 순간과 비교하면
+  // 종료일 12시부터 빠진다. 오늘(KST) 하루와 겹치는지로 판정해 종료일 하루 전체를 포함한다.
   async findActive(userId: string, petId: string) {
     await this.petService.assertOwnership(userId, petId);
-    const now = new Date();
+    const { start, end } = kstDayRange();
     return this.prisma.medication.findMany({
       where: {
         petId,
-        startDate: { lte: now },
-        OR: [{ endDate: null }, { endDate: { gte: now } }],
+        startDate: { lt: end },
+        OR: [{ endDate: null }, { endDate: { gte: start } }],
       },
       orderBy: { startDate: 'desc' },
     });
