@@ -282,7 +282,11 @@ describe('NotificationService 투약 알림', () => {
     const { where } = prisma.medication.findMany.mock.calls[0][0];
     expect(where.frequency).toEqual({ startsWith: '하루' });
     expect(where.startDate.lt.toISOString()).toBe(KST_DAY_END);
-    expect(where.OR).toEqual([{ endDate: null }, { endDate: { gte: new Date(KST_DAY_END) } }]);
+    expect(where.OR).toEqual([
+      { endDate: null },
+      { endDate: { gte: new Date(KST_DAY_END) } },
+      { startDate: { gte: new Date(KST_DAY_START) } },
+    ]);
     expect(where.pet.deletedAt).toBeNull();
     expect(where.pet.user.deletionRequestedAt).toBeNull();
     expect(where.pet.user.anonymizedAt).toBeNull();
@@ -359,6 +363,23 @@ describe('NotificationService 투약 알림', () => {
 
   // useCreateMedication이 고른 날짜에 T12:00:00(로컬 정오)을 붙여 보내므로 종료일은
   // KST 12:00(= 03:00Z)으로 저장된다. where 절 모양이 아니라 이 실제 저장값이 걸리는지를 본다.
+  // 투약 종료 알림은 오늘 시작한 약을 빼므로, 하루짜리 약은 아침 복용 알림으로 받아야 한다.
+  it('하루만 먹는 약(시작일 = 종료일)은 아침 알림에 포함된다', async () => {
+    const stored = new Date('2026-07-30T03:00:00Z'); // 07-30 정오 앵커, 시작일과 종료일이 같다
+    jest.useFakeTimers().setSystemTime(new Date('2026-07-30T00:00:00Z')); // 서울 07-30 09:00
+
+    await service.scanAndSendMedicationReminder('morning');
+
+    const { where } = prisma.medication.findMany.mock.calls[0][0];
+    expect(stored < where.startDate.lt).toBe(true);
+    const matchesOr = where.OR.some(
+      (c: { endDate?: { gte: Date } | null; startDate?: { gte: Date } }) =>
+        (c.endDate?.gte !== undefined && stored >= c.endDate.gte) ||
+        (c.startDate?.gte !== undefined && stored >= c.startDate.gte),
+    );
+    expect(matchesOr).toBe(true);
+  });
+
   it('종료일 당일 약은 아침 알림에서 빠지고 저녁 알림에는 포함된다', async () => {
     const storedEndDate = new Date('2026-07-30T03:00:00Z');
     const endDateMatches = () =>

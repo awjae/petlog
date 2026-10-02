@@ -275,6 +275,7 @@ export class NotificationService {
   //   FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
   //   "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
   //   종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을 같은 아침에 따로 보내므로 뺀다.
+  //   단, 오늘 시작한 하루짜리 약은 그 알림에서 빠지므로 여기서 보낸다.
   // - evening(18시): "하루 2회"·"하루 3회" 약의 저녁 복용. 3회 약의 점심 복용은 알리지 않는다.
   //   종료일 당일도 저녁 복용은 남아 있으므로 포함한다.
   //
@@ -292,7 +293,12 @@ export class NotificationService {
         deletedAt: null,
         frequency: isMorning ? { startsWith: '하루' } : { in: ['하루 2회', '하루 3회'] },
         startDate: { lt: end },
-        OR: [{ endDate: null }, { endDate: { gte: isMorning ? end : start } }],
+        OR: [
+          { endDate: null },
+          { endDate: { gte: isMorning ? end : start } },
+          // 하루만 먹는 약(시작일 = 종료일)은 scanAndSendMedicationEnd가 빼므로 아침 알림에 넣는다.
+          ...(isMorning ? [{ startDate: { gte: start } }] : []),
+        ],
         pet: { deletedAt: null, user: ACTIVE_USER },
       },
       include: { pet: { select: { id: true, name: true, userId: true } } },
