@@ -207,35 +207,141 @@ export class NotificationService {
       include: { pet: { select: { id: true, name: true, userId: true, deletedAt: true } } },
     });
 
+    // 같은 pet의 약이 같은 날 여러 개 끝나면 푸시 하나로 묶는다(scanAndSendMedicationReminder와 동일).
+    const byPet = new Map<string, typeof endingMedications>();
     for (const medication of endingMedications) {
       if (medication.pet.deletedAt) continue;
+      byPet.set(medication.pet.id, [...(byPet.get(medication.pet.id) ?? []), medication]);
+    }
 
-      const preference = await this.getPreference(medication.pet.userId);
+    for (const medications of byPet.values()) {
+      const { pet } = medications[0];
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.medicationReminderEnabled) continue;
+
+      // 중복 방지는 약 단위로 유지한다. referenceId를 petId로 바꾸면 같은 오전 구간의
+      // 복용 알림(referenceId = petId) 중복 방지에 걸려 그날 아침 복용 알림이 막힌다.
+      const unsent: typeof medications = [];
+      for (const medication of medications) {
+        const alreadySent = await this.prisma.notification.findFirst({
+          where: {
+            type: NotificationType.medicationReminder,
+            referenceId: medication.id,
+            referenceType: NotificationReferenceType.medication,
+            sentAt: { not: null },
+          },
+        });
+        if (!alreadySent) unsent.push(medication);
+      }
+      if (unsent.length === 0) continue;
+
+      // name은 선택 입력이라 비어 있을 수 있다. 여러 개를 나열할 때는 "약"으로 채운다.
+      const label =
+        unsent.length === 1 ? (unsent[0].name ?? '') : unsent.map((m) => m.name ?? '약').join(', ');
+      const title = `[Petlog] ${pet.name} 투약 종료 알림`;
+      const body = `오늘은 ${label ? `${label} ` : ''}투약 마지막 날이에요.`;
+      await this.sendAndLog({
+        userId: pet.userId,
+        type: NotificationType.medicationReminder,
+        title,
+        body,
+        referenceId: unsent[0].id,
+        referenceType: NotificationReferenceType.medication,
+      });
+      // 푸시는 하나지만 나머지 약에도 발송 이력을 남겨 다음 스캔에서 다시 보내지 않게 한다.
+      for (const medication of unsent.slice(1)) {
+        await this.prisma.notification.create({
+          data: {
+            userId: pet.userId,
+            type: NotificationType.medicationReminder,
+            title,
+            body,
+            referenceId: medication.id,
+            referenceType: NotificationReferenceType.medication,
+            sentAt: new Date(),
+          },
+        });
+      }
+    }
+
+    this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);
+  }
+
+  // 복용 중인 약 알림. 오늘(KST) 복용 중인 약을 pet별로 묶어 슬롯마다 1회 보낸다. 약마다
+  // 따로 보내면 여러 약을 먹는 pet의 보호자가 알림 여러 개를 받게 되므로 묶는다.
+  //
+  // - morning(09시): 주기가 "하루 N회"인 약 전부. 투약 폼의 선택지(frontend medication.types.ts
+  //   FREQUENCY_OPTIONS)가 하루 1~3회와 "필요시"뿐이라 매일 알림이 맞는 건 하루 N회뿐이고,
+  //   "필요시"나 주기를 비워둔 약에 매일 알림을 보내면 오히려 잘못된 복용을 유도한다.
+  //   종료일 당일은 scanAndSendMedicationEnd가 "마지막 날" 알림을 같은 아침에 따로 보내므로 뺀다.
+  //   단, 오늘 시작한 하루짜리 약은 그 알림에서 빠지므로 여기서 보낸다.
+  // - evening(18시): "하루 2회"·"하루 3회" 약의 저녁 복용. 3회 약의 점심 복용은 알리지 않는다.
+  //   종료일 당일도 저녁 복용은 남아 있으므로 포함한다.
+  //
+  // referenceId에는 petId를 담는다(weeklyCheckin과 동일). 약 여러 개를 묶은 알림이라
+  // 특정 medication.id를 가리킬 수 없기 때문이다. 중복 발송은 슬롯 구간(KST 0~12시 /
+  // 12~24시) 안에 같은 pet으로 보낸 이력이 있는지로 막는다 — 하루 단위로 막으면 아침에
+  // 보낸 이력 때문에 저녁 알림이 막힌다.
+  async scanAndSendMedicationReminder(slot: 'morning' | 'evening'): Promise<void> {
+    const { start, end } = kstDayRange();
+    const noon = new Date(start.getTime() + 12 * 60 * 60 * 1000);
+    const isMorning = slot === 'morning';
+
+    const activeMedications = await this.prisma.medication.findMany({
+      where: {
+        deletedAt: null,
+        frequency: isMorning ? { startsWith: '하루' } : { in: ['하루 2회', '하루 3회'] },
+        startDate: { lt: end },
+        OR: [
+          { endDate: null },
+          { endDate: { gte: isMorning ? end : start } },
+          // 하루만 먹는 약(시작일 = 종료일)은 scanAndSendMedicationEnd가 빼므로 아침 알림에 넣는다.
+          ...(isMorning ? [{ startDate: { gte: start } }] : []),
+        ],
+        pet: { deletedAt: null, user: ACTIVE_USER },
+      },
+      include: { pet: { select: { id: true, name: true, userId: true } } },
+      orderBy: { startDate: 'asc' },
+    });
+
+    const byPet = new Map<string, typeof activeMedications>();
+    for (const medication of activeMedications) {
+      byPet.set(medication.petId, [...(byPet.get(medication.petId) ?? []), medication]);
+    }
+
+    let sentCount = 0;
+
+    for (const medications of byPet.values()) {
+      const { pet } = medications[0];
+
+      const preference = await this.getPreference(pet.userId);
       if (!preference.medicationReminderEnabled) continue;
 
       const alreadySent = await this.prisma.notification.findFirst({
         where: {
           type: NotificationType.medicationReminder,
-          referenceId: medication.id,
-          referenceType: NotificationReferenceType.medication,
-          sentAt: { not: null },
+          referenceId: pet.id,
+          sentAt: isMorning ? { gte: start, lt: noon } : { gte: noon, lt: end },
         },
       });
       if (alreadySent) continue;
 
-      // name은 선택 입력이라 비어 있을 수 있다.
-      const medicationName = medication.name ? `${medication.name} ` : '';
+      const summary = medications.map((m) => `${m.name ?? '약'}(${m.frequency})`).join(', ');
       await this.sendAndLog({
-        userId: medication.pet.userId,
+        userId: pet.userId,
         type: NotificationType.medicationReminder,
-        title: `[Petlog] ${medication.pet.name} 투약 종료 알림`,
-        body: `오늘은 ${medicationName}투약 마지막 날이에요.`,
-        referenceId: medication.id,
-        referenceType: NotificationReferenceType.medication,
+        title: `[Petlog] ${pet.name} 투약 알림`,
+        body: isMorning
+          ? `오늘도 ${summary} 잊지 말고 챙겨주세요.`
+          : `저녁 투약 시간이에요. ${summary} 챙겨주세요.`,
+        referenceId: pet.id,
+        referenceType: null,
       });
+      sentCount += 1;
     }
 
-    this.logger.log(`투약 종료 알림 스캔 완료: ${endingMedications.length}건 대상`);
+    this.logger.log(`투약 알림(${slot}) 스캔 완료: ${sentCount}건 발송`);
   }
 
   // 건강기록 권장 알림. pet의 최신 HealthRecord.recordedAt이 7일 이상 경과하면 발송한다.
