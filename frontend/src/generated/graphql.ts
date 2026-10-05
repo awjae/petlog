@@ -35,7 +35,7 @@ export type CreateMedicalEventInput = {
 export type CreateMedicationInput = {
   dosage?: string | null | undefined;
   endDate?: string | null | undefined;
-  frequency?: string | null | undefined;
+  frequency?: MedicationFrequency | null | undefined;
   name?: string | null | undefined;
   petId: string | number;
   startDate: string;
@@ -74,6 +74,8 @@ export type HealthRecordType =
   | 'vomit'
   | 'waterIntake'
   | 'weight';
+
+export type MedicationFrequency = 'asNeeded' | 'onceDaily' | 'threeTimesDaily' | 'twiceDaily';
 
 export type ReportGeneratedBy = 'ai' | 'mock';
 
@@ -296,7 +298,7 @@ export type MedicationsQuery = {
     petId: string;
     name: string | null;
     dosage: string | null;
-    frequency: string | null;
+    frequency: MedicationFrequency | null;
     startDate: string;
     endDate: string | null;
     createdAt: string;

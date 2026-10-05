@@ -8,7 +8,7 @@ const med = (startDate: string, endDate?: string): Medication => ({
   petId: 'p1',
   name: '항생제',
   dosage: '',
-  frequency: '하루 2회',
+  frequency: 'twiceDaily',
   startDate,
   endDate,
   createdAt: startDate,

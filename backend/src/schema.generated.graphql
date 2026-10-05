@@ -72,7 +72,7 @@ input CreateMedicalEventInput {
 input CreateMedicationInput {
   dosage: String
   endDate: DateTime
-  frequency: String
+  frequency: MedicationFrequency
   name: String
   petId: ID!
   startDate: DateTime!
@@ -160,12 +160,19 @@ type Medication {
   createdAt: DateTime!
   dosage: String
   endDate: DateTime
-  frequency: String
+  frequency: MedicationFrequency
   id: ID!
   name: String
   petId: ID!
   startDate: DateTime!
   updatedAt: DateTime!
+}
+
+enum MedicationFrequency {
+  asNeeded
+  onceDaily
+  threeTimesDaily
+  twiceDaily
 }
 
 type Mutation {
@@ -354,7 +361,7 @@ input UpdateMedicalEventInput {
 input UpdateMedicationInput {
   dosage: String
   endDate: DateTime
-  frequency: String
+  frequency: MedicationFrequency
   name: String
   startDate: DateTime
 }

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Trash2, ChevronDown, Pill } from 'lucide-react';
-import type { Medication } from '../types/medication.types';
+import { FREQUENCY_LABEL, type Medication } from '../types/medication.types';
 import { isMedicationActive } from '../utils/medicationStatus';
 import styles from './MedicationList.module.css';
 
@@ -95,7 +95,7 @@ function MedicationItem({ item, onDelete }: MedicationItemProps) {
               )}
             </div>
             <span className={styles.itemSub}>
-              {item.frequency} · {formatDate(item.startDate)}부터
+              {item.frequency && FREQUENCY_LABEL[item.frequency]} · {formatDate(item.startDate)}부터
             </span>
           </div>
           <ChevronDown
@@ -118,7 +118,9 @@ function MedicationItem({ item, onDelete }: MedicationItemProps) {
             )}
             <p className={styles.detailRow}>
               <span className={styles.detailLabel}>투약 주기</span>
-              <span className={styles.detailValue}>{item.frequency}</span>
+              <span className={styles.detailValue}>
+                {item.frequency && FREQUENCY_LABEL[item.frequency]}
+              </span>
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { NotificationService } from './notification.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import type { PushSender } from '@petlog/push';
+import type { MedicationFrequency } from '@prisma/client';
 
 // 서울 2026-07-30 00:30 (= UTC 2026-07-29 15:30). UTC 날짜는 아직 07-29다.
 const SEOUL_DAWN = new Date('2026-07-29T15:30:00Z');
@@ -248,7 +249,7 @@ describe('NotificationService 투약 알림', () => {
   };
 
   const coco = { id: 'pet-1', name: '코코', userId: 'user-1' };
-  const med = (id: string, name: string | null, frequency: string, pet = coco) => ({
+  const med = (id: string, name: string | null, frequency: MedicationFrequency, pet = coco) => ({
     id,
     petId: pet.id,
     name,
@@ -274,13 +275,13 @@ describe('NotificationService 투약 알림', () => {
     jest.useRealTimers();
   });
 
-  it('오늘(KST) 복용 중이고 오늘 끝나지 않는 "하루 N회" 약만 조회한다', async () => {
+  it('오늘(KST) 복용 중이고 오늘 끝나지 않는 매일 복용 약만 조회한다', async () => {
     jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
 
     await service.scanAndSendMedicationReminder('morning');
 
     const { where } = prisma.medication.findMany.mock.calls[0][0];
-    expect(where.frequency).toEqual({ startsWith: '하루' });
+    expect(where.frequency).toEqual({ in: ['onceDaily', 'twiceDaily', 'threeTimesDaily'] });
     expect(where.startDate.lt.toISOString()).toBe(KST_DAY_END);
     expect(where.OR).toEqual([
       { endDate: null },
@@ -295,9 +296,9 @@ describe('NotificationService 투약 알림', () => {
   it('같은 pet의 약 여러 개를 알림 하나로 묶는다', async () => {
     const bori = { id: 'pet-2', name: '보리', userId: 'user-1' };
     prisma.medication.findMany.mockResolvedValue([
-      med('m1', '심장약', '하루 2회'),
-      med('m2', null, '하루 1회'),
-      med('m3', '항생제', '하루 3회', bori),
+      med('m1', '심장약', 'twiceDaily'),
+      med('m2', null, 'onceDaily'),
+      med('m3', '항생제', 'threeTimesDaily', bori),
     ]);
 
     await service.scanAndSendMedicationReminder('morning');
@@ -310,7 +311,7 @@ describe('NotificationService 투약 알림', () => {
   });
 
   it('투약 알림을 끈 사용자에게는 보내지 않는다', async () => {
-    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', '하루 2회')]);
+    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', 'twiceDaily')]);
     prisma.notificationPreference.findUnique.mockResolvedValue({
       vaccinationDueEnabled: true,
       appointmentReminderEnabled: true,
@@ -325,7 +326,7 @@ describe('NotificationService 투약 알림', () => {
 
   it('같은 pet에 오늘 아침 이미 보냈으면 다시 보내지 않는다', async () => {
     jest.useFakeTimers().setSystemTime(SEOUL_DAWN);
-    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', '하루 2회')]);
+    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', 'twiceDaily')]);
     prisma.notification.findFirst.mockResolvedValue({ id: 'n1' });
 
     await service.scanAndSendMedicationReminder('morning');
@@ -343,14 +344,14 @@ describe('NotificationService 투약 알림', () => {
     await service.scanAndSendMedicationReminder('evening');
 
     const { where } = prisma.medication.findMany.mock.calls[0][0];
-    expect(where.frequency).toEqual({ in: ['하루 2회', '하루 3회'] });
+    expect(where.frequency).toEqual({ in: ['twiceDaily', 'threeTimesDaily'] });
     expect(where.OR).toEqual([{ endDate: null }, { endDate: { gte: new Date(KST_DAY_START) } }]);
   });
 
   // 하루 단위로 중복을 막으면 아침에 보낸 이력 때문에 저녁 알림이 나가지 않는다.
   it('저녁 중복 방지는 오후 구간만 보므로 아침 발송 이력에 막히지 않는다', async () => {
     jest.useFakeTimers().setSystemTime(SEOUL_EVENING);
-    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', '하루 2회')]);
+    prisma.medication.findMany.mockResolvedValue([med('m1', '심장약', 'twiceDaily')]);
 
     await service.scanAndSendMedicationReminder('evening');
 

@@ -1,11 +1,12 @@
 import { gql } from '@apollo/client';
 import type { TypedDocumentNode } from '@apollo/client';
+import type { MedicationFrequency } from '@/generated/graphql';
 
 interface CreateMedicationInput {
   petId: string;
   name?: string;
   dosage?: string;
-  frequency?: string;
+  frequency?: MedicationFrequency;
   startDate: string;
   endDate?: string;
 }

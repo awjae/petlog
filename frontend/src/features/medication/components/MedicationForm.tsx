@@ -5,7 +5,8 @@ import { CalendarDays, ChevronDown, Loader2, Check } from 'lucide-react';
 import { SelectBottomSheet } from '@/shared/components/SelectBottomSheet';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
 import { localToday } from '@/shared/utils/date';
-import { FREQUENCY_OPTIONS } from '../types/medication.types';
+import type { MedicationFrequency } from '@/generated/graphql';
+import { FREQUENCY_LABEL, FREQUENCY_OPTIONS } from '../types/medication.types';
 import type { CreateMedicationFormInput } from '../types/medication.types';
 import styles from './MedicationForm.module.css';
 
@@ -20,7 +21,7 @@ export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFo
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState(localToday);
   const [endDate, setEndDate] = useState('');
-  const [frequency, setFrequency] = useState('');
+  const [frequency, setFrequency] = useState<MedicationFrequency | ''>('');
   const [freqSheetOpen, setFreqSheetOpen] = useState(false);
   const [datePicker, setDatePicker] = useState<'startDate' | 'endDate' | null>(null);
 
@@ -83,7 +84,7 @@ export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFo
             aria-expanded={freqSheetOpen}
           >
             <span className={frequency ? styles.selectValue : styles.selectPlaceholder}>
-              {frequency || '주기 선택'}
+              {frequency ? FREQUENCY_LABEL[frequency] : '주기 선택'}
             </span>
             <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
           </button>
@@ -140,7 +141,8 @@ export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFo
         title="투약 주기"
         options={FREQUENCY_OPTIONS}
         value={frequency}
-        onChange={setFrequency}
+        // 선택지가 FREQUENCY_OPTIONS뿐이라 값은 항상 MedicationFrequency다.
+        onChange={(value) => setFrequency(value as MedicationFrequency)}
       />
 
       <DatePickerSheet
