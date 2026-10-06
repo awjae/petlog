@@ -39,6 +39,9 @@ export function toRecordTrend(
         new Date(record.recordedAt).getTime() >= windowStart.getTime(),
     )
     .map((record) => ({ recordedAt: record.recordedAt, value: record.numValue }))
+    // 같은 날 기록은 recordedAt이 같아 정렬로 순서가 안 바뀐다. 서버의 최신순(입력 역순)을
+    // 먼저 뒤집어야 같은 날 안에서도 입력 순서가 된다.
+    .reverse()
     .sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
 
   if (points.length < 2) return null;

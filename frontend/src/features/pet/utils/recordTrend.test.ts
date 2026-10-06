@@ -52,6 +52,37 @@ describe('toRecordTrend', () => {
     expect(trend?.change).toBe(40);
   });
 
+  it('같은 날 기록은 입력한 순서를 지킨다', () => {
+    // 같은 날 기록은 recordedAt이 같고, 서버는 나중에 입력한 것을 먼저 내려준다.
+    const trend = toRecordTrend(
+      [
+        record({
+          id: 'today-pm',
+          type: 'glucose',
+          recordedAt: localNoon('2026-09-11'),
+          numValue: 250,
+        }),
+        record({
+          id: 'today-am',
+          type: 'glucose',
+          recordedAt: localNoon('2026-09-11'),
+          numValue: 300,
+        }),
+        record({
+          id: 'yesterday',
+          type: 'glucose',
+          recordedAt: localNoon('2026-09-10'),
+          numValue: 400,
+        }),
+      ],
+      'glucose',
+      NOW,
+    );
+
+    expect(trend?.points.map((p) => p.value)).toEqual([400, 300, 250]);
+    expect(trend?.change).toBe(-150);
+  });
+
   it('값이 없는 체중 기록은 건너뛴다', () => {
     const trend = toRecordTrend(
       [
