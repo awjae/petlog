@@ -52,8 +52,9 @@ describe('toRecordTrend', () => {
     expect(trend?.change).toBe(40);
   });
 
-  it('같은 날 기록은 입력한 순서를 지킨다', () => {
+  it('같은 날 기록은 마지막에 입력한 값 하나로 그린다', () => {
     // 같은 날 기록은 recordedAt이 같고, 서버는 나중에 입력한 것을 먼저 내려준다.
+    // 하루에 점이 여럿이면 같은 x에 세로로 쌓여 선이 수직으로 오르내린다.
     const trend = toRecordTrend(
       [
         record({
@@ -79,8 +80,19 @@ describe('toRecordTrend', () => {
       NOW,
     );
 
-    expect(trend?.points.map((p) => p.value)).toEqual([400, 300, 250]);
+    expect(trend?.points.map((p) => p.value)).toEqual([400, 250]);
     expect(trend?.change).toBe(-150);
+  });
+
+  it('기록이 모두 같은 날이면 null이다', () => {
+    const today = localNoon('2026-09-11');
+    const trend = toRecordTrend(
+      [record({ recordedAt: today, numValue: 3.2 }), record({ recordedAt: today, numValue: 3.0 })],
+      'weight',
+      NOW,
+    );
+
+    expect(trend).toBeNull();
   });
 
   it('값이 없는 체중 기록은 건너뛴다', () => {

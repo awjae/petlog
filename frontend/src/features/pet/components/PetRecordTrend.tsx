@@ -44,7 +44,7 @@ export function PetRecordTrend({ type, trend, error }: PetRecordTrendProps) {
           <p className={styles.message}>{label} 기록을 불러오지 못했어요</p>
         ) : !trend ? (
           <p className={styles.message}>
-            최근 {TREND_DAYS}일 동안 {label}을 2번 이상 기록하면 변화를 볼 수 있어요
+            최근 {TREND_DAYS}일 동안 {label}을 이틀 이상 기록하면 변화를 볼 수 있어요
           </p>
         ) : (
           <TrendChart type={type} trend={trend} />
@@ -72,7 +72,7 @@ function TrendChart({ type, trend }: { type: HealthRecordType; trend: RecordTren
           className={styles.line}
           points={coords.map(({ x, y }) => `${x},${y}`).join(' ')}
         />
-        {/* 같은 날 기록은 recordedAt이 같아 키로 쓰면 중복된다. 점 목록은 순서만 있는 정적 렌더라 인덱스로 충분하다. */}
+        {/* 점 목록은 순서만 있는 정적 렌더라 인덱스로 충분하다. */}
         {coords.map(({ x, y }, index) => (
           <circle key={index} className={styles.dot} cx={x} cy={y} r={3} />
         ))}

@@ -19,7 +19,7 @@ export interface RecordTrend {
 
 /**
  * 오늘을 포함한 최근 90일의 type 수치 기록을 오래된 순으로 돌려준다.
- * 점이 2개 미만이면 변화를 그릴 수 없으므로 null.
+ * 하루에 한 점이며, 점이 2개 미만이면 변화를 그릴 수 없으므로 null.
  *
  * 개수가 아니라 기간으로 자른다. 가로축이 날짜 간격이라 오래된 기록 하나가 섞이면
  * 최근 기록들이 오른쪽 끝에 몰려 보이지 않는다.
@@ -31,7 +31,7 @@ export function toRecordTrend(
 ): RecordTrend | null {
   const windowStart = periodStart(TREND_DAYS, now);
 
-  const points = records
+  const sorted = records
     .filter(
       (record): record is HealthRecord & { numValue: number } =>
         record.type === type &&
@@ -43,6 +43,13 @@ export function toRecordTrend(
     // 먼저 뒤집어야 같은 날 안에서도 입력 순서가 된다.
     .reverse()
     .sort((a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime());
+
+  // 하루에 한 점만 그린다. 같은 날 점이 여럿이면 같은 x에 세로로 쌓이므로, 그날 마지막에
+  // 입력한 값을 쓴다 (평균이 아니라 실제 기록한 값이 보이게).
+  // ponytail: 하루 마지막 값. 혈당처럼 하루 여러 번 재는 값의 평균·범위는 실사용 데이터를 보고 추가
+  const points = [
+    ...new Map(sorted.map((point) => [new Date(point.recordedAt).toDateString(), point])).values(),
+  ];
 
   if (points.length < 2) return null;
 
