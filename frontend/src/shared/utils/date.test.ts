@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { localToday, toLocalDateString } from './date';
+import { localToday, periodStart, toLocalDateString } from './date';
 
 // 모든 테스트는 TZ=Asia/Seoul 고정으로 실행된다 (vitest.config.ts).
 // 이 로직은 "UTC 기준으로 날짜를 접으면 하루가 밀린다"는 문제를 막는 것이 목적이라,
@@ -37,5 +37,12 @@ describe('localToday', () => {
     vi.setSystemTime(new Date('2026-07-30T03:00:00Z')); // 서울 07-30 12:00
 
     expect(localToday()).toBe('2026-07-30');
+  });
+});
+
+describe('periodStart', () => {
+  it('오늘을 포함해 days일이다 — 30일이면 29일 전 0시', () => {
+    const start = periodStart(30, new Date('2026-09-18T15:00:00+09:00'));
+    expect(start.toISOString()).toBe(new Date('2026-08-20T00:00:00+09:00').toISOString());
   });
 });

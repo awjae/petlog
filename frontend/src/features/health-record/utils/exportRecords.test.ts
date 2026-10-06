@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HealthRecord } from '../types/health-record.types';
-import { buildRecordExport, periodStart } from './exportRecords';
+import { buildRecordExport } from './exportRecords';
 
 // TZ=Asia/Seoul 고정 (vitest.config.ts의 test.env). 기간 경계가 실제 날짜에 따라
 // 흔들리지 않도록 "오늘"을 고정해서 넘긴다.
@@ -18,13 +18,6 @@ function record(date: string, overrides: Partial<HealthRecord> = {}): HealthReco
     ...overrides,
   };
 }
-
-describe('periodStart', () => {
-  it('오늘을 포함해 days일이다 — 30일이면 29일 전 0시', () => {
-    const start = periodStart(30, NOW);
-    expect(start.toISOString()).toBe(new Date('2026-08-20T00:00:00+09:00').toISOString());
-  });
-});
 
 describe('buildRecordExport', () => {
   it('기간 밖 기록을 버린다 — 경계 당일은 포함한다', () => {

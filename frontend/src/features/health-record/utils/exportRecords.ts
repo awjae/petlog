@@ -1,8 +1,8 @@
 import type { HealthRecordType } from '@/generated/graphql';
-import { toLocalDateString } from '@/shared/utils/date';
+import { periodStart, toLocalDateString } from '@/shared/utils/date';
 import { TYPE_LABEL, buildSummary, type HealthRecord } from '../types/health-record.types';
 
-// 병원에 보여줄 기간. 기본 90일은 체중 그래프(weightTrend.TREND_DAYS)와 맞춘다 —
+// 병원에 보여줄 기간. 기본 90일은 수치 그래프(recordTrend.TREND_DAYS)와 맞춘다 —
 // 같은 반려동물 화면을 오간 사용자가 "최근"의 의미를 다시 배우지 않아도 되게 한다.
 export const EXPORT_PERIODS = [30, 90, 180] as const;
 export type ExportPeriodDays = (typeof EXPORT_PERIODS)[number];
@@ -36,18 +36,6 @@ export interface RecordExport {
   countByType: { type: HealthRecordType; label: string; count: number }[];
   /** 체중 기록이 2건 미만이면 null */
   weight: WeightSummary | null;
-}
-
-/**
- * 기간의 시작 경계. 오늘을 포함해 days일이므로 days - 1을 뺀다.
- * 기록 시각이 로컬 날짜의 정오로 저장되므로 경계도 로컬 0시로 잡는다
- * (weightTrend.toWeightTrend와 같은 규칙).
- */
-export function periodStart(days: number, now: Date = new Date()): Date {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - (days - 1));
-  return start;
 }
 
 /**

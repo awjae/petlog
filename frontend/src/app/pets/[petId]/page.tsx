@@ -7,24 +7,23 @@ import { ChevronLeft } from 'lucide-react';
 import { usePetDetail } from '@/features/pet/hooks/usePet';
 import { PetProfileSummary } from '@/features/pet/components/PetProfileSummary';
 import { PetStatCards } from '@/features/pet/components/PetStatCards';
-import { PetWeightTrend } from '@/features/pet/components/PetWeightTrend';
-import { toWeightTrend } from '@/features/pet/utils/weightTrend';
+import { PetRecordTrend } from '@/features/pet/components/PetRecordTrend';
+import { toRecordTrend } from '@/features/pet/utils/recordTrend';
 import { useHealthRecords } from '@/features/health-record/hooks/useHealthRecords';
 import { PetRecentRecords } from '@/features/pet/components/PetRecentRecords';
 import { PetQuickLinks } from '@/features/pet/components/PetQuickLinks';
 import { PetDetailSkeleton } from '@/features/pet/components/PetDetailSkeleton';
 import styles from './page.module.css';
 
+const CHRONIC_TREND_TYPES = ['glucose', 'temperature', 'waterIntake'] as const;
+
 export default function PetDetailPage({ params }: { params: Promise<{ petId: string }> }) {
   const { petId } = use(params);
   const router = useRouter();
   const { pet, loading, error, notFound, refetch } = usePetDetail(petId);
-  // 그래프는 체중 기록만 받아 최근 90일로 거른다 (toWeightTrend).
-  const {
-    records,
-    loading: recordsLoading,
-    error: recordsError,
-  } = useHealthRecords(petId, { type: 'weight' });
+  // 그래프용 수치 기록. 유형 필터 없이 받아 타임라인과 같은 캐시를 쓰고, 유형별 최근 90일로
+  // 거른다 (toRecordTrend).
+  const { records, loading: recordsLoading, error: recordsError } = useHealthRecords(petId);
 
   /* ── 반려동물을 찾을 수 없음 (헤더 없이 중앙 정렬) ── */
   if (notFound) {
@@ -73,10 +72,20 @@ export default function PetDetailPage({ params }: { params: Promise<{ petId: str
           <PetProfileSummary pet={pet} />
           <PetStatCards recentWeight={pet.recentWeight} todayRecordCount={pet.todayRecordCount} />
           {!(recordsLoading && records.length === 0) && (
-            <PetWeightTrend
-              trend={toWeightTrend(records)}
-              error={recordsError != null && records.length === 0}
-            />
+            <>
+              <PetRecordTrend
+                type="weight"
+                trend={toRecordTrend(records, 'weight')}
+                error={recordsError != null && records.length === 0}
+              />
+              {/* 만성질환 수치는 기록하는 보호자만 쓰므로, 빈 상태 카드 없이 그릴 게 있을 때만 보인다. */}
+              {CHRONIC_TREND_TYPES.map((type) => {
+                const trend = toRecordTrend(records, type);
+                return (
+                  trend && <PetRecordTrend key={type} type={type} trend={trend} error={false} />
+                );
+              })}
+            </>
           )}
           <PetRecentRecords petId={petId} records={pet.recentHealthRecords} />
           <PetQuickLinks petId={petId} />
