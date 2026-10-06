@@ -19,3 +19,15 @@ export function toLocalDateString(date: Date): string {
 export function localToday(): string {
   return toLocalDateString(new Date());
 }
+
+/**
+ * 기간의 시작 경계. 오늘을 포함해 days일이므로 days - 1을 뺀다.
+ * 기록 시각이 로컬 날짜의 정오로 저장되므로 경계도 로컬 0시로 잡는다
+ * (내보내기 기간과 수치 그래프의 최근 90일이 이 경계를 쓴다).
+ */
+export function periodStart(days: number, now: Date = new Date()): Date {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+  return start;
+}

@@ -1,6 +1,6 @@
 import type { HealthRecordType } from '@/generated/graphql';
 import type { HealthRecord } from '@/features/health-record/types/health-record.types';
-import { periodStart } from '@/features/health-record/utils/exportRecords';
+import { periodStart } from '@/shared/utils/date';
 
 // ponytail: 최근 90일 고정. 기간 선택(30일/1년)은 사용자가 원하면 그때 추가
 export const TREND_DAYS = 90;
