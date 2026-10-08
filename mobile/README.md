@@ -83,8 +83,9 @@ npm run run:android --workspace=mobile
 
 ## TODO (다음 단계)
 
-- [ ] 오프라인/네트워크 에러 화면: `server.url` 모드는 로드 실패 시 빈 화면만 보이므로,
-      네이티브 WebView 레벨에서 로드 실패를 감지해 로컬 에러 화면을 보여주는 처리가 필요하다.
+- [x] 오프라인/네트워크 에러 화면: `server.url` 모드는 로드 실패 시 빈 화면만 보이므로,
+      Capacitor의 `server.errorPath`로 번들된 `www/error.html`을 띄운다(Android 전용 기능).
+      iOS는 프로젝트 생성 시 별도 처리가 필요하다.
 - [ ] 푸시 알림 연동: `@capacitor/push-notifications`로 권한 요청 및 FCM/APNs 토큰 발급까지만
       이 레이어의 책임이다. 토큰을 유저와 매핑해 저장하고, 백신/투약 만료·주간 리포트 알림을
       실제로 트리거하는 로직은 `backend/`의 신규 `notification` 도메인 모듈에서 담당한다.
