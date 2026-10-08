@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>연결할 수 없어요</title>
+    <!--
+      capacitor.config.ts의 server.errorPath가 가리키는 화면. 원격 URL 모드라 네트워크가
+      없거나 서버가 응답하지 않으면 웹뷰가 빈 화면이 되는데, 그때 Capacitor가 이 파일을
+      로컬 자산에서 로드한다(http://localhost/error.html).
+
+      제약 두 개가 구현을 결정한다:
+      1. 앱 자산이라 Capacitor 플러그인을 쓸 수 없고(공식 제약) 배포 URL도 모른다 —
+         그래서 재시도는 history.back()으로 직전 요청을 다시 태우는 방식뿐이다.
+      2. 오리진이 앱(petlog.quest)과 달라 사용자가 고른 테마(globals.css의 data-mode,
+         localStorage)를 읽을 수 없다. 앱 CSS가 일부러 쓰지 않는 prefers-color-scheme을
+         여기서만 쓰는 이유다. 색 값은 globals.css의 토큰을 그대로 옮겼다.
+    -->
+    <style>
+      :root {
+        --bg: #f4f0e6;
+        --text: #2d3c48;
+        --muted: #586e81;
+        --primary: #2f7099;
+        --primary-text: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141210;
+          --text: #eae4d9;
+          --muted: #a49a8c;
+          --primary: #7cbde4;
+          --primary-text: #06212f;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      p {
+        margin: 0;
+        max-width: 280px;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+      button {
+        margin-top: 12px;
+        min-height: 48px;
+        padding: 0 28px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--primary);
+        color: var(--primary-text);
+        font-size: 15px;
+        font-weight: 600;
+        font-family: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>연결할 수 없어요</h1>
+    <p>네트워크 상태를 확인한 뒤 다시 시도해주세요. 계속 안 되면 잠시 후 앱을 다시 실행해주세요.</p>
+    <!-- 로드가 실패하면 Capacitor가 [실패한 URL, error.html] 순으로 히스토리를 쌓으므로,
+         back()이 곧 그 요청의 재시도다. 되돌릴 항목이 없으면 아무 일도 일어나지 않고
+         위 안내문(앱 다시 실행)이 그대로 남는다. -->
+    <button type="button" onclick="history.back()">다시 시도</button>
+  </body>
+</html>
