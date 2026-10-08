@@ -24,8 +24,10 @@ export function useCreatePet() {
 
   const loading = uploading || mutating;
 
-  /** 성공하면 null, 실패하면 사용자에게 보여줄 사유를 돌려준다. */
-  async function createPet(input: CreatePetFormInput): Promise<string | null> {
+  /** 성공하면 생성된 pet의 id, 실패하면 사용자에게 보여줄 사유를 돌려준다. */
+  async function createPet(
+    input: CreatePetFormInput,
+  ): Promise<{ petId: string } | { error: string }> {
     let profileImageUrl: string | undefined;
     if (input.imageFile) {
       setUploading(true);
@@ -33,7 +35,7 @@ export function useCreatePet() {
         profileImageUrl = await uploadImage(input.imageFile);
       } catch (err) {
         setUploading(false);
-        return err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요';
+        return { error: err instanceof UploadError ? err.message : '이미지 업로드에 실패했어요' };
       }
       setUploading(false);
     }
@@ -54,7 +56,10 @@ export function useCreatePet() {
       },
     }).catch(() => null);
 
-    return result?.data?.createPet != null ? null : '등록에 실패했어요. 다시 시도해주세요';
+    const created = result?.data?.createPet;
+    return created != null
+      ? { petId: created.id }
+      : { error: '등록에 실패했어요. 다시 시도해주세요' };
   }
 
   return { createPet, loading };

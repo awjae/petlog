@@ -58,6 +58,14 @@ export function useNewRecordForm() {
 
   const pets = data?.pets ?? [];
 
+  // URL로 pet이 지정돼 들어온 것도 "선택이 확정된 지점"이라 스토어에 반영한다
+  // (selectedPet.store 주석 참고). 안 하면 저장 후 돌아간 홈이 다른 pet을 보여준다.
+  useEffect(() => {
+    if (!petIdFromUrl || petIdFromUrl === lastSelectedPetId) return;
+    if (!pets.some((p) => p.id === petIdFromUrl)) return;
+    setSelectedPetId(petIdFromUrl);
+  }, [petIdFromUrl, lastSelectedPetId, pets, setSelectedPetId]);
+
   // pets 목록이 비동기 로딩된 이후 petId가 비어있으면 마지막 선택 반려동물로 동기화
   useEffect(() => {
     if (petId || pets.length === 0) return;
