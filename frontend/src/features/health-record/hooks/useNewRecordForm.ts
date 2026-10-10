@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
@@ -57,6 +57,20 @@ export function useNewRecordForm() {
   const [success, setSuccess] = useState(false);
 
   const pets = data?.pets ?? [];
+
+  // URL로 pet이 지정돼 들어온 것도 "선택이 확정된 지점"이라 스토어에 반영한다
+  // (selectedPet.store 주석 참고). 안 하면 저장 후 돌아간 홈이 다른 pet을 보여준다.
+  //
+  // 기준은 스토어 값이 아니라 "이 URL 값을 이미 반영했는지"다. 스토어와 비교하면 폼에서
+  // 다른 pet으로 바꾼 직후(handlePetChange가 스토어를 바꾼다) 이 effect가 다시 돌아
+  // 스토어를 URL의 pet으로 되돌려버린다 — 폼은 B에 기록하는데 홈은 A를 보여주게 된다.
+  const appliedUrlPetId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!petIdFromUrl || appliedUrlPetId.current === petIdFromUrl) return;
+    if (!pets.some((p) => p.id === petIdFromUrl)) return;
+    appliedUrlPetId.current = petIdFromUrl;
+    setSelectedPetId(petIdFromUrl);
+  }, [petIdFromUrl, pets, setSelectedPetId]);
 
   // pets 목록이 비동기 로딩된 이후 petId가 비어있으면 마지막 선택 반려동물로 동기화
   useEffect(() => {

@@ -13,9 +13,15 @@ export default function NewPetPage() {
   const { toasts, addToast, dismiss } = useToast();
 
   async function handleSubmit(values: PetFormValues) {
-    const failure = await createPet(values);
-    if (failure) addToast(failure, 'error');
-    else router.push('/home');
+    const result = await createPet(values);
+    if ('error' in result) {
+      addToast(result.error, 'error');
+      return;
+    }
+    // 등록 직후 첫 기록 화면까지 바로 잇는다 — 홈을 한 번 거치면 거기서 이탈한다
+    // (2026-09 가입자가 반려동물만 등록하고 기록 0건으로 떠난 지점).
+    // push가 아니라 replace여야 기록 저장 후 router.back()이 빈 등록 폼이 아닌 홈으로 간다.
+    router.replace(`/records/new?petId=${result.petId}`);
   }
 
   return (
