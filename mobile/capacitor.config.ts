@@ -24,6 +24,10 @@ const config: CapacitorConfig = {
   server: {
     url: appUrl,
     cleartext: appUrl.startsWith('http://'),
+    // 로드 실패 시 빈 웹뷰 대신 번들된 로컬 화면을 띄운다(Android). 원격 URL 모드에서는
+    // 네트워크가 끊기면 보여줄 자산이 하나도 없어 검정 화면이 되고, 첫 실행에서 그걸 본
+    // 사용자는 그대로 이탈한다. www/error.html 주석도 함께 참고.
+    errorPath: 'error.html',
   },
 };
 
