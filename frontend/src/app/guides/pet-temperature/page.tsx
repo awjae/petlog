@@ -68,7 +68,7 @@ export default function PetTemperatureGuide() {
         <h2 className={styles.sectionTitle}>언제 재서 남겨야 할까</h2>
         <p className={styles.paragraph}>
           건강할 때는 매일 잴 필요가 없습니다. 다만 평소 체온을 두세 번이라도 재서 남겨두면, 아플 때
-          잰 값이 이 아이 기준으로 높은지 낮은지 판단할 근거가 생깁니다. 아픈 날에는 같은 방식 으로
+          잰 값이 이 아이 기준으로 높은지 낮은지 판단할 근거가 생깁니다. 아픈 날에는 같은 방식으로
           아침·저녁 두 번 재서 흐름을 남기면 진료 때 그대로 쓸 수 있습니다.
         </p>
       </section>
