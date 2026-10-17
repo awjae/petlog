@@ -84,6 +84,9 @@ export default function LandingPage() {
         <Link href="/login" className={styles.landingLogin}>
           이미 계정이 있어요 <span>로그인</span>
         </Link>
+        <Link href="/guides" className={styles.landingLogin}>
+          반려동물 건강 기록 <span>가이드 보기</span>
+        </Link>
       </div>
     </main>
   );

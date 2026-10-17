@@ -1,0 +1,158 @@
+/*
+ * 공개 가이드(/guides, /guides/*) 공용 스타일.
+ * 검색으로 들어온 비회원이 처음 보는 화면이라 앱 내부 화면과 달리 본문 가독성과
+ * 하단 CTA가 중심이다.
+ */
+
+.main {
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: 48px;
+  background: var(--color-bg);
+}
+
+.header {
+  padding: 28px 20px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+}
+
+.lead {
+  margin-top: 8px;
+  font: var(--font-body);
+  color: var(--color-text-secondary);
+}
+
+.content {
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+  margin-bottom: 10px;
+}
+
+.paragraph {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 18px;
+  list-style: disc;
+  margin-bottom: 8px;
+}
+
+.list li {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+.note {
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.indexList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+}
+
+.indexItem {
+  display: block;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.indexItemTitle {
+  display: block;
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+}
+
+.indexItemDesc {
+  display: block;
+  margin-top: 6px;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.related {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.relatedTitle {
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+}
+
+.relatedList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.relatedLink {
+  font: var(--font-body);
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.cta {
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  text-align: center;
+}
+
+.ctaText {
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  margin-bottom: 14px;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  font: var(--font-title-m);
+}

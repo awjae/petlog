@@ -11,11 +11,12 @@ const PUBLIC_EXACT_PATHS = new Set([
   '/forgot-password',
   '/reset-password',
   '/privacy',
+  '/guides',
 ]);
 
 // prefix 매칭이 필요한 공개 경로 — 동적 세그먼트를 포함한다.
 // 예: /share/reports/[shareToken] (완전 공개, 인증 가드 없음)
-const PUBLIC_PATH_PREFIXES = ['/share/'];
+const PUBLIC_PATH_PREFIXES = ['/share/', '/guides/'];
 
 export function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_EXACT_PATHS.has(pathname)) return true;
