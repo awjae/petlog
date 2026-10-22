@@ -163,3 +163,31 @@ LEFT JOIN report_shares rs ON rs.report_id = rp.id
 JOIN kst_users u ON u.id = p.user_id
 GROUP BY rp.status
 ORDER BY 2 DESC;
+
+
+-- 가입 이전 유입 퍼널 (visit_events: 공개 페이지 방문 → users: 가입). 일자는 KST.
+-- 방문자는 식별하지 않으므로 전환율은 "그날 방문 수 대비 그날 가입 수"의 거친 비율이다.
+SELECT
+  d.day_kst,
+  coalesce(v.visits, 0)  AS visits,
+  coalesce(v.guide_visits, 0) AS guide_visits,
+  coalesce(u.signups, 0) AS signups
+FROM (
+  SELECT generate_series(
+    (now() AT TIME ZONE 'Asia/Seoul')::date - 29,
+    (now() AT TIME ZONE 'Asia/Seoul')::date,
+    interval '1 day'
+  )::date AS day_kst
+) d
+LEFT JOIN (
+  SELECT (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul')::date AS day_kst,
+         count(*) AS visits,
+         count(*) FILTER (WHERE path LIKE '/guides%') AS guide_visits
+  FROM visit_events GROUP BY 1
+) v USING (day_kst)
+LEFT JOIN (
+  SELECT (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Seoul')::date AS day_kst,
+         count(*) AS signups
+  FROM users GROUP BY 1
+) u USING (day_kst)
+ORDER BY 1;

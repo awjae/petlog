@@ -73,6 +73,9 @@ export class PrismaService implements OnModuleInit {
   get userConsent() {
     return this.client.userConsent;
   }
+  get visitEvent() {
+    return this.client.visitEvent;
+  }
   get $transaction() {
     return this.client.$transaction.bind(this.client);
   }
