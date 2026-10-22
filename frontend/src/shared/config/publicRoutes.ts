@@ -12,6 +12,7 @@ const PUBLIC_EXACT_PATHS = new Set([
   '/reset-password',
   '/privacy',
   '/guides',
+  '/sample-report',
 ]);
 
 // prefix 매칭이 필요한 공개 경로 — 동적 세그먼트를 포함한다.
