@@ -81,6 +81,9 @@ export default function LandingPage() {
         <Link href="/register" className={styles.landingCta}>
           무료로 시작하기
         </Link>
+        <Link href="/sample-report" className={styles.landingLogin}>
+          가입 전에 <span>리포트 예시 보기</span>
+        </Link>
         <Link href="/login" className={styles.landingLogin}>
           이미 계정이 있어요 <span>로그인</span>
         </Link>
