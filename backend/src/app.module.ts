@@ -21,6 +21,7 @@ import { ReportModule } from './report/report.module';
 import { HealthModule } from './health/health.module';
 import { NotificationModule } from './notification/notification.module';
 import { ConsentModule } from './consent/consent.module';
+import { VisitModule } from './visit/visit.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ConsentModule } from './consent/consent.module';
     ReportModule,
     NotificationModule,
     ConsentModule,
+    VisitModule,
   ],
   providers: [DateTimeScalar],
 })

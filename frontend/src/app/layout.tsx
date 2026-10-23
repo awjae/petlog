@@ -5,6 +5,7 @@ import { ApolloProvider } from '@/providers/ApolloProvider';
 import { MSWProvider } from '@/providers/MSWProvider';
 import { NotificationProvider } from '@/providers/NotificationProvider';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import { VisitBeacon } from '@/shared/components/VisitBeacon';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/shared/config/site';
 import './globals.css';
 
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body>
+        <VisitBeacon />
         <ThemeProvider>
           <MSWProvider>
             <ApolloProvider>

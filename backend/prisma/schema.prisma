@@ -369,6 +369,20 @@ model UserConsent {
   @@map("user_consents")
 }
 
+// 가입 이전의 공개 페이지 방문 로그. 유입(가이드 글 → 가입) 퍼널의 첫 단계만 담당한다.
+// 가입·펫 등록·첫 기록·리포트 단계는 각 테이블의 created_at으로 이미 집계되므로 중복 저장하지 않는다.
+// 개인정보(IP, 사용자 ID, 쿠키)를 저장하지 않는다 — referrer는 호스트만, 방문자 식별은 하지 않는다.
+model VisitEvent {
+  id        String   @id @default(uuid())
+  path      String
+  referrer  String?
+  utmSource String?  @map("utm_source")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("visit_events")
+}
+
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum Species {
