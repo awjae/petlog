@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 // 가입 이전 유입 퍼널(가이드 글 → 가입)을 보기 위한 방문 기록. 로그인 후 화면은 세지 않는다.
-const PUBLIC_PATH = /^\/(guides(\/.*)?|login|register)?$/;
+const PUBLIC_PATH = /^\/(guides(\/.*)?|sample-report|login|register)?$/;
 
 function referrerHost(): string | undefined {
   try {
