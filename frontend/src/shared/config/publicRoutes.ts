@@ -11,6 +11,7 @@ const PUBLIC_EXACT_PATHS = new Set([
   '/forgot-password',
   '/reset-password',
   '/privacy',
+  '/terms',
   '/guides',
   '/sample-report',
 ]);
