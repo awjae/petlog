@@ -47,6 +47,16 @@ export function kstDateString(date: Date): string {
 }
 
 /**
+ * 주어진 시각이 속한 **KST 주(월~일)**의 월요일 00:00을 UTC 인스턴트로 반환한다.
+ */
+export function kstWeekStart(now: Date = new Date()): Date {
+  const { start } = kstDayRange(now);
+  // getUTCDay는 일=0 … 토=6. KST 벽시계 기준 요일을 읽어 월요일로부터 며칠 지났는지 구한다.
+  const daysSinceMonday = (new Date(start.getTime() + KST_OFFSET_MS).getUTCDay() + 6) % 7;
+  return new Date(start.getTime() - daysSinceMonday * DAY_MS);
+}
+
+/**
  * 주어진 시각이 속한 **KST 달력 한 달**의 시작과 다음 달 시작을 UTC 인스턴트로 반환한다.
  *
  * `start <= x < nextStart` 형태로 쓴다(반열림). 월마다 길이가 달라 `start + 30일` 같은

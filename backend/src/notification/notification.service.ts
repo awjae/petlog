@@ -1,13 +1,14 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import {
   AppointmentStatus,
+  HealthRecordType,
   MedicationFrequency,
   NotificationReferenceType,
   NotificationType,
 } from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { kstDayRange } from '../common/utils/date';
+import { kstDayRange, kstWeekStart } from '../common/utils/date';
 import { MEDICATION_FREQUENCY_LABEL } from '../medication/medication.types';
 import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
 
@@ -41,6 +42,33 @@ const EVENING_FREQUENCIES: MedicationFrequency[] = [
   MedicationFrequency.twiceDaily,
   MedicationFrequency.threeTimesDaily,
 ];
+
+// 주간 요약 본문. 기록 건수 + 체중 변화 + 주의할 기록(구토·이상증상) 횟수.
+// 체중은 recordedAt 오름차순으로 받은 첫 값과 마지막 값을 비교한다.
+export function summarizeWeek(
+  records: { type: HealthRecordType; numValue: { toString(): string } | null }[],
+): string {
+  const parts = [`기록 ${records.length}건`];
+
+  const weights = records
+    .filter((r) => r.type === HealthRecordType.weight && r.numValue != null)
+    .map((r) => Number(r.numValue!.toString()));
+  if (weights.length === 1) {
+    parts.push(`체중 ${weights[0]}kg`);
+  } else if (weights.length > 1) {
+    const first = weights[0];
+    const last = weights[weights.length - 1];
+    const diff = Math.round((last - first) * 100) / 100;
+    parts.push(`체중 ${first}→${last}kg(${diff > 0 ? '+' : ''}${diff})`);
+  }
+
+  const vomit = records.filter((r) => r.type === HealthRecordType.vomit).length;
+  if (vomit > 0) parts.push(`구토 ${vomit}회`);
+  const symptom = records.filter((r) => r.type === HealthRecordType.symptom).length;
+  if (symptom > 0) parts.push(`이상증상 ${symptom}회`);
+
+  return `${parts.join(' · ')}. 지난주 흐름을 확인해보세요.`;
+}
 
 interface SendAndLogParams {
   userId: string;
@@ -424,6 +452,67 @@ export class NotificationService {
     }
 
     this.logger.log(`건강기록 권장 알림 스캔 완료: ${sentCount}건 발송`);
+  }
+
+  // 주간 건강 요약. 매주 월요일 지난주(KST 월~일)에 기록이 있는 pet마다 1회 보낸다.
+  // 기록이 없는 pet은 scanAndSendWeeklyCheckin(기록 권장)이 맡으므로 여기서는 건너뛴다.
+  // 주 구간은 recordedAt 기준이다 — "언제 입력했나"가 아니라 "그 주에 어땠나"를 요약한다.
+  //
+  // 타입을 weeklyCheckin과 나눈 이유: 같은 타입으로 남기면 권장 알림의 중복 방지
+  // (마지막 알림 sentAt > 마지막 기록)가 요약 발송 시각에 걸려 권장 알림이 막힌다.
+  // ponytail: 설정 토글은 weeklyCheckinEnabled를 같이 쓴다. 따로 끄고 싶다는 요구가 생기면 컬럼을 나눈다.
+  async scanAndSendWeeklySummary(): Promise<void> {
+    const thisWeek = kstWeekStart();
+    const lastWeek = new Date(thisWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const records = await this.prisma.healthRecord.findMany({
+      where: {
+        deletedAt: null,
+        recordedAt: { gte: lastWeek, lt: thisWeek },
+        pet: { deletedAt: null, user: ACTIVE_USER },
+      },
+      select: {
+        type: true,
+        numValue: true,
+        pet: { select: { id: true, name: true, userId: true } },
+      },
+      orderBy: { recordedAt: 'asc' },
+    });
+
+    const byPet = new Map<string, typeof records>();
+    for (const record of records) {
+      byPet.set(record.pet.id, [...(byPet.get(record.pet.id) ?? []), record]);
+    }
+
+    let sentCount = 0;
+
+    for (const petRecords of byPet.values()) {
+      const { pet } = petRecords[0];
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.weeklyCheckinEnabled) continue;
+
+      const alreadySent = await this.prisma.notification.findFirst({
+        where: {
+          type: NotificationType.weeklySummary,
+          referenceId: pet.id,
+          sentAt: { gte: thisWeek },
+        },
+      });
+      if (alreadySent) continue;
+
+      await this.sendAndLog({
+        userId: pet.userId,
+        type: NotificationType.weeklySummary,
+        title: `[Petlog] ${pet.name}의 지난주 건강 요약`,
+        body: summarizeWeek(petRecords),
+        referenceId: pet.id,
+        referenceType: null,
+      });
+      sentCount += 1;
+    }
+
+    this.logger.log(`주간 요약 스캔 완료: ${sentCount}건 발송`);
   }
 
   private async sendAndLog(params: SendAndLogParams): Promise<void> {

@@ -443,6 +443,7 @@ enum NotificationType {
   vaccinationDue
   medicationReminder
   weeklyCheckin
+  weeklySummary
 }
 
 enum NotificationReferenceType {
