@@ -45,7 +45,7 @@ const EVENING_FREQUENCIES: MedicationFrequency[] = [
 
 // 주간 요약 본문. 기록 건수 + 체중 변화 + 주의할 기록(구토·이상증상) 횟수.
 // 체중은 recordedAt 오름차순으로 받은 첫 값과 마지막 값을 비교한다.
-export function summarizeWeek(
+function summarizeWeek(
   records: { type: HealthRecordType; numValue: { toString(): string } | null }[],
 ): string {
   const parts = [`기록 ${records.length}건`];
