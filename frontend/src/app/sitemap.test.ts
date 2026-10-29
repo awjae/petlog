@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import sitemap from './sitemap';
 import { GUIDES } from './guides/guides';
@@ -11,6 +12,14 @@ describe('sitemap', () => {
   it('모든 가이드 글이 등록된다', () => {
     for (const guide of GUIDES) {
       expect(urls).toContain(`https://petlog.quest/guides/${guide.slug}`);
+    }
+  });
+
+  // 반대 방향의 누락. guides.ts에 slug만 추가하고 라우트를 빠뜨리면 sitemap이 404 URL을
+  // 검색엔진에 제출한다. 이것도 화면에는 드러나지 않는다.
+  it('등록된 모든 가이드 글에 실제 페이지가 있다', () => {
+    for (const guide of GUIDES) {
+      expect(existsSync(new URL(`./guides/${guide.slug}/page.tsx`, import.meta.url))).toBe(true);
     }
   });
 
