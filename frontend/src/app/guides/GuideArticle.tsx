@@ -44,8 +44,8 @@ export function GuideArticle({ slug, children }: GuideArticleProps) {
 
         <div className={styles.cta}>
           <p className={styles.ctaText}>
-            재는 것보다 어려운 건 꾸준히 남기는 거예요. Petlog에 기록하면 변화를 그래프로 보고,
-            병원에 갈 때 그대로 보여줄 수 있어요.
+            기록은 쌓일수록 쓸모가 생겨요. Petlog에 남기면 변화를 한눈에 보고, 병원에 갈 때 그대로
+            보여줄 수 있어요.
           </p>
           <Link href="/register" className={styles.ctaBtn}>
             무료로 기록 시작하기
