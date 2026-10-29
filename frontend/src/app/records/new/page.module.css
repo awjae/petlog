@@ -461,6 +461,13 @@
   cursor: not-allowed;
 }
 
+/* ===== 직전 체중 대비 변화 ===== */
+.weightChange {
+  margin-top: 8px;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
 /* ===== 경고 배너 ===== */
 .warningBanner {
   display: flex;
