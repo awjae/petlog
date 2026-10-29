@@ -395,3 +395,80 @@ describe('NotificationService 투약 알림', () => {
     expect(endDateMatches()).toBe(true);
   });
 });
+
+describe('NotificationService 주간 요약', () => {
+  let service: NotificationService;
+  let push: { send: jest.Mock };
+  let prisma: {
+    healthRecord: { findMany: jest.Mock };
+    notificationPreference: { findUnique: jest.Mock };
+    notification: { findFirst: jest.Mock; create: jest.Mock };
+    pushToken: { findMany: jest.Mock };
+  };
+
+  const coco = { id: 'pet-1', name: '코코', userId: 'user-1' };
+  const rec = (type: string, numValue: string | null = null) => ({ type, numValue, pet: coco });
+
+  beforeEach(() => {
+    push = { send: jest.fn() };
+    prisma = {
+      healthRecord: { findMany: jest.fn().mockResolvedValue([]) },
+      notificationPreference: { findUnique: jest.fn().mockResolvedValue(null) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
+      pushToken: { findMany: jest.fn().mockResolvedValue([{ token: 'tok-1' }]) },
+    };
+    service = new NotificationService(
+      prisma as unknown as PrismaService,
+      push as unknown as PushSender,
+    );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // 서울 월요일 00:30은 UTC로 아직 일요일이다. UTC 요일로 자르면 한 주 앞 구간을 본다.
+  it('지난주 KST 월요일 00시 ~ 이번주 월요일 00시 구간을 조회한다', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-25T15:30:00Z')); // 서울 10-26(월) 00:30
+
+    await service.scanAndSendWeeklySummary();
+
+    const { where } = prisma.healthRecord.findMany.mock.calls[0][0];
+    expect(where.recordedAt.gte.toISOString()).toBe('2026-10-18T15:00:00.000Z'); // 10-19(월) 00:00
+    expect(where.recordedAt.lt.toISOString()).toBe('2026-10-25T15:00:00.000Z'); // 10-26(월) 00:00
+    expect(where.pet.user.deletionRequestedAt).toBeNull();
+  });
+
+  it('pet마다 요약 하나를 보낸다', async () => {
+    prisma.healthRecord.findMany.mockResolvedValue([
+      rec('weight', '4.2'),
+      rec('vomit'),
+      rec('weight', '4.05'),
+    ]);
+
+    await service.scanAndSendWeeklySummary();
+
+    expect(push.send).toHaveBeenCalledTimes(1);
+    const [log] = prisma.notification.create.mock.calls[0];
+    expect(log.data.type).toBe('weeklySummary');
+    expect(log.data.body).toBe(
+      '기록 3건 · 체중 4.2→4.05kg(-0.15) · 구토 1회. 지난주 흐름을 확인해보세요.',
+    );
+  });
+
+  it('이번 주에 이미 보냈거나 알림을 끈 사용자에게는 보내지 않는다', async () => {
+    prisma.healthRecord.findMany.mockResolvedValue([rec('mood')]);
+    prisma.notification.findFirst.mockResolvedValueOnce({ id: 'n1' });
+    await service.scanAndSendWeeklySummary();
+
+    prisma.notificationPreference.findUnique.mockResolvedValue({
+      vaccinationDueEnabled: true,
+      appointmentReminderEnabled: true,
+      weeklyCheckinEnabled: false,
+      medicationReminderEnabled: true,
+    });
+    await service.scanAndSendWeeklySummary();
+
+    expect(push.send).not.toHaveBeenCalled();
+  });
+});

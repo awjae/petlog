@@ -241,12 +241,12 @@ export default function SettingsPage() {
             <div className={styles.divider} />
             <div className={styles.listItem}>
               <Bell size={18} strokeWidth={1.75} className={styles.listIcon} aria-hidden="true" />
-              <span className={styles.listLabel}>건강기록 권장 알림</span>
+              <span className={styles.listLabel}>주간 건강 알림</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={preference?.weeklyCheckinEnabled ?? true}
-                aria-label="건강기록 권장 알림"
+                aria-label="주간 건강 알림"
                 className={`${styles.switch} ${(preference?.weeklyCheckinEnabled ?? true) ? styles.switchOn : ''}`}
                 disabled={preferenceLoading || preferenceUpdating}
                 onClick={() =>

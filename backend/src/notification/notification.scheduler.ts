@@ -26,6 +26,12 @@ export class NotificationScheduler {
     this.logger.log('일일 알림 스캔 종료');
   }
 
+  // 지난주(월~일) 건강 요약. 월요일 아침 9시에 일일 스캔과 별도로 보낸다.
+  @Cron('0 9 * * 1', { timeZone: 'Asia/Seoul' })
+  async handleWeeklySummary(): Promise<void> {
+    await this.notificationService.scanAndSendWeeklySummary();
+  }
+
   // "하루 2회"·"하루 3회" 약의 저녁 복용 알림. 복용 시각을 입력받지 않으므로 저녁 18시로 고정한다.
   @Cron(CronExpression.EVERY_DAY_AT_6PM, { timeZone: 'Asia/Seoul' })
   async handleEveningScan(): Promise<void> {
