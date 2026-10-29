@@ -9,6 +9,7 @@ import { localToday } from '@/shared/utils/date';
 import type { HealthRecordType } from '@/generated/graphql';
 import { isHealthRecordType, type AppetiteChoice } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
+import { calcWeightChange, isGrowing } from '../utils/weightChange';
 
 // 기록 추가 화면(app/records/new)의 폼 상태와 저장 흐름.
 //
@@ -169,6 +170,16 @@ export function useNewRecordForm() {
   const abnormalTemperature =
     !Number.isNaN(temperatureC) && (temperatureC >= 39.5 || temperatureC <= 37.5);
 
+  const selectedPet = pets.find((p) => p.id === petId);
+  const weightChange =
+    recordType === 'weight'
+      ? calcWeightChange(
+          selectedPet?.recentWeight?.value ?? null,
+          weight,
+          isGrowing(selectedPet?.birthDate ?? null),
+        )
+      : null;
+
   // 수의사 상담을 권해야 하는 입력 조합.
   const showWarning =
     (recordType === 'symptom' && (symptoms.includes('구토') || symptoms.includes('설사'))) ||
@@ -197,6 +208,7 @@ export function useNewRecordForm() {
 
     weight,
     setWeight,
+    weightChange,
     appetite,
     setAppetite,
     duration,
