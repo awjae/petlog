@@ -77,6 +77,8 @@ interface SendAndLogParams {
   body: string;
   referenceId?: string;
   referenceType?: NotificationReferenceType | null;
+  // 알림을 탭했을 때 앱이 이동할 화면. 푸시 data로 실어 보낸다.
+  path: string;
 }
 
 @Injectable()
@@ -186,6 +188,7 @@ export class NotificationService {
         body: `오늘은 ${vaccination.name} 접종 예정일이에요.`,
         referenceId: vaccination.id,
         referenceType: NotificationReferenceType.vaccination,
+        path: `/pets/${vaccination.pet.id}/medical`,
       });
     }
 
@@ -231,6 +234,7 @@ export class NotificationService {
         body: `오늘은 ${appointment.hospitalName} 방문 예정일이에요.`,
         referenceId: appointment.id,
         referenceType: NotificationReferenceType.appointment,
+        path: `/pets/${appointment.pet.id}/medical`,
       });
     }
 
@@ -295,6 +299,7 @@ export class NotificationService {
         body,
         referenceId: unsent[0].id,
         referenceType: NotificationReferenceType.medication,
+        path: `/pets/${pet.id}/medications`,
       });
       // 푸시는 하나지만 나머지 약에도 발송 이력을 남겨 다음 스캔에서 다시 보내지 않게 한다.
       for (const medication of unsent.slice(1)) {
@@ -386,6 +391,7 @@ export class NotificationService {
           : `저녁 투약 시간이에요. ${summary} 챙겨주세요.`,
         referenceId: pet.id,
         referenceType: null,
+        path: `/pets/${pet.id}/medications`,
       });
       sentCount += 1;
     }
@@ -447,6 +453,7 @@ export class NotificationService {
         body: '최근 7일간 새로운 건강 기록이 없어요. 오늘의 상태를 기록해보세요.',
         referenceId: pet.id,
         referenceType: null,
+        path: `/records/new?petId=${pet.id}`,
       });
       sentCount += 1;
     }
@@ -508,6 +515,7 @@ export class NotificationService {
         body: summarizeWeek(petRecords),
         referenceId: pet.id,
         referenceType: null,
+        path: `/pets/${pet.id}`,
       });
       sentCount += 1;
     }
@@ -531,7 +539,9 @@ export class NotificationService {
     });
 
     await Promise.all(
-      tokens.map((pushToken) => this.pushSender.send(pushToken.token, params.title, params.body)),
+      tokens.map((pushToken) =>
+        this.pushSender.send(pushToken.token, params.title, params.body, { path: params.path }),
+      ),
     );
   }
 }
