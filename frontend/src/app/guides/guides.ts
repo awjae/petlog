@@ -18,6 +18,12 @@ export const GUIDES: GuideMeta[] = [
       '집에서 강아지 체중을 정확히 재는 방법, 얼마나 자주 재야 하는지, 어느 정도 변화부터 수의사와 상담해야 하는지 정리했습니다.',
   },
   {
+    slug: 'pet-diabetes-glucose',
+    title: '당뇨 강아지·고양이 혈당 기록하는 법',
+    description:
+      '당뇨를 관리 중인 반려동물의 혈당을 집에서 기록할 때 함께 남겨야 할 것, 저혈당 신호, 수의사와 기록을 활용하는 법을 정리했습니다.',
+  },
+  {
     slug: 'pet-temperature',
     title: '강아지·고양이 정상 체온과 집에서 재는 법',
     description:
