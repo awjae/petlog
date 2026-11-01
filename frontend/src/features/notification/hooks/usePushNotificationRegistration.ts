@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client/react';
 import { REGISTER_PUSH_TOKEN_MUTATION } from '../api/notification.api';
 
@@ -15,6 +16,8 @@ import { REGISTER_PUSH_TOKEN_MUTATION } from '../api/notification.api';
  *   호출부(NotificationProvider)가 로그인 여부를 판단해 넘겨준다.
  * - 권한 거부(registrationError)는 흔한 케이스이므로 콘솔 로그만 남기고
  *   사용자에게 별도 UI를 노출하지 않는다.
+ * - 알림을 탭하면 백엔드가 data.path로 실어 보낸 화면으로 이동한다. 앱이 꺼진 상태에서
+ *   탭해도 플러그인이 이벤트를 리스너 등록 시점까지 보관했다가 전달한다.
  */
 export function usePushNotificationRegistration(enabled: boolean): void {
   const [registerPushToken] = useMutation(REGISTER_PUSH_TOKEN_MUTATION, {
@@ -27,6 +30,10 @@ export function usePushNotificationRegistration(enabled: boolean): void {
   // effect의 의존성 배열을 [enabled]로 유지하면서도 항상 최신 mutate 함수를 쓰기 위한 ref.
   const registerPushTokenRef = useRef(registerPushToken);
   registerPushTokenRef.current = registerPushToken;
+
+  const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
     if (!enabled) return;
@@ -52,15 +59,28 @@ export function usePushNotificationRegistration(enabled: boolean): void {
         },
       );
 
+      const actionHandle = await PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        (action) => {
+          const path: unknown = action.notification.data?.path;
+          // 앱 내부 경로만 따라간다. '//host'는 프로토콜 상대 URL이라 외부로 나간다.
+          if (typeof path === 'string' && path.startsWith('/') && !path.startsWith('//')) {
+            routerRef.current.push(path);
+          }
+        },
+      );
+
       if (cancelled) {
         registrationHandle.remove();
         registrationErrorHandle.remove();
+        actionHandle.remove();
         return;
       }
 
       removeListeners = () => {
         registrationHandle.remove();
         registrationErrorHandle.remove();
+        actionHandle.remove();
       };
 
       const permission = await PushNotifications.requestPermissions();

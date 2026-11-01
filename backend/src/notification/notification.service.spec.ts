@@ -187,6 +187,7 @@ describe('NotificationService 투약 종료 알림', () => {
       'token-1',
       '[Petlog] 초코 투약 종료 알림',
       '오늘은 심장사상충약 투약 마지막 날이에요.',
+      { path: '/pets/pet-1/medications' },
     );
   });
 
@@ -203,6 +204,7 @@ describe('NotificationService 투약 종료 알림', () => {
       'token-1',
       '[Petlog] 초코 투약 종료 알림',
       '오늘은 심장사상충약, 약 투약 마지막 날이에요.',
+      { path: '/pets/pet-1/medications' },
     );
     const referenceIds = prisma.notification.create.mock.calls.map(([arg]) => arg.data.referenceId);
     expect(referenceIds).toEqual(['med-1', 'med-2']);
@@ -308,6 +310,9 @@ describe('NotificationService 투약 알림', () => {
     expect(first.data.referenceId).toBe('pet-1');
     expect(first.data.body).toBe('오늘도 심장약(하루 2회), 약(하루 1회) 잊지 말고 챙겨주세요.');
     expect(push.send).toHaveBeenCalledTimes(2);
+    // 알림을 탭하면 그 pet의 투약 화면으로 간다.
+    expect(push.send.mock.calls[0][3]).toEqual({ path: '/pets/pet-1/medications' });
+    expect(push.send.mock.calls[1][3]).toEqual({ path: '/pets/pet-2/medications' });
   });
 
   it('투약 알림을 끈 사용자에게는 보내지 않는다', async () => {
@@ -451,6 +456,7 @@ describe('NotificationService 주간 요약', () => {
     expect(push.send).toHaveBeenCalledTimes(1);
     const [log] = prisma.notification.create.mock.calls[0];
     expect(log.data.type).toBe('weeklySummary');
+    expect(push.send.mock.calls[0][3]).toEqual({ path: '/pets/pet-1' });
     expect(log.data.body).toBe(
       '기록 3건 · 체중 4.2→4.05kg(-0.15) · 구토 1회. 지난주 흐름을 확인해보세요.',
     );

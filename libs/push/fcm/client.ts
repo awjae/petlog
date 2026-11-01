@@ -32,10 +32,16 @@ export class FcmPushSender implements PushSender {
       );
   }
 
-  async send(token: string, title: string, body: string): Promise<void> {
+  async send(
+    token: string,
+    title: string,
+    body: string,
+    data?: Record<string, string>,
+  ): Promise<void> {
     await getMessaging(this.app).send({
       token,
       notification: { title, body },
+      data,
     });
   }
 }
