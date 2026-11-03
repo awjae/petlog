@@ -18,6 +18,13 @@ describe('calcWeightChange', () => {
     expect(calcWeightChange(5, '4.8')?.notable).toBe(false);
   });
 
+  // 6kg → 5.7kg는 float로 0.0499…라 표시(-5%)와 판정이 어긋나기 쉽다.
+  it('화면에 5%로 표시되는 변화는 경고도 같이 띄운다', () => {
+    const change = calcWeightChange(6, '5.7');
+    expect(change?.percent).toBe(-5);
+    expect(change?.notable).toBe(true);
+  });
+
   it('성장기에는 변화량은 보여주되 경고하지 않는다', () => {
     const change = calcWeightChange(2, '2.3', true);
     expect(change?.percent).toBe(15);

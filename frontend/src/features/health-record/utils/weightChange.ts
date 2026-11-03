@@ -35,11 +35,12 @@ export function calcWeightChange(
   if (previous == null || previous <= 0 || Number.isNaN(current) || current <= 0) return null;
 
   const diff = Math.round((current - previous) * 100) / 100;
-  const ratio = (current - previous) / previous;
+  const percent = Math.round(((current - previous) / previous) * 1000) / 10;
   return {
     previous,
     diff,
-    percent: Math.round(ratio * 1000) / 10,
-    notable: !growing && Math.abs(ratio) >= NOTABLE_WEIGHT_CHANGE_RATIO,
+    percent,
+    // 화면에 보이는 반올림 퍼센트로 판정한다. float 비율로 비교하면 -5%로 표시되는데 경고가 안 뜬다.
+    notable: !growing && Math.abs(percent) >= NOTABLE_WEIGHT_CHANGE_RATIO * 100,
   };
 }
