@@ -93,4 +93,16 @@ test.describe('체중 변화 안내 @integration @mock', () => {
     await expect(page.getByText('지난 기록 3.2kg 대비 -0.2kg (-6.3%)')).toBeVisible();
     await expect(page.getByText(/5% 이상 변화예요/)).toBeVisible();
   });
+
+  // 최근 기록(2026-06-20)보다 이전 날짜로 입력하면 "지난 기록"과 비교할 수 없다.
+  test('최근 기록보다 이전 날짜로 입력하면 변화를 숨긴다', async ({ page }) => {
+    await page.goto('/records/new?petId=pet-1&type=weight');
+    const input = page.getByLabel('체중 (kg)');
+
+    await input.fill('3.0');
+    await expect(page.getByText(/지난 기록 3.2kg 대비/)).toBeVisible();
+
+    await page.getByLabel('기록 날짜').fill('2026-06-01');
+    await expect(page.getByText(/지난 기록/)).toHaveCount(0);
+  });
 });
