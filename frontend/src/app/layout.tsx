@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  // 각 페이지의 canonical을 자기 경로(쿼리 제외)로 둔다. 공유 링크에 붙는 ?utm_source=
+  // (visit_events가 수집하는 값)나 기타 쿼리가 붙은 주소가 별개 페이지로 색인되지 않게 한다.
+  // './'는 metadataBase 기준으로 현재 라우트 경로로 풀린다.
+  alternates: { canonical: './' },
   verification: {
     other: {
       'naver-site-verification': 'f2d8a6a3429f8bb20c4820d9304237a2cb104caf',
