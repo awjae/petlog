@@ -32,6 +32,7 @@ function NewRecordContent() {
     maxDate,
     weight,
     setWeight,
+    weightChange,
     appetite,
     setAppetite,
     duration,
@@ -195,6 +196,19 @@ function NewRecordContent() {
               />
               <span className={styles.unit}>kg</span>
             </div>
+            {weightChange && (
+              <p className={styles.weightChange} aria-live="polite">
+                지난 기록 {weightChange.previous}kg 대비 {weightChange.diff > 0 ? '+' : ''}
+                {weightChange.diff}kg ({weightChange.percent > 0 ? '+' : ''}
+                {weightChange.percent}%)
+              </p>
+            )}
+            {weightChange?.notable && (
+              <div className={styles.warningBanner} role="note">
+                <AlertTriangle size={14} strokeWidth={2} aria-hidden="true" />
+                <span>5% 이상 변화예요. 의도한 변화가 아니라면 수의사와 상담해보세요.</span>
+              </div>
+            )}
           </section>
         )}
 

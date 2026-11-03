@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useHomeData } from '@/features/home/hooks/useHomeData';
 import { useSelectedPetStore } from '@/features/pet/stores/selectedPet.store';
 import { useLocalToday } from '@/shared/hooks/useLocalToday';
-import { localToday } from '@/shared/utils/date';
+import { localToday, toLocalDateString } from '@/shared/utils/date';
 import type { HealthRecordType } from '@/generated/graphql';
 import { isHealthRecordType, type AppetiteChoice } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
+import { calcWeightChange, isGrowing } from '../utils/weightChange';
 
 // 기록 추가 화면(app/records/new)의 폼 상태와 저장 흐름.
 //
@@ -169,6 +170,20 @@ export function useNewRecordForm() {
   const abnormalTemperature =
     !Number.isNaN(temperatureC) && (temperatureC >= 39.5 || temperatureC <= 37.5);
 
+  const selectedPet = pets.find((p) => p.id === petId);
+  // 최근 기록보다 이전 날짜로 입력하면 "지난 기록"이 아니라 미래 값과 비교하게 되므로 숨긴다.
+  const recent = selectedPet?.recentWeight;
+  const recentIsBeforeInput =
+    recent != null && toLocalDateString(new Date(recent.recordedAt)) <= date;
+  const weightChange =
+    recordType === 'weight'
+      ? calcWeightChange(
+          recentIsBeforeInput ? recent.value : null,
+          weight,
+          isGrowing(selectedPet?.birthDate ?? null),
+        )
+      : null;
+
   // 수의사 상담을 권해야 하는 입력 조합.
   const showWarning =
     (recordType === 'symptom' && (symptoms.includes('구토') || symptoms.includes('설사'))) ||
@@ -197,6 +212,7 @@ export function useNewRecordForm() {
 
     weight,
     setWeight,
+    weightChange,
     appetite,
     setAppetite,
     duration,
