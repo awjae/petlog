@@ -18,13 +18,14 @@ export default function PetWaterIntakeGuide() {
         <h2 className={styles.sectionTitle}>하루에 얼마나 마시면 정상일까</h2>
         <p className={styles.paragraph}>
           개는 일반적으로 <strong>체중 1kg당 하루 50~60mL</strong> 정도를 마십니다. 5kg인 아이라면
-          250~300mL, 10kg인 아이라면 500~600mL입니다. 고양이는 개보다 적게 마시는 편이고, 습식
-          사료를 먹으면 음식으로 수분을 얻어 그릇의 물은 더 줄어듭니다.
+          250~300mL, 10kg인 아이라면 500~600mL입니다. 고양이는 개보다 적게 마시는 편이라{' '}
+          <strong>체중 1kg당 하루 40~50mL</strong> 안팎이고, 습식 사료를 먹으면 음식으로 수분을 얻어
+          그릇의 물은 더 줄어듭니다.
         </p>
         <p className={styles.paragraph}>
-          개·고양이 모두 <strong>체중 1kg당 하루 100mL를 넘게</strong> 마시는 상태가 이어지면 많이
-          마시는 것(다음)으로 봅니다. 다음은 신장·내분비 질환에서 흔히 먼저 보이는 신호라, 보호자가
-          가장 일찍 알아챌 수 있는 변화 중 하나입니다.
+          개는 <strong>체중 1kg당 하루 100mL</strong>, 고양이는 <strong>50mL</strong>를 넘게 마시는
+          상태가 이어지면 많이 마시는 것(다음, 多飮)으로 봅니다. 다음은 신장·내분비 질환에서 흔히
+          먼저 보이는 신호라, 보호자가 가장 일찍 알아챌 수 있는 변화 중 하나입니다.
         </p>
       </section>
 
@@ -56,8 +57,9 @@ export default function PetWaterIntakeGuide() {
           늘었다면 음수량과 같이 남겨두세요.
         </p>
         <p className={styles.note}>
-          이 글은 기록을 남기기 위한 참고 정보이며 진단이 아닙니다. 체중 1kg당 하루 100mL 넘게
-          마시는 날이 이어지거나, 반대로 하루 종일 물을 거의 마시지 않으면 수의사와 상담하세요.
+          이 글은 기록을 남기기 위한 참고 정보이며 진단이 아닙니다. 개 100mL, 고양이 50mL(체중 1kg당
+          하루)를 넘게 마시는 날이 이어지거나, 반대로 하루 종일 물을 거의 마시지 않으면 수의사와
+          상담하세요.
         </p>
       </section>
     </GuideArticle>
