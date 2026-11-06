@@ -12,6 +12,12 @@ export interface GuideMeta {
 
 export const GUIDES: GuideMeta[] = [
   {
+    slug: 'pet-water-intake',
+    title: '강아지·고양이 하루 음수량과 집에서 재는 법',
+    description:
+      '반려동물이 하루에 물을 얼마나 마시면 정상인지, 집에서 음수량을 재는 방법, 많이 마실 때 확인할 것을 정리했습니다.',
+  },
+  {
     slug: 'dog-weight-check',
     title: '강아지 체중 재는 법과 기록 기준',
     description:
