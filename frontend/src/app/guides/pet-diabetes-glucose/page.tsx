@@ -22,8 +22,9 @@ export default function PetDiabetesGlucoseGuide() {
           싶어 합니다. 보호자가 남긴 기록이 곧 용량 조절의 근거가 됩니다.
         </p>
         <p className={styles.paragraph}>
-          당뇨를 관리 중인 아이는 건강한 아이와 기준이 다릅니다. 200mg/dL 전후가 일상인 경우도
-          있으므로, 숫자 하나를 일반 기준과 비교하기보다 수의사가 정해준 목표 범위와 비교하세요.
+          당뇨를 관리 중인 아이는 건강한 아이와 기준이 다릅니다. 일반 기준보다 높은 값이 나오는
+          경우도 흔하므로, 숫자 하나를 일반 기준과 비교하기보다 수의사가 정해준 목표 범위와
+          비교하세요.
         </p>
       </section>
 
@@ -55,9 +56,7 @@ export default function PetDiabetesGlucoseGuide() {
           떨림, 비틀거림, 멍하게 있음, 경련 같은 모습이 보이면 기록을 미루고 바로 병원에 연락하세요.
         </p>
         <ul className={styles.list}>
-          <li>
-            밥을 거의 안 먹은 날 평소 용량의 인슐린을 그대로 놓지 않도록, 투여 전에 꼭 확인합니다.
-          </li>
+          <li>식사량이 줄어든 날은 인슐린을 놓기 전에 수의사에게 먼저 연락해 용량을 확인합니다.</li>
           <li>인슐린 용량은 혈당 수치를 보고 보호자가 임의로 바꾸지 않습니다.</li>
         </ul>
         <p className={styles.note}>
