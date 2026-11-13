@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import sitemap from './sitemap';
 import { GUIDES } from './guides/guides';
+import { TOOLS } from './tools/tools';
 import { isPublicRoute } from '@/shared/config/publicRoutes';
 
 // 가이드를 추가하고 sitemap 등록을 빠뜨리면 그 글은 색인되지 않는다. 화면에는
@@ -32,6 +33,17 @@ describe('sitemap', () => {
     expect(isPublicRoute('/guides')).toBe(true);
     for (const guide of GUIDES) {
       expect(isPublicRoute(`/guides/${guide.slug}`)).toBe(true);
+    }
+  });
+
+  // 계산 도구도 가이드와 같은 세 가지 누락(sitemap·실제 페이지·공개 경로)을 막는다.
+  it('모든 계산 도구가 sitemap·실제 페이지·공개 경로에 있다', () => {
+    expect(urls).toContain('https://petlog.quest/tools');
+    expect(isPublicRoute('/tools')).toBe(true);
+    for (const tool of TOOLS) {
+      expect(urls).toContain(`https://petlog.quest/tools/${tool.slug}`);
+      expect(existsSync(new URL(`./tools/${tool.slug}/page.tsx`, import.meta.url))).toBe(true);
+      expect(isPublicRoute(`/tools/${tool.slug}`)).toBe(true);
     }
   });
 

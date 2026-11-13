@@ -2,6 +2,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/shared/config/site';
 import { GUIDES } from './guides/guides';
+import { TOOLS } from './tools/tools';
 
 // 공개(색인 대상) 라우트만 등록한다. 인증이 필요한 라우트와
 // /forgot-password, /reset-password는 robots.ts에서 별도로 색인 제외한다.
@@ -14,6 +15,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/sample-report', priority: 0.6 },
     { path: '/login', priority: 0.6 },
     { path: '/register', priority: 0.6 },
+    // 계산 도구도 가이드와 같은 검색 진입점이다.
+    { path: '/tools', priority: 0.7 },
+    ...TOOLS.map((tool) => ({ path: `/tools/${tool.slug}`, priority: 0.7 })),
     { path: '/privacy', priority: 0.3 },
   ];
 
