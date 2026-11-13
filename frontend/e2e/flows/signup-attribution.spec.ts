@@ -23,7 +23,6 @@ test.describe('가입 경로 기록 @integration', () => {
 
     await page.getByLabel('이메일').fill('first-touch@petlog.test');
     await page.locator('#password').fill('password123');
-    await page.locator('#confirm').fill('password123');
     await page.locator('label[for="agree-all"]').click();
     await page.getByRole('button', { name: /가입/ }).click();
 

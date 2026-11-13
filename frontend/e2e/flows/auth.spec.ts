@@ -91,7 +91,6 @@ test.describe('인증 흐름 @e2e', () => {
     await page.goto('/register');
     await page.getByLabel('이메일').fill(email);
     await page.getByLabel('비밀번호', { exact: true }).fill(TEST_PASSWORD);
-    await page.getByLabel('비밀번호 확인').fill(TEST_PASSWORD);
     // 전체 동의를 체크해 필수 동의(이용약관/개인정보) 조건을 채운다 — 미체크 상태면
     // 가입 버튼이 계속 비활성 상태로 남는다(AgreementSection.tsx).
     await page.getByLabel('전체 동의').check();

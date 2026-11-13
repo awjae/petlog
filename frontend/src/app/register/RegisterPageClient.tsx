@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { useRegister } from '@/features/auth/hooks/useRegister';
 import { AgreementSection } from '@/features/auth/components/AgreementSection';
 import type { RegisterConsents } from '@/features/auth/types/auth.types';
@@ -19,7 +19,7 @@ export function RegisterPageClient() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [consents, setConsents] = useState<RegisterConsents>(INITIAL_CONSENTS);
   const { loading, error, register } = useRegister();
 
@@ -27,7 +27,6 @@ export function RegisterPageClient() {
     return (
       email.includes('@') &&
       password.length >= 8 &&
-      password === confirm &&
       consents.termsOfService &&
       consents.privacyPolicy
     );
@@ -80,34 +79,36 @@ export function RegisterPageClient() {
             <label className={styles.label} htmlFor="password">
               비밀번호
             </label>
-            <input
-              id="password"
-              type="password"
-              className={styles.input}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="8자 이상"
-              autoComplete="new-password"
-              required
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label className={styles.label} htmlFor="confirm">
-              비밀번호 확인
-            </label>
-            <input
-              id="confirm"
-              type="password"
-              className={`${styles.input} ${confirm && password !== confirm ? styles.inputError : ''}`}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="비밀번호를 한 번 더 입력해주세요"
-              autoComplete="new-password"
-              required
-            />
-            {confirm && password !== confirm && (
-              <p className={styles.fieldError}>비밀번호가 일치하지 않아요</p>
+            {/* 확인 칸 대신 "보기" 토글을 둔다. 모바일에서 같은 비밀번호를 두 번 치는 것은
+                가입 이탈의 흔한 원인이고, 오타는 눈으로 확인하는 편이 더 확실하다.
+                잊어버려도 비밀번호 재설정(/forgot-password)이 있다. */}
+            <div className={styles.passwordRow}>
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                className={`${styles.input} ${password && password.length < 8 ? styles.inputError : ''}`}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="8자 이상"
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                className={styles.passwordToggle}
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label="비밀번호 보기"
+                aria-pressed={showPassword}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} strokeWidth={1.75} aria-hidden="true" />
+                ) : (
+                  <Eye size={20} strokeWidth={1.75} aria-hidden="true" />
+                )}
+              </button>
+            </div>
+            {password && password.length < 8 && (
+              <p className={styles.fieldError}>8자 이상 입력해주세요</p>
             )}
           </div>
 

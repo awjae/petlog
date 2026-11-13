@@ -18,7 +18,6 @@ test.describe('첫 기록 흐름 @e2e', () => {
     await page.goto('/register');
     await page.getByLabel('이메일').fill(email);
     await page.getByLabel('비밀번호', { exact: true }).fill(TEST_PASSWORD);
-    await page.getByLabel('비밀번호 확인').fill(TEST_PASSWORD);
     await page.getByLabel('전체 동의').check();
     await page.getByRole('button', { name: '회원가입' }).click();
 
