@@ -71,6 +71,25 @@ describe('UserService', () => {
       expect(user).toEqual({ id: 'user-1', email: 'new@petlog.test' });
     });
 
+    it('가입 경로(first-touch)를 User에 함께 저장한다', async () => {
+      await service.create(
+        'new@petlog.test',
+        'password123',
+        undefined,
+        AGREED_ALL,
+        {},
+        { landingPath: '/guides/dog-vomit', referrer: 'search.naver.com', utmSource: undefined },
+      );
+
+      expect(txUserCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          signupLandingPath: '/guides/dog-vomit',
+          signupReferrer: 'search.naver.com',
+          signupUtmSource: undefined,
+        }),
+      });
+    });
+
     it('User 생성과 동의 이력 3건 기록을 같은 트랜잭션 클라이언트로 원자적으로 묶는다', async () => {
       await service.create('new@petlog.test', 'password123', '홍길동', AGREED_ALL, {
         ipAddress: '1.2.3.4',

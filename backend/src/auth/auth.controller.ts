@@ -57,10 +57,14 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.userService.create(dto.email, dto.password, dto.name, dto.consents, {
-      ipAddress: req.ip,
-      userAgent: req.get('user-agent'),
-    });
+    const user = await this.userService.create(
+      dto.email,
+      dto.password,
+      dto.name,
+      dto.consents,
+      { ipAddress: req.ip, userAgent: req.get('user-agent') },
+      dto.attribution,
+    );
     const { accessToken, refreshToken } = this.authService.createTokens({
       id: user.id,
       email: user.email,

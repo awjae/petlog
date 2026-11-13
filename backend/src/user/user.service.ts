@@ -13,6 +13,12 @@ import { REQUIRED_CONSENT_TYPES } from '../consent/consent.constants';
 
 const BCRYPT_ROUNDS = 12;
 
+export interface SignupAttribution {
+  landingPath?: string;
+  referrer?: string;
+  utmSource?: string;
+}
+
 export interface RegisterConsents {
   termsOfService: boolean;
   privacyPolicy: boolean;
@@ -49,6 +55,7 @@ export class UserService {
     name: string | undefined,
     consents: RegisterConsents,
     requestMeta: RequestMeta,
+    attribution: SignupAttribution = {},
   ): Promise<PrismaUser> {
     const existing = await this.findByEmail(email);
     if (existing) throw new ConflictException('이미 사용 중인 이메일입니다.');
@@ -66,7 +73,16 @@ export class UserService {
     const hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({ data: { email, password: hash, name } });
+      const user = await tx.user.create({
+        data: {
+          email,
+          password: hash,
+          name,
+          signupLandingPath: attribution.landingPath,
+          signupReferrer: attribution.referrer,
+          signupUtmSource: attribution.utmSource,
+        },
+      });
 
       await this.consentService.recordConsents(
         user.id,
