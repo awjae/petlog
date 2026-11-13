@@ -40,9 +40,16 @@ export class UserResolver {
   @ResolveField(() => [String])
   recordDates(
     @Parent() user: User,
-    @Args('limit', { type: () => Int, defaultValue: 90 }) limit: number,
+    // 인자 이름은 limit이지만 "최근 며칠"이다(기록 건수가 아니다). 이름을 바꾸면 프론트와 따로
+    // 배포되는 동안 홈 쿼리가 깨지므로 그대로 두고 설명으로 남긴다.
+    @Args('limit', {
+      type: () => Int,
+      defaultValue: 90,
+      description: '최근 며칠 안의 기록일을 돌려줄지 (기록 건수가 아님)',
+    })
+    days: number,
   ): Promise<string[]> {
-    return this.userService.getRecordDates(user.id, limit);
+    return this.userService.getRecordDates(user.id, days);
   }
 
   @ResolveField(() => [CalendarEvent])

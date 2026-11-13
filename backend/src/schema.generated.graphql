@@ -403,7 +403,10 @@ type User {
   id: ID!
   name: String
   pets: [Pet!]!
-  recordDates(limit: Int! = 90): [String!]!
+  recordDates(
+    """최근 며칠 안의 기록일을 돌려줄지 (기록 건수가 아님)"""
+    limit: Int! = 90
+  ): [String!]!
   upcomingSchedules(limit: Int! = 3): [UpcomingSchedule!]!
   updatedAt: DateTime!
 }

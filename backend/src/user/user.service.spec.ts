@@ -109,8 +109,29 @@ describe('UserService', () => {
         expect.objectContaining({ where: { userId: 'user-1', deletedAt: null } }),
       );
       expect(prisma.healthRecord.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { petId: { in: ['pet-1'] }, deletedAt: null } }),
+        expect.objectContaining({
+          where: expect.objectContaining({ petId: { in: ['pet-1'] }, deletedAt: null }),
+        }),
       );
+    });
+
+    // 하루 여러 건 기록하는 사람의 연속 기록이 잘리던 버그. 90"건"이 아니라 90"일"이다.
+    it('기록 건수가 아니라 최근 N일 안의 날짜를 날마다 하나씩 돌려준다', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-11-13T03:00:00Z')); // 서울 11-13 12:00
+      // 50일 동안 하루 3건씩(150건). 예전 구현이면 앞의 90건 = 30일만 남았다.
+      const records = Array.from({ length: 150 }, (_, i) => ({
+        recordedAt: new Date(Date.UTC(2026, 10, 13 - Math.floor(i / 3), 3 + (i % 3))),
+      }));
+      prisma.healthRecord.findMany.mockResolvedValue(records);
+
+      const dates = await service.getRecordDates('user-1', 90);
+
+      expect(dates).toHaveLength(50);
+      const { where } = prisma.healthRecord.findMany.mock.calls[0][0];
+      // 서울 11-13 기준 90일 = 08-16 00:00 KST(= 08-15 15:00Z)부터
+      expect(where.recordedAt.gte.toISOString()).toBe('2026-08-15T15:00:00.000Z');
+      expect(prisma.healthRecord.findMany.mock.calls[0][0].take).toBeUndefined();
+      jest.useRealTimers();
     });
 
     it('반려동물이 없으면 기록을 조회하지 않는다', async () => {
