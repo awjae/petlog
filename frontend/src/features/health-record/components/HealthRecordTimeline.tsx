@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import type { HealthRecordType } from '@/generated/graphql';
 import { TYPE_LABEL, buildSummary } from '../types/health-record.types';
 import type { HealthRecord } from '../types/health-record.types';
@@ -8,6 +9,7 @@ import styles from './HealthRecordTimeline.module.css';
 
 type Props = {
   records: HealthRecord[];
+  onDelete: (record: HealthRecord) => void;
 };
 
 const ALL_TYPES = Object.keys(TYPE_LABEL) as HealthRecordType[];
@@ -43,7 +45,7 @@ function groupByDate(records: HealthRecord[]): [string, HealthRecord[]][] {
   return Array.from(map.entries());
 }
 
-export function HealthRecordTimeline({ records }: Props) {
+export function HealthRecordTimeline({ records, onDelete }: Props) {
   const [activeType, setActiveType] = useState<HealthRecordType | null>(null);
 
   const filtered = activeType ? records.filter((r) => r.type === activeType) : records;
@@ -92,6 +94,14 @@ export function HealthRecordTimeline({ records }: Props) {
                   <div className={styles.cardTop}>
                     <span className={styles.typeBadge}>{TYPE_LABEL[record.type]}</span>
                     <span className={styles.time}>{formatTime(record.recordedAt)}</span>
+                    <button
+                      type="button"
+                      className={styles.deleteButton}
+                      onClick={() => onDelete(record)}
+                      aria-label={`${TYPE_LABEL[record.type]} 기록 삭제`}
+                    >
+                      <Trash2 size={16} strokeWidth={2} aria-hidden="true" />
+                    </button>
                   </div>
                   <p className={styles.summary}>
                     {buildSummary(record.type, record.numValue, record.textValue)}

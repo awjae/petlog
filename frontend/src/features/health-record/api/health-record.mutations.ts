@@ -3,6 +3,8 @@ import type { TypedDocumentNode } from '@apollo/client';
 import type {
   CreateHealthRecordMutation,
   CreateHealthRecordMutationVariables,
+  DeleteHealthRecordMutation,
+  DeleteHealthRecordMutationVariables,
 } from '@/generated/graphql';
 
 export const CREATE_HEALTH_RECORD_MUTATION: TypedDocumentNode<
@@ -15,5 +17,14 @@ export const CREATE_HEALTH_RECORD_MUTATION: TypedDocumentNode<
       type
       recordedAt
     }
+  }
+`;
+
+export const DELETE_HEALTH_RECORD_MUTATION: TypedDocumentNode<
+  DeleteHealthRecordMutation,
+  DeleteHealthRecordMutationVariables
+> = gql`
+  mutation DeleteHealthRecord($id: ID!) {
+    deleteHealthRecord(id: $id)
   }
 `;
