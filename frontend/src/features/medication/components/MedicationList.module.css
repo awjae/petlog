@@ -162,3 +162,15 @@
   color: var(--color-text-secondary);
   margin: 0;
 }
+
+/* 일찍 끊은 약의 알림을 멈춘다. 삭제와 달리 이력은 남는다. */
+.endTodayBtn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font: var(--font-label);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}

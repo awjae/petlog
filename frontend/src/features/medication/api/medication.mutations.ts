@@ -35,3 +35,19 @@ export const DELETE_MEDICATION_MUTATION: TypedDocumentNode<DeleteMedicationData,
       deleteMedication(id: $id)
     }
   `;
+
+// 복용 중인 약을 오늘로 끝낼 때만 쓴다. 다른 필드는 바꾸지 않는다.
+interface EndMedicationData {
+  updateMedication: { id: string; endDate: string | null };
+}
+export const END_MEDICATION_MUTATION: TypedDocumentNode<
+  EndMedicationData,
+  { id: string; input: { endDate: string } }
+> = gql`
+  mutation EndMedication($id: ID!, $input: UpdateMedicationInput!) {
+    updateMedication(id: $id, input: $input) {
+      id
+      endDate
+    }
+  }
+`;
