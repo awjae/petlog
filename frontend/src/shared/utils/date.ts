@@ -31,3 +31,15 @@ export function periodStart(days: number, now: Date = new Date()): Date {
   start.setDate(start.getDate() - (days - 1));
   return start;
 }
+
+/**
+ * `YYYY-MM-DD`에 일·년을 더한 `YYYY-MM-DD`. 정오로 계산해 서머타임 경계에서도 날짜가 밀리지 않는다.
+ * 2월 29일에 1년을 더하면 3월 1일이 아니라 2월 28일로 맞춘다 — "1년 뒤 같은 달"이 기대값이다.
+ */
+export function addToDate(ymd: string, { days = 0, years = 0 }: { days?: number; years?: number }) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  const date = new Date(y + years, m - 1, d, 12);
+  if (years !== 0 && date.getMonth() !== m - 1) date.setDate(0);
+  date.setDate(date.getDate() + days);
+  return toLocalDateString(date);
+}

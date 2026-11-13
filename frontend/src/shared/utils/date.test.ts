@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { localToday, periodStart, toLocalDateString } from './date';
+import { addToDate, localToday, periodStart, toLocalDateString } from './date';
 
 // 모든 테스트는 TZ=Asia/Seoul 고정으로 실행된다 (vitest.config.ts).
 // 이 로직은 "UTC 기준으로 날짜를 접으면 하루가 밀린다"는 문제를 막는 것이 목적이라,
@@ -44,5 +44,21 @@ describe('periodStart', () => {
   it('오늘을 포함해 days일이다 — 30일이면 29일 전 0시', () => {
     const start = periodStart(30, new Date('2026-09-18T15:00:00+09:00'));
     expect(start.toISOString()).toBe(new Date('2026-08-20T00:00:00+09:00').toISOString());
+  });
+});
+
+describe('addToDate', () => {
+  it('일을 더한다 (월·연 경계 포함)', () => {
+    expect(addToDate('2026-11-13', { days: 14 })).toBe('2026-11-27');
+    expect(addToDate('2026-12-25', { days: 14 })).toBe('2027-01-08');
+  });
+
+  it('년을 더한다', () => {
+    expect(addToDate('2026-11-13', { years: 1 })).toBe('2027-11-13');
+  });
+
+  // 3월 1일로 넘어가면 "1년 뒤 같은 달" 예정일이 한 달 밀린 것처럼 보인다.
+  it('2월 29일 + 1년은 2월 28일이다', () => {
+    expect(addToDate('2028-02-29', { years: 1 })).toBe('2029-02-28');
   });
 });

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { CalendarDays, ChevronDown, Loader2, Check } from 'lucide-react';
 import { SelectBottomSheet } from '@/shared/components/SelectBottomSheet';
 import { DatePickerSheet, formatDateKo } from '@/shared/components/DatePickerSheet';
-import { localToday } from '@/shared/utils/date';
+import { addToDate, localToday } from '@/shared/utils/date';
 import { VACCINE_OPTIONS } from '../types/medical.types';
 import type { CreateVaccinationFormInput } from '../types/medical.types';
 import styles from './VaccinationForm.module.css';
@@ -39,6 +39,14 @@ export function VaccinationForm({ petId, onSubmit, loading, error }: Vaccination
   // 시도해주세요"만 본다 — 다시 눌러도 결과는 같다. 접종 알림 문구("오늘은 {백신} 접종
   // 예정일이에요")도 이름이 있어야 성립한다.
   const isValid = vaccinatedAt.length > 0 && vaccineName.length > 0;
+
+  // 접종 알림(scanAndSendVaccinationDue)은 nextDueAt이 있어야만 나간다. 선택 입력이라 달력을
+  // 열어야 하면 대부분 비워두고, 그러면 만들어 둔 알림이 한 번도 울리지 않는다. 흔한 간격 두
+  // 가지는 한 번에 고르게 한다 — 접종일 기준이며, 정확한 일정은 병원 안내가 우선이다.
+  const nextDuePresets = [
+    { label: '2주 후', hint: '기초 접종', value: addToDate(vaccinatedAt, { days: 14 }) },
+    { label: '1년 후', hint: '추가 접종', value: addToDate(vaccinatedAt, { years: 1 }) },
+  ];
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -113,6 +121,22 @@ export function VaccinationForm({ petId, onSubmit, loading, error }: Vaccination
             </span>
             <CalendarDays size={18} strokeWidth={1.8} aria-hidden="true" />
           </button>
+          <div className={styles.presetRow}>
+            {nextDuePresets.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className={`${styles.presetChip} ${nextDueAt === preset.value ? styles.presetChipActive : ''}`}
+                aria-pressed={nextDueAt === preset.value}
+                onClick={() => setNextDueAt(nextDueAt === preset.value ? '' : preset.value)}
+              >
+                {preset.label} <span className={styles.presetHint}>{preset.hint}</span>
+              </button>
+            ))}
+          </div>
+          {nextDueAt && (
+            <p className={styles.presetNote}>앱 알림이 켜져 있으면 이날 아침에 알려드려요.</p>
+          )}
         </section>
 
         <section className={styles.section}>
