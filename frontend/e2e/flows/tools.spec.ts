@@ -24,6 +24,17 @@ test.describe('계산 도구 @integration', () => {
     await expect(page.getByText(/사료로 하루 약 180g/)).toBeVisible();
   });
 
+  test('음수량 계산기: 고양이는 개보다 낮은 기준으로 판정한다', async ({ page }) => {
+    await page.goto('/tools/water-intake');
+    await page.getByLabel('체중 (kg)').fill('4');
+    await page.getByLabel('마신 양 (mL)').fill('300');
+    await expect(page.getByText(/1kg당 75mL — 많이 마시는 기준 아래예요/)).toBeVisible();
+
+    await page.getByRole('radio', { name: '고양이' }).click();
+    await expect(page.getByText('160~200mL')).toBeVisible();
+    await expect(page.getByText(/1kg당 75mL — 기준보다 많아요/)).toBeVisible();
+  });
+
   test('허브에서 도구로 들어갈 수 있다', async ({ page }) => {
     await page.goto('/tools');
     await page.getByRole('link', { name: /나이 계산기/ }).click();
