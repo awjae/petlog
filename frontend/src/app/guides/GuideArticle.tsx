@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { JsonLd } from '@/shared/components/JsonLd';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site';
 import { findGuide, otherGuides } from './guides';
+import { toolsForGuide } from '../tools/tools';
 import styles from './page.module.css';
 
 interface GuideArticleProps {
@@ -51,6 +52,22 @@ export function GuideArticle({ slug, children }: GuideArticleProps) {
             무료로 기록 시작하기
           </Link>
         </div>
+
+        {/* 글을 읽은 뒤의 다음 행동. 체중 글 → 사료량 계산처럼 "그럼 우리 아이는?"으로 잇는다. */}
+        {toolsForGuide(slug).length > 0 && (
+          <nav className={styles.related} aria-label="관련 계산 도구">
+            <p className={styles.relatedTitle}>관련 계산 도구</p>
+            <ul className={styles.relatedList}>
+              {toolsForGuide(slug).map((tool) => (
+                <li key={tool.slug}>
+                  <Link href={`/tools/${tool.slug}`} className={styles.relatedLink}>
+                    {tool.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
 
         <nav className={styles.related} aria-label="다른 가이드">
           <p className={styles.relatedTitle}>다른 가이드</p>
