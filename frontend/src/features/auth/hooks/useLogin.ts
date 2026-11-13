@@ -5,6 +5,8 @@ function mapLoginError(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.statusCode === 401) return '이메일 또는 비밀번호가 올바르지 않아요';
     if (err.statusCode === 404) return '가입되지 않은 이메일이에요';
+    // 서버가 같은 IP의 로그인을 1분에 10번으로 제한한다(AuthController.login).
+    if (err.statusCode === 429) return '로그인 시도가 너무 많아요. 1분 뒤에 다시 시도해주세요';
   }
   return '잠시 후 다시 시도해주세요';
 }
