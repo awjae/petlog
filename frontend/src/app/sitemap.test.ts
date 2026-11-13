@@ -23,6 +23,15 @@ describe('sitemap', () => {
     }
   });
 
+  // 빠뜨리면 카톡 미리보기가 루트 공용 카드로 떨어진다. 화면에는 아무 이상이 없다.
+  it('모든 가이드 글에 글 제목이 들어간 OG 이미지가 있다', () => {
+    for (const guide of GUIDES) {
+      expect(
+        existsSync(new URL(`./guides/${guide.slug}/opengraph-image.tsx`, import.meta.url)),
+      ).toBe(true);
+    }
+  });
+
   it('가이드 허브도 등록된다', () => {
     expect(urls).toContain('https://petlog.quest/guides');
   });
