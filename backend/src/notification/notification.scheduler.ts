@@ -24,6 +24,7 @@ export class NotificationScheduler {
     await this.notificationService.scanAndSendMedicationReminder('morning');
     await this.notificationService.scanAndSendWeeklyCheckin();
     await this.notificationService.scanAndSendReportReady();
+    await this.notificationService.scanAndSendPetBirthday();
     this.logger.log('일일 알림 스캔 종료');
   }
 

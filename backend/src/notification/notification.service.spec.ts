@@ -1,4 +1,4 @@
-import { NotificationService } from './notification.service';
+import { NotificationService, birthdayAge } from './notification.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import type { PushSender } from '@petlog/push';
 import type { MedicationFrequency } from '@prisma/client';
@@ -554,6 +554,93 @@ describe('NotificationService 리포트 생성 가능 알림', () => {
       medicationReminderEnabled: true,
     });
     await service.scanAndSendReportReady();
+    expect(push.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('birthdayAge', () => {
+  // birthDate는 로컬 정오 앵커(03:00Z)로 저장된다.
+  const born = (ymd: string) => new Date(`${ymd}T03:00:00Z`);
+  // 서울 아침 9시 = 00:00Z
+  const seoul9am = (ymd: string) => new Date(`${ymd}T00:00:00Z`);
+
+  it('KST 기준 월·일이 같으면 몇 번째 생일인지 돌려준다', () => {
+    expect(birthdayAge(born('2021-11-13'), seoul9am('2026-11-13'))).toBe(5);
+    expect(birthdayAge(born('2021-11-13'), seoul9am('2026-11-14'))).toBeNull();
+  });
+
+  // UTC 날짜로 비교하면 서울 00~09시에는 전날로 판정된다.
+  it('서울 새벽(UTC 전날)에도 오늘 날짜로 판정한다', () => {
+    expect(birthdayAge(born('2021-11-13'), new Date('2026-11-12T16:00:00Z'))).toBe(5);
+  });
+
+  it('2월 29일생은 평년에는 2월 28일에, 윤년에는 2월 29일에 축하한다', () => {
+    expect(birthdayAge(born('2020-02-29'), seoul9am('2027-02-28'))).toBe(7);
+    expect(birthdayAge(born('2020-02-29'), seoul9am('2028-02-28'))).toBeNull();
+    expect(birthdayAge(born('2020-02-29'), seoul9am('2028-02-29'))).toBe(8);
+  });
+
+  it('태어난 당일은 생일로 보지 않는다', () => {
+    expect(birthdayAge(born('2026-11-13'), seoul9am('2026-11-13'))).toBeNull();
+  });
+});
+
+describe('NotificationService 생일 알림', () => {
+  let service: NotificationService;
+  let push: { send: jest.Mock };
+  let prisma: {
+    pet: { findMany: jest.Mock };
+    notificationPreference: { findUnique: jest.Mock };
+    notification: { findFirst: jest.Mock; create: jest.Mock };
+    pushToken: { findMany: jest.Mock };
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-11-13T00:00:00Z')); // 서울 11-13 09:00
+    push = { send: jest.fn() };
+    prisma = {
+      pet: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'pet-1',
+            name: '코코',
+            userId: 'user-1',
+            birthDate: new Date('2021-11-13T03:00:00Z'),
+          },
+          {
+            id: 'pet-2',
+            name: '보리',
+            userId: 'user-1',
+            birthDate: new Date('2021-05-01T03:00:00Z'),
+          },
+        ]),
+      },
+      notificationPreference: { findUnique: jest.fn().mockResolvedValue(null) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
+      pushToken: { findMany: jest.fn().mockResolvedValue([{ token: 'tok-1' }]) },
+    };
+    service = new NotificationService(
+      prisma as unknown as PrismaService,
+      push as unknown as PushSender,
+    );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('오늘 생일인 pet에게만 체중 기록 화면으로 가는 알림을 보낸다', async () => {
+    await service.scanAndSendPetBirthday();
+
+    expect(push.send).toHaveBeenCalledTimes(1);
+    const [, title, , data] = push.send.mock.calls[0];
+    expect(title).toBe('[Petlog] 오늘은 코코의 5번째 생일이에요 🎂');
+    expect(data).toEqual({ path: '/records/new?petId=pet-1&type=weight' });
+  });
+
+  it('오늘 이미 보냈으면 다시 보내지 않는다', async () => {
+    prisma.notification.findFirst.mockResolvedValue({ id: 'n1' });
+    await service.scanAndSendPetBirthday();
     expect(push.send).not.toHaveBeenCalled();
   });
 });

@@ -445,6 +445,7 @@ enum NotificationType {
   weeklyCheckin
   weeklySummary
   reportReady
+  petBirthday
 }
 
 enum NotificationReferenceType {

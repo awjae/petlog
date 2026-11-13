@@ -8,7 +8,7 @@ import {
 } from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { kstDayRange, kstWeekStart } from '../common/utils/date';
+import { kstDateString, kstDayRange, kstWeekStart } from '../common/utils/date';
 import { MEDICATION_FREQUENCY_LABEL } from '../medication/medication.types';
 import { MIN_RECORD_COUNT, MIN_RECORD_DAYS } from '../report/report.types';
 import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
@@ -69,6 +69,18 @@ export function summarizeWeek(
   if (symptom > 0) parts.push(`이상증상 ${symptom}회`);
 
   return `${parts.join(' · ')}. 지난주 흐름을 확인해보세요.`;
+}
+
+// 오늘(KST)이 생일인지와 몇 번째 생일인지. 2월 29일생은 평년에는 2월 28일에 축하한다.
+// 생일 당일 등록(0번째)은 생일이 아니라 등록일이라 null이다.
+export function birthdayAge(birthDate: Date, now: Date = new Date()): number | null {
+  const [by, bm, bd] = kstDateString(birthDate).split('-').map(Number);
+  const [ty, tm, td] = kstDateString(now).split('-').map(Number);
+  const isLeapYear = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const celebrateDay = bm === 2 && bd === 29 && !isLeapYear(ty) ? 28 : bd;
+  if (tm !== bm || td !== celebrateDay) return null;
+  const age = ty - by;
+  return age > 0 ? age : null;
 }
 
 interface SendAndLogParams {
@@ -577,6 +589,46 @@ export class NotificationService {
     }
 
     this.logger.log(`리포트 생성 가능 알림 스캔 완료: ${sentCount}건 발송`);
+  }
+
+  // 반려동물 생일 알림. 보호자가 앱을 열 감정적인 이유를 1년에 한 번 만든다(반려동물 앱에서 흔한
+  // 리텐션 장치). 생일 체중을 남기면 1년 단위 성장 기록이 되므로 체중 기록 화면으로 보낸다.
+  // pet 수가 적어 생일 판정은 앱에서 한다.
+  // ponytail: birthDate가 있는 pet 전체를 매일 읽는다. pet이 수만 단위가 되면 월·일 컬럼이나 DB 함수로 거른다.
+  async scanAndSendPetBirthday(): Promise<void> {
+    const { start } = kstDayRange();
+    const pets = await this.prisma.pet.findMany({
+      where: { deletedAt: null, birthDate: { not: null }, user: ACTIVE_USER },
+      select: { id: true, name: true, userId: true, birthDate: true },
+    });
+
+    let sentCount = 0;
+
+    for (const pet of pets) {
+      const age = birthdayAge(pet.birthDate!);
+      if (age == null) continue;
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.weeklyCheckinEnabled) continue;
+
+      const alreadySent = await this.prisma.notification.findFirst({
+        where: { type: NotificationType.petBirthday, referenceId: pet.id, sentAt: { gte: start } },
+      });
+      if (alreadySent) continue;
+
+      await this.sendAndLog({
+        userId: pet.userId,
+        type: NotificationType.petBirthday,
+        title: `[Petlog] 오늘은 ${pet.name}의 ${age}번째 생일이에요 🎂`,
+        body: '생일 기념으로 오늘 체중을 남겨두면 1년 동안의 성장을 비교할 수 있어요.',
+        referenceId: pet.id,
+        referenceType: null,
+        path: `/records/new?petId=${pet.id}&type=weight`,
+      });
+      sentCount += 1;
+    }
+
+    this.logger.log(`생일 알림 스캔 완료: ${sentCount}건 발송`);
   }
 
   private async sendAndLog(params: SendAndLogParams): Promise<void> {
