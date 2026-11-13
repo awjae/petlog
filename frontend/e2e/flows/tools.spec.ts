@@ -35,6 +35,21 @@ test.describe('계산 도구 @integration', () => {
     await expect(page.getByText(/1kg당 75mL — 기준보다 많아요/)).toBeVisible();
   });
 
+  test('가이드 글 하단에서 짝인 계산 도구로 이어진다', async ({ page }) => {
+    await page.goto('/guides/dog-weight-check');
+    await page
+      .getByRole('navigation', { name: '관련 계산 도구' })
+      .getByRole('link', { name: /칼로리·사료량/ })
+      .click();
+    await expect(page).toHaveURL(/\/tools\/daily-calories$/);
+  });
+
+  test('짝인 도구가 없는 가이드에는 관련 도구 영역을 두지 않는다', async ({ page }) => {
+    await page.goto('/guides/dog-vomit');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: '관련 계산 도구' })).toHaveCount(0);
+  });
+
   test('허브에서 도구로 들어갈 수 있다', async ({ page }) => {
     await page.goto('/tools');
     await page.getByRole('link', { name: /나이 계산기/ }).click();

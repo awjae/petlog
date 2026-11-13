@@ -47,6 +47,13 @@ describe('sitemap', () => {
     }
   });
 
+  // 오타 난 slug는 링크를 조용히 사라지게 한다(toolsForGuide가 아무것도 못 찾음).
+  it('도구의 relatedGuide는 실제 가이드 slug다', () => {
+    for (const tool of TOOLS) {
+      if (tool.relatedGuide) expect(GUIDES.map((g) => g.slug)).toContain(tool.relatedGuide);
+    }
+  });
+
   it('인증이 필요한 라우트는 넣지 않는다', () => {
     expect(urls.some((url) => url.includes('/home') || url.includes('/records'))).toBe(false);
   });
