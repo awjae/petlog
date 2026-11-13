@@ -12,11 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/guides', priority: 0.7 },
     // 가이드 글이 검색 유입의 실제 진입점이라 랜딩 다음으로 높게 둔다.
     ...GUIDES.map((guide) => ({ path: `/guides/${guide.slug}`, priority: 0.7 })),
-    { path: '/tools', priority: 0.7 },
-    ...TOOLS.map((tool) => ({ path: `/tools/${tool.slug}`, priority: 0.7 })),
     { path: '/sample-report', priority: 0.6 },
     { path: '/login', priority: 0.6 },
     { path: '/register', priority: 0.6 },
+    // 계산 도구도 가이드와 같은 검색 진입점이다.
+    { path: '/tools', priority: 0.7 },
+    ...TOOLS.map((tool) => ({ path: `/tools/${tool.slug}`, priority: 0.7 })),
     { path: '/privacy', priority: 0.3 },
   ];
 
