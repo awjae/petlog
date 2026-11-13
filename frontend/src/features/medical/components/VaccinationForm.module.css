@@ -190,3 +190,37 @@
     transform: rotate(360deg);
   }
 }
+
+/* 다음 접종 예정일 빠른 선택 */
+.presetRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.presetChip {
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font: var(--font-label);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.presetChipActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.presetHint {
+  color: var(--color-text-secondary);
+  font: var(--font-caption);
+}
+
+.presetNote {
+  margin-top: 8px;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
