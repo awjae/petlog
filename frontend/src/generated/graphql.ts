@@ -127,6 +127,12 @@ export type CreateHealthRecordMutation = {
   createHealthRecord: { id: string; type: HealthRecordType; recordedAt: string };
 };
 
+export type DeleteHealthRecordMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+export type DeleteHealthRecordMutation = { deleteHealthRecord: boolean };
+
 export type HealthRecordsQueryVariables = Exact<{
   petId: string | number;
 }>;
@@ -677,6 +683,42 @@ export const CreateHealthRecordDocument = {
     },
   ],
 } as unknown as DocumentNode<CreateHealthRecordMutation, CreateHealthRecordMutationVariables>;
+export const DeleteHealthRecordDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'DeleteHealthRecord' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'deleteHealthRecord' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DeleteHealthRecordMutation, DeleteHealthRecordMutationVariables>;
 export const HealthRecordsDocument = {
   kind: 'Document',
   definitions: [

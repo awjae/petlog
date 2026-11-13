@@ -114,6 +114,21 @@
   margin-left: auto;
 }
 
+/* 잘못 입력한 기록 삭제. 기록을 빠르게 훑는 화면이라 눈에 덜 띄게, 터치 영역은 충분히. */
+.deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px -8px -6px 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
 .summary {
   font: var(--font-body);
   color: var(--color-text-primary);
