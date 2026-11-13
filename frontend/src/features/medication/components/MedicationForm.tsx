@@ -88,6 +88,16 @@ export function MedicationForm({ petId, onSubmit, loading, error }: MedicationFo
             </span>
             <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
           </button>
+          {/* 매일 복용 알림은 하루 1·2·3회 약에만 나간다(scanAndSendMedicationReminder). 비우거나
+              "필요시"를 고르면 그 알림이 한 번도 오지 않는데, 화면에서는 알 수 없었다.
+              종료일 당일 알림은 주기와 무관하게 나간다. */}
+          {(frequency === '' || frequency === 'asNeeded') && (
+            <p className={styles.hint}>
+              {frequency === ''
+                ? '주기를 정하지 않으면 매일 복용 알림이 가지 않아요.'
+                : "'필요시' 약은 매일 복용 알림이 가지 않아요."}
+            </p>
+          )}
         </section>
 
         <section className={styles.section}>

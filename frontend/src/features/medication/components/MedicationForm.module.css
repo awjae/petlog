@@ -157,3 +157,9 @@
     transform: rotate(360deg);
   }
 }
+
+.hint {
+  margin-top: 8px;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
