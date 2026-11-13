@@ -451,6 +451,14 @@ export class BackendStack extends TerraformStack {
     const ALL_VIEWER_EXCEPT_HOST_HEADER_ORIGIN_REQUEST_POLICY_ID =
       'b689b0a8-53d0-40ab-baf2-68738e2966ac';
 
+    // AWS 관리형 응답 헤더 정책 "Managed-SecurityHeadersPolicy" ID (고정값). 프론트·백엔드 응답
+    // 모두에 HSTS(1년)·X-Content-Type-Options(nosniff)·X-Frame-Options(SAMEORIGIN)·
+    // Referrer-Policy(strict-origin-when-cross-origin)를 붙인다. 붙이기 전에는 보안 헤더가 하나도
+    // 없어 로그인 화면을 다른 사이트가 iframe으로 감쌀 수 있었다(클릭재킹). 프론트에는 iframe이
+    // 없어 SAMEORIGIN이 기존 화면을 깨지 않는다. 두 서비스가 이 배포 하나를 지나므로 여기 한 곳에 둔다.
+    // `aws cloudfront list-response-headers-policies --type managed`로 확인한 값이다.
+    const SECURITY_HEADERS_POLICY_ID = '67f7725c-6f97-4210-82d7-5512b31e9d03';
+
     // CloudFront에 붙일 ACM 인증서: 요청하는 CloudFront 배포가 어느 리전에 있든, CloudFront용
     // ACM 인증서는 반드시 us-east-1이어야 한다(AWS의 고정 제약). 이 스택의 기본 AwsProvider는
     // ap-northeast-2로 구성되어 있으므로, 별도 provider 블록 없이 리소스 단위 `region`
@@ -501,6 +509,7 @@ export class BackendStack extends TerraformStack {
         compress: true,
         cachePolicyId: CACHING_DISABLED_POLICY_ID,
         originRequestPolicyId: ALL_VIEWER_EXCEPT_HOST_HEADER_ORIGIN_REQUEST_POLICY_ID,
+        responseHeadersPolicyId: SECURITY_HEADERS_POLICY_ID,
       },
       restrictions: {
         geoRestriction: {
