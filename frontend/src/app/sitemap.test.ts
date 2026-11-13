@@ -23,16 +23,6 @@ describe('sitemap', () => {
     }
   });
 
-  it('모든 가이드 글에 올바른 작성일·수정일이 있고, sitemap lastmod가 수정일이다', () => {
-    const entries = sitemap();
-    for (const guide of GUIDES) {
-      expect(guide.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(guide.updatedAt >= guide.publishedAt).toBe(true);
-      const entry = entries.find((e) => e.url.endsWith(`/guides/${guide.slug}`));
-      expect(new Date(entry!.lastModified!).toISOString().slice(0, 10)).toBe(guide.updatedAt);
-    }
-  });
-
   it('가이드 허브도 등록된다', () => {
     expect(urls).toContain('https://petlog.quest/guides');
   });
@@ -47,5 +37,15 @@ describe('sitemap', () => {
 
   it('인증이 필요한 라우트는 넣지 않는다', () => {
     expect(urls.some((url) => url.includes('/home') || url.includes('/records'))).toBe(false);
+  });
+
+  it('모든 가이드 글에 올바른 작성일·수정일이 있고, sitemap lastmod가 수정일이다', () => {
+    const entries = sitemap();
+    for (const guide of GUIDES) {
+      expect(guide.publishedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(guide.updatedAt >= guide.publishedAt).toBe(true);
+      const entry = entries.find((e) => e.url.endsWith(`/guides/${guide.slug}`));
+      expect(new Date(entry!.lastModified!).toISOString().slice(0, 10)).toBe(guide.updatedAt);
+    }
   });
 });
