@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   AppointmentStatus,
   HealthRecordType,
@@ -7,6 +8,12 @@ import {
   NotificationType,
 } from '@prisma/client';
 import { PUSH_SENDER, type PushSender } from '@petlog/push';
+import {
+  MAIL_SENDER,
+  buildWeeklySummaryEmailHtml,
+  weeklySummaryEmailSubject,
+  type MailSender,
+} from '@petlog/mail';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { kstDateString, kstDayRange, kstWeekStart } from '../common/utils/date';
 import { MEDICATION_FREQUENCY_LABEL } from '../medication/medication.types';
@@ -101,6 +108,8 @@ export class NotificationService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(PUSH_SENDER) private readonly pushSender: PushSender,
+    @Inject(MAIL_SENDER) private readonly mailSender: MailSender,
+    private readonly config: ConfigService,
   ) {}
 
   // 기기별 FCM 토큰을 등록한다. token이 unique이므로 이미 등록된 토큰이면
@@ -521,19 +530,57 @@ export class NotificationService {
       });
       if (alreadySent) continue;
 
+      const body = summarizeWeek(petRecords);
       await this.sendAndLog({
         userId: pet.userId,
         type: NotificationType.weeklySummary,
         title: `[Petlog] ${pet.name}의 지난주 건강 요약`,
-        body: summarizeWeek(petRecords),
+        body,
         referenceId: pet.id,
         referenceType: null,
         path: `/pets/${pet.id}`,
       });
+      await this.emailWeeklySummaryIfNoPush(pet, body);
       sentCount += 1;
     }
 
     this.logger.log(`주간 요약 스캔 완료: ${sentCount}건 발송`);
+  }
+
+  // 푸시 토큰이 없는 사용자(앱 미설치, 웹 전용)에게는 같은 요약을 메일로 보낸다. 푸시만으로는
+  // 웹 사용자에게 주간 요약이 한 번도 닿지 않는다. 앱이 있으면 메일은 보내지 않는다 — 같은
+  // 내용을 두 번 받게 된다. 메일 실패는 다음 pet 발송을 막지 않도록 로그만 남긴다.
+  private async emailWeeklySummaryIfNoPush(
+    pet: { id: string; name: string; userId: string },
+    summary: string,
+  ): Promise<void> {
+    const tokenCount = await this.prisma.pushToken.count({ where: { userId: pet.userId } });
+    if (tokenCount > 0) return;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: pet.userId },
+      select: { email: true },
+    });
+    if (!user) return;
+
+    const frontendUrl = this.config.getOrThrow<string>('FRONTEND_URL');
+    try {
+      await this.mailSender.send(
+        user.email,
+        weeklySummaryEmailSubject(pet.name),
+        buildWeeklySummaryEmailHtml({
+          petName: pet.name,
+          summary,
+          petUrl: `${frontendUrl}/pets/${pet.id}`,
+          settingsUrl: `${frontendUrl}/settings`,
+        }),
+      );
+    } catch (error) {
+      this.logger.error(
+        `주간 요약 메일 발송 실패 (userId=${pet.userId})`,
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   // AI 리포트 생성 가능 알림. 리포트 조건(기록 10건 · 서로 다른 7일)을 처음 채운 pet에게 1회 보낸다.

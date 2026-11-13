@@ -1,6 +1,12 @@
 import { NotificationService, birthdayAge } from './notification.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import type { PushSender } from '@petlog/push';
+import type { MailSender } from '@petlog/mail';
+import type { ConfigService } from '@nestjs/config';
+
+// 메일을 보내지 않는 스캔들의 생성자 인자. 주간 요약 메일 테스트는 자체 mock을 쓴다.
+const mail = { send: jest.fn() };
+const config = { getOrThrow: () => 'https://petlog.quest' };
 import type { MedicationFrequency } from '@prisma/client';
 
 // 서울 2026-07-30 00:30 (= UTC 2026-07-29 15:30). UTC 날짜는 아직 07-29다.
@@ -30,6 +36,8 @@ describe('NotificationService 당일 스캔 구간', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       { send: jest.fn() } as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -115,6 +123,8 @@ describe('NotificationService 탈퇴 계정 제외', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       { send: jest.fn() } as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -171,6 +181,8 @@ describe('NotificationService 투약 종료 알림', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       push as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -270,6 +282,8 @@ describe('NotificationService 투약 알림', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       push as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -408,8 +422,10 @@ describe('NotificationService 주간 요약', () => {
     healthRecord: { findMany: jest.Mock };
     notificationPreference: { findUnique: jest.Mock };
     notification: { findFirst: jest.Mock; create: jest.Mock };
-    pushToken: { findMany: jest.Mock };
+    pushToken: { findMany: jest.Mock; count: jest.Mock };
+    user: { findUnique: jest.Mock };
   };
+  let weeklyMail: { send: jest.Mock };
 
   const coco = { id: 'pet-1', name: '코코', userId: 'user-1' };
   const rec = (type: string, numValue: string | null = null) => ({ type, numValue, pet: coco });
@@ -420,11 +436,18 @@ describe('NotificationService 주간 요약', () => {
       healthRecord: { findMany: jest.fn().mockResolvedValue([]) },
       notificationPreference: { findUnique: jest.fn().mockResolvedValue(null) },
       notification: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
-      pushToken: { findMany: jest.fn().mockResolvedValue([{ token: 'tok-1' }]) },
+      pushToken: {
+        findMany: jest.fn().mockResolvedValue([{ token: 'tok-1' }]),
+        count: jest.fn().mockResolvedValue(1),
+      },
+      user: { findUnique: jest.fn().mockResolvedValue({ email: 'owner@petlog.test' }) },
     };
+    weeklyMail = { send: jest.fn() };
     service = new NotificationService(
       prisma as unknown as PrismaService,
       push as unknown as PushSender,
+      weeklyMail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -477,6 +500,42 @@ describe('NotificationService 주간 요약', () => {
 
     expect(push.send).not.toHaveBeenCalled();
   });
+
+  it('앱이 있는 사용자에게는 메일을 보내지 않는다 (같은 내용을 두 번 받지 않게)', async () => {
+    prisma.healthRecord.findMany.mockResolvedValue([rec('mood')]);
+    await service.scanAndSendWeeklySummary();
+    expect(push.send).toHaveBeenCalledTimes(1);
+    expect(weeklyMail.send).not.toHaveBeenCalled();
+  });
+
+  it('푸시 토큰이 없는 사용자(웹 전용)에게는 같은 요약을 메일로 보낸다', async () => {
+    prisma.healthRecord.findMany.mockResolvedValue([rec('weight', '4.2'), rec('vomit')]);
+    prisma.pushToken.findMany.mockResolvedValue([]);
+    prisma.pushToken.count.mockResolvedValue(0);
+
+    await service.scanAndSendWeeklySummary();
+
+    const [to, subject, html] = weeklyMail.send.mock.calls[0];
+    expect(to).toBe('owner@petlog.test');
+    expect(subject).toBe('[Petlog] 코코의 지난주 건강 요약');
+    expect(html).toContain('기록 2건 · 체중 4.2kg · 구토 1회.');
+    expect(html).toContain('https://petlog.quest/pets/pet-1');
+    expect(html).toContain('https://petlog.quest/settings');
+  });
+
+  it('메일 발송이 실패해도 다음 pet 발송은 이어진다', async () => {
+    const bori = { id: 'pet-2', name: '보리', userId: 'user-2' };
+    prisma.healthRecord.findMany.mockResolvedValue([
+      rec('mood'),
+      { type: 'mood', numValue: null, pet: bori },
+    ]);
+    prisma.pushToken.findMany.mockResolvedValue([]);
+    prisma.pushToken.count.mockResolvedValue(0);
+    weeklyMail.send.mockRejectedValueOnce(new Error('SES down'));
+
+    await expect(service.scanAndSendWeeklySummary()).resolves.toBeUndefined();
+    expect(weeklyMail.send).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('NotificationService 리포트 생성 가능 알림', () => {
@@ -513,6 +572,8 @@ describe('NotificationService 리포트 생성 가능 알림', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       push as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 
@@ -622,6 +683,8 @@ describe('NotificationService 생일 알림', () => {
     service = new NotificationService(
       prisma as unknown as PrismaService,
       push as unknown as PushSender,
+      mail as unknown as MailSender,
+      config as unknown as ConfigService,
     );
   });
 

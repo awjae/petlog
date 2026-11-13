@@ -4,8 +4,11 @@ import { createPushSender, PUSH_SENDER, type PushSender } from '@petlog/push';
 import { NotificationService } from './notification.service';
 import { NotificationResolver } from './notification.resolver';
 import { NotificationScheduler } from './notification.scheduler';
+import { MailModule } from '../common/mail/mail.module';
 
 @Module({
+  // 주간 요약을 푸시 토큰이 없는 사용자(웹 전용)에게는 메일로 보낸다.
+  imports: [MailModule],
   providers: [
     NotificationService,
     NotificationResolver,
