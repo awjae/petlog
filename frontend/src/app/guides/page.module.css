@@ -27,6 +27,12 @@
   color: var(--color-text-secondary);
 }
 
+.dates {
+  margin-top: 8px;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
 .content {
   padding: 20px;
 }

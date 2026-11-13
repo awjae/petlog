@@ -4,6 +4,11 @@ import { SITE_NAME, SITE_URL } from '@/shared/config/site';
 import { findGuide, otherGuides } from './guides';
 import styles from './page.module.css';
 
+function formatKoDate(ymd: string): string {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return `${y}년 ${m}월 ${d}일`;
+}
+
 interface GuideArticleProps {
   slug: string;
   children: React.ReactNode;
@@ -23,6 +28,8 @@ export function GuideArticle({ slug, children }: GuideArticleProps) {
     headline: guide.title,
     description: guide.description,
     mainEntityOfPage: url,
+    datePublished: guide.publishedAt,
+    dateModified: guide.updatedAt,
     publisher: {
       '@type': 'Organization',
       name: SITE_NAME,
@@ -37,6 +44,15 @@ export function GuideArticle({ slug, children }: GuideArticleProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>{guide.title}</h1>
         <p className={styles.lead}>{guide.description}</p>
+        <p className={styles.dates}>
+          <time dateTime={guide.publishedAt}>{formatKoDate(guide.publishedAt)}</time> 작성
+          {guide.updatedAt !== guide.publishedAt && (
+            <>
+              {' · '}
+              <time dateTime={guide.updatedAt}>{formatKoDate(guide.updatedAt)}</time> 수정
+            </>
+          )}
+        </p>
       </header>
 
       <div className={styles.content}>
