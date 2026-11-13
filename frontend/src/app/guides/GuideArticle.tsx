@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { JsonLd } from '@/shared/components/JsonLd';
+import { ShareLinkButton } from '@/shared/components/ShareLinkButton';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site';
 import { findGuide, otherGuides } from './guides';
 import styles from './page.module.css';
@@ -41,6 +42,10 @@ export function GuideArticle({ slug, children }: GuideArticleProps) {
 
       <div className={styles.content}>
         {children}
+
+        <div className={styles.share}>
+          <ShareLinkButton title={guide.title} url={url} className={styles.shareBtn} />
+        </div>
 
         <div className={styles.cta}>
           <p className={styles.ctaText}>

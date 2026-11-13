@@ -156,3 +156,25 @@
   color: var(--color-primary-text);
   font: var(--font-title-m);
 }
+
+/* 공유 — 본문을 다 읽은 자리에 둔다. 가입 CTA보다 덜 눈에 띄게. */
+.share {
+  margin-top: 24px;
+  text-align: center;
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
