@@ -49,8 +49,12 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
+  // 계정 대량 생성을 막는다. E2E가 같은 IP에서 1분 안에 5~6번 가입하므로(global-setup·auth·
+  // first-record) 5회로 두면 테스트가 깨진다. 10회도 사람이 가입하기에는 충분하다.
   @Post('register')
   @HttpCode(201)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: '회원가입 — 계정 생성 후 자동 로그인' })
   async register(
     @Body() dto: RegisterDto,
@@ -77,8 +81,15 @@ export class AuthController {
     return { message: '회원가입 성공' };
   }
 
+  // 비밀번호 무차별 대입을 막는다. 비밀번호 재설정·탈퇴에는 시도 제한이 있었는데 정작 로그인에는
+  // 없어서, 같은 IP에서 틀린 비밀번호를 끝없이 보낼 수 있었다. 오타를 몇 번 내는 사람은 걸리지
+  // 않게 재설정(5회)보다 넉넉히 둔다. IP는 ALB 뒤에서 trust proxy로 얻는다(main.ts).
+  // ponytail: 제한 카운터가 태스크 메모리에 있어 태스크가 여러 개면 태스크마다 따로 센다.
+  // 태스크를 늘리면 Redis 저장소로 옮긴다.
   @Post('login')
   @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: '로그인 — access/refresh 쿠키 발급' })
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const user = await this.userService.validateUser(dto.email, dto.password);
