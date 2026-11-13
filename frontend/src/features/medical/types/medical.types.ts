@@ -46,7 +46,8 @@ export interface CreateMedicalEventFormInput {
 
 export interface CreateVaccinationFormInput {
   petId: string;
-  name?: string;
+  // 서버 입력(CreateVaccinationInput.name: String!)과 같이 필수다.
+  name: string;
   vaccinatedAt: string;
   nextDueAt?: string;
   memo?: string;

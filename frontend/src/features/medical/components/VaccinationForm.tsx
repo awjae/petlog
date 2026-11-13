@@ -34,14 +34,18 @@ export function VaccinationForm({ petId, onSubmit, loading, error }: Vaccination
         ? customName.trim() || '기타 (직접 입력)'
         : selectedPreset;
 
-  const isValid = vaccinatedAt.length > 0;
+  // 백신 이름은 서버(CreateVaccinationInput.name: String!)와 DB(name String)가 모두 필수다.
+  // 화면만 "(선택)"으로 두면 비워둔 채 저장을 누를 때마다 서버가 거절하고, 사용자는 "다시
+  // 시도해주세요"만 본다 — 다시 눌러도 결과는 같다. 접종 알림 문구("오늘은 {백신} 접종
+  // 예정일이에요")도 이름이 있어야 성립한다.
+  const isValid = vaccinatedAt.length > 0 && vaccineName.length > 0;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid || loading) return;
     onSubmit({
       petId,
-      name: vaccineName || undefined,
+      name: vaccineName,
       vaccinatedAt,
       nextDueAt: nextDueAt || undefined,
       memo: memo.trim() || undefined,
@@ -67,9 +71,7 @@ export function VaccinationForm({ petId, onSubmit, loading, error }: Vaccination
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.sectionLabel}>
-            백신 <span className={styles.optional}>(선택)</span>
-          </h2>
+          <h2 className={styles.sectionLabel}>백신</h2>
           <button
             type="button"
             className={`${styles.selectTrigger} ${selectedPreset ? styles.selectTriggerActive : ''}`}
