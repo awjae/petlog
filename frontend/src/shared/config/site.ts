@@ -8,3 +8,5 @@ export const SITE_URL = 'https://petlog.quest';
 export const SITE_NAME = 'Petlog';
 export const SITE_DESCRIPTION =
   '체중, 식사, 활동량을 기록하고 AI 리포트로 반려동물 건강 변화를 파악하는 건강 기록 서비스';
+// 2026년 8월 출시한 Android 앱. iOS 앱은 없다.
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=quest.petlog.app';
