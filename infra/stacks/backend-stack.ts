@@ -260,6 +260,17 @@ export class BackendStack extends TerraformStack {
         'CloudFront에 연결할 커스텀 도메인 (ACM 인증서와 동일해야 함). TF_VAR_domain_name으로 주입.',
     });
 
+    // 빈 값으로는 배포하지 못하게 막는다. 기본값 ''은 "배포는 항상 성공"을 위한 것이지만 이 변수에는
+    // 맞지 않는다 — 비어 있으면 CloudFront aliases에서 petlog.quest가 빠져(plan: "petlog.quest" →
+    // null) 사이트 전체가 끊기고, ACM 인증서도 교체 대상이 된다. TF_VAR_domain_name을 export하지
+    // 않은 셸에서 `cdktf deploy`를 실행하는 실수 하나로 일어난다(README의 배포 명령이 직접 실행이다).
+    domainName.addValidation({
+      condition: '${var.domain_name != ""}',
+      errorMessage:
+        'domain_name이 비어 있다 — TF_VAR_domain_name(예: petlog.quest)을 export한 셸에서 배포해야 한다. ' +
+        '비운 채 적용하면 CloudFront에서 커스텀 도메인이 빠져 사이트가 끊긴다.',
+    });
+
     // 기본값을 빈 문자열로 두는 이유는 mail_provider와 동일하다 — 배포 자체는 항상 성공해야
     // 하고, Sentry 초기화는 TF_VAR_backend_sentry_dsn을 명시적으로 줄 때만 켜진다
     // (backend/src/instrument.ts의 `if (dsn)` 가드와 동일한 계약, backend/.env.example의 로컬
