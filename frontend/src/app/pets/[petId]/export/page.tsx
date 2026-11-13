@@ -12,6 +12,12 @@ import {
   buildRecordExport,
   type ExportPeriodDays,
 } from '@/features/health-record/utils/exportRecords';
+import {
+  activeMedicationLines,
+  vaccinationLinesInPeriod,
+} from '@/features/health-record/utils/exportMedical';
+import { useMedications } from '@/features/medication/hooks/useMedication';
+import { useVaccinations } from '@/features/medical/hooks/useMedical';
 import { canPrint } from '@/shared/native/canPrint';
 import styles from './page.module.css';
 
@@ -36,7 +42,20 @@ export default function RecordExportPage({ params }: Props) {
   const [printable, setPrintable] = useState(false);
   useEffect(() => setPrintable(canPrint()), []);
 
+  // 진료 때 먼저 묻는 "지금 먹는 약"과 "접종 이력"(exportMedical.ts 주석). 불러오지 못해도
+  // 건강 기록 표는 보여줘야 하므로 이 두 섹션은 데이터가 있을 때만 그린다.
+  const { data: medicationData } = useMedications(petId);
+  const { data: vaccinationData } = useVaccinations(petId);
+
   const data = useMemo(() => buildRecordExport(records, days), [records, days]);
+  const medications = useMemo(
+    () => activeMedicationLines(medicationData?.medications ?? []),
+    [medicationData],
+  );
+  const vaccinations = useMemo(
+    () => vaccinationLinesInPeriod(vaccinationData?.vaccinations ?? [], days),
+    [vaccinationData, days],
+  );
   const loading = petLoading || recordsLoading;
 
   return (
@@ -107,6 +126,37 @@ export default function RecordExportPage({ params }: Props) {
               {formatDate(data.from)} ~ {formatDate(data.to)} · 총 {data.rows.length}건
             </p>
           </section>
+
+          {medications.length > 0 && (
+            <section className={styles.medicalSection} aria-label="복용 중인 약">
+              <h3 className={styles.sectionTitle}>복용 중인 약</h3>
+              <ul className={styles.medicalList}>
+                {medications.map((m) => (
+                  <li key={m.id}>
+                    {m.name}
+                    {m.frequencyLabel && ` · ${m.frequencyLabel}`}
+                    <span className={styles.note}>{formatDate(m.since)}부터</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {vaccinations.length > 0 && (
+            <section className={styles.medicalSection} aria-label="이 기간의 접종">
+              <h3 className={styles.sectionTitle}>이 기간의 접종</h3>
+              <ul className={styles.medicalList}>
+                {vaccinations.map((v) => (
+                  <li key={v.id}>
+                    {formatDate(v.date)} {v.name}
+                    {v.nextDue && (
+                      <span className={styles.note}>다음 예정 {formatDate(v.nextDue)}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {data.rows.length === 0 ? (
             <p className={styles.empty}>이 기간에 남긴 기록이 없어요.</p>

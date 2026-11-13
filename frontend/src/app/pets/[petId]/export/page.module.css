@@ -320,3 +320,25 @@
 @page {
   margin: 14mm;
 }
+
+/* 투약·접종 요약 — 건강 기록 표 위에 둔다. 진료 때 먼저 묻는 정보다. */
+.medicalSection {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sectionTitle {
+  font: var(--font-label);
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+
+.medicalList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  font: var(--font-body);
+  color: var(--color-text-primary);
+}
