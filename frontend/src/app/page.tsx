@@ -5,6 +5,7 @@ import { JsonLd } from '@/shared/components/JsonLd';
 import { SITE_NAME, SITE_URL } from '@/shared/config/site';
 import styles from './page.module.css';
 import { AppLogo } from '@/shared/components/AppLogo';
+import { PlayStoreLink } from '@/shared/components/PlayStoreLink';
 
 export const metadata: Metadata = {
   title: '반려동물 건강 기록 · AI 건강 리포트',
@@ -18,7 +19,8 @@ const landingJsonLd = {
   name: SITE_NAME,
   url: SITE_URL,
   applicationCategory: 'HealthApplication',
-  operatingSystem: 'Web, iOS, Android',
+  // iOS 앱은 없다. 웹은 iOS Safari에서도 열리지만 '앱'으로 표기하면 검색 결과가 사실과 달라진다.
+  operatingSystem: 'Web, Android',
   description:
     '반려동물의 체중, 식사, 활동량 등 건강 데이터를 기록하고 AI 기반 건강 리포트로 변화를 이해할 수 있도록 돕는 모바일 우선 건강 기록 서비스.',
   offers: {
@@ -81,6 +83,9 @@ export default function LandingPage() {
         <Link href="/register" className={styles.landingCta}>
           무료로 시작하기
         </Link>
+        <PlayStoreLink className={styles.landingLogin}>
+          Android 앱으로 <span>Google Play에서 받기</span>
+        </PlayStoreLink>
         <Link href="/sample-report" className={styles.landingLogin}>
           가입 전에 <span>리포트 예시 보기</span>
         </Link>
