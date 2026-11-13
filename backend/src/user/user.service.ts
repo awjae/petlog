@@ -10,6 +10,7 @@ import type { User as PrismaUser } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ConsentService } from '../consent/consent.service';
 import { REQUIRED_CONSENT_TYPES } from '../consent/consent.constants';
+import { kstDateString, kstDayRange } from '../common/utils/date';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -115,7 +116,12 @@ export class UserService {
     await this.prisma.user.update({ where: { id }, data: { password: hash } });
   }
 
-  async getRecordDates(userId: string, limit: number): Promise<string[]> {
+  // 기록이 있었던 날(KST) 목록, 최근 `days`일 안에서 날마다 하나씩. 홈의 연속 기록 계산이 쓴다.
+  //
+  // 예전에는 "최근 기록 N건"을 돌려줬다. 하루에 여러 건 기록하는 사람일수록 N건이 덮는 기간이
+  // 짧아져, 하루 3건씩 기록하면 90건이 30일만 덮어 연속 기록이 30일에서 잘렸다. 날 단위로
+  // 자르면 기록을 많이 할수록 손해 보는 일이 없다.
+  async getRecordDates(userId: string, days: number): Promise<string[]> {
     // 삭제는 전부 소프트 삭제다(deletedAt에 시각을 찍는다). 필터를 빠뜨리면
     // 사용자가 지운 기록이 캘린더에 계속 남는다.
     const pets = await this.prisma.pet.findMany({
@@ -126,13 +132,19 @@ export class UserService {
 
     const petIds = pets.map((p) => p.id);
 
+    const since = new Date(kstDayRange().start.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
     const records = await this.prisma.healthRecord.findMany({
-      where: { petId: { in: petIds }, deletedAt: null },
+      where: { petId: { in: petIds }, deletedAt: null, recordedAt: { gte: since } },
       select: { recordedAt: true },
       orderBy: { recordedAt: 'desc' },
-      take: limit,
     });
 
-    return records.map((r) => r.recordedAt.toISOString());
+    // 날마다 가장 최근 기록 하나만 남긴다. 클라이언트는 이 순간값을 로컬 날짜로 바꿔 센다.
+    const byDay = new Map<string, string>();
+    for (const r of records) {
+      const day = kstDateString(r.recordedAt);
+      if (!byDay.has(day)) byDay.set(day, r.recordedAt.toISOString());
+    }
+    return [...byDay.values()];
   }
 }
