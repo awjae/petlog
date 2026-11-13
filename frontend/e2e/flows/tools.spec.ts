@@ -13,6 +13,17 @@ test.describe('계산 도구 @integration', () => {
     await expect(page.getByText('80살')).toBeVisible();
   });
 
+  test('칼로리 계산기: 체중과 사료 칼로리로 하루 급여량을 보여준다', async ({ page }) => {
+    await page.goto('/tools/daily-calories');
+
+    await page.getByRole('radio', { name: '성견 · 중성화', exact: true }).click();
+    await page.getByLabel('체중 (kg)').fill('10');
+    await expect(page.getByText('약 630kcal')).toBeVisible();
+
+    await page.getByLabel('사료 칼로리 (kcal/kg)').fill('3500');
+    await expect(page.getByText(/사료로 하루 약 180g/)).toBeVisible();
+  });
+
   test('허브에서 도구로 들어갈 수 있다', async ({ page }) => {
     await page.goto('/tools');
     await page.getByRole('link', { name: /나이 계산기/ }).click();

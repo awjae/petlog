@@ -14,6 +14,12 @@ export const TOOLS: ToolMeta[] = [
     description:
       '반려동물 나이를 사람 나이로 환산합니다. 강아지는 체구별로, 고양이는 별도 기준으로 계산합니다.',
   },
+  {
+    slug: 'daily-calories',
+    title: '강아지·고양이 하루 칼로리·사료량 계산기',
+    description:
+      '체중과 생애 단계(성장기·중성화·감량)로 하루 권장 칼로리를 구하고, 사료 칼로리로 하루 급여량을 계산합니다.',
+  },
 ];
 
 export function findTool(slug: string): ToolMeta {
