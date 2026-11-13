@@ -55,6 +55,14 @@ export const GUIDES: GuideMeta[] = [
     publishedAt: '2026-11-07',
     updatedAt: '2026-11-07',
   },
+  {
+    slug: 'dog-vaccination-schedule',
+    title: '강아지 예방접종 시기와 접종 기록 남기는 법',
+    description:
+      '강아지 기초 접종을 언제 몇 번 맞히는지, 추가 접종은 언제인지, 접종 기록에 무엇을 남겨야 하는지 정리했습니다.',
+    publishedAt: '2026-11-13',
+    updatedAt: '2026-11-13',
+  },
 ];
 
 export function findGuide(slug: string): GuideMeta {
