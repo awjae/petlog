@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, PawPrint, AlertTriangle, Check } from 'lucide-react';
+import { X, PawPrint, AlertTriangle, Check, Flame } from 'lucide-react';
 import {
   APPETITE_OPTIONS,
   COUNT_OPTIONS,
@@ -60,6 +60,7 @@ function NewRecordContent() {
     submitting,
     error,
     success,
+    streak,
     showToast,
     showWarning,
     warningText,
@@ -72,6 +73,13 @@ function NewRecordContent() {
           <Check size={36} strokeWidth={3} />
         </span>
         <p className={styles.successText}>기록했어요!</p>
+        {streak && (
+          <p className={streak.milestone ? styles.streakMilestone : styles.streakText}>
+            <Flame size={16} strokeWidth={2} aria-hidden="true" />
+            {streak.days}일 연속 기록
+            {streak.milestone && <span className={styles.streakSub}>꾸준함이 쌓이고 있어요</span>}
+          </p>
+        )}
       </div>
     );
   }

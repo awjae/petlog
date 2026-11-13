@@ -396,6 +396,27 @@
   margin: 0;
 }
 
+/* 저장 직후 연속 기록. 홈 배너의 불꽃 아이콘과 같은 표현을 쓴다. */
+.streakText,
+.streakMilestone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font: var(--font-body);
+  color: var(--color-warning);
+}
+
+.streakMilestone {
+  font: var(--font-title-m);
+}
+
+.streakSub {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
 .errorMsg {
   font: var(--font-caption);
   color: var(--color-danger);

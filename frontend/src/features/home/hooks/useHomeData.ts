@@ -33,6 +33,7 @@ export function useHomeData(): UseHomeDataReturn {
     pets: data.me.pets,
     upcomingSchedules,
     streak: calcStreak(data.me.recordDates),
+    recordDates: data.me.recordDates,
   };
 
   return { data: homeData, loading, error, refetch };

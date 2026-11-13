@@ -10,6 +10,7 @@ import type { HealthRecordType } from '@/generated/graphql';
 import { isHealthRecordType, type AppetiteChoice } from '../types/health-record.types';
 import { useCreateHealthRecord } from './useCreateHealthRecord';
 import { calcWeightChange, isGrowing } from '../utils/weightChange';
+import { streakAfterSave, type StreakAfterSave } from '../utils/streakAfterSave';
 
 // 기록 추가 화면(app/records/new)의 폼 상태와 저장 흐름.
 //
@@ -20,6 +21,9 @@ import { calcWeightChange, isGrowing } from '../utils/weightChange';
 const MAX_SYMPTOMS = 5;
 const SYMPTOM_TOAST_MS = 2000;
 const SUCCESS_ROUTE_DELAY_MS = 800;
+// 연속 기록 문구가 있으면 읽을 시간을 준다. 마일스톤은 한 줄이 더 있어 더 길게.
+const STREAK_ROUTE_DELAY_MS = 1300;
+const MILESTONE_ROUTE_DELAY_MS = 2000;
 
 export function useNewRecordForm() {
   const router = useRouter();
@@ -56,6 +60,7 @@ export function useNewRecordForm() {
 
   const [showToast, setShowToast] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [streak, setStreak] = useState<StreakAfterSave | null>(null);
 
   const pets = data?.pets ?? [];
 
@@ -159,8 +164,15 @@ export function useNewRecordForm() {
     });
 
     if (ok) {
+      const saved = streakAfterSave(data?.recordDates ?? [], date);
+      setStreak(saved);
       setSuccess(true);
-      setTimeout(() => router.back(), SUCCESS_ROUTE_DELAY_MS);
+      const delay = saved?.milestone
+        ? MILESTONE_ROUTE_DELAY_MS
+        : saved
+          ? STREAK_ROUTE_DELAY_MS
+          : SUCCESS_ROUTE_DELAY_MS;
+      setTimeout(() => router.back(), delay);
     }
   }
 
@@ -241,6 +253,7 @@ export function useNewRecordForm() {
     submitting,
     error,
     success,
+    streak,
     showToast,
     showWarning,
     warningText,

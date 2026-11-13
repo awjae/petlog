@@ -15,4 +15,6 @@ export type HomeData = {
   pets: Pet[];
   upcomingSchedules: UpcomingSchedule[];
   streak: number;
+  /** 연속 기록 계산의 원본. 기록 저장 직후 늘어난 연속 일수를 다시 계산할 때 쓴다. */
+  recordDates: readonly string[];
 };
