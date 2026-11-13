@@ -4,7 +4,12 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Loader2 } from 'lucide-react';
 import { MedicationList } from '@/features/medication/components/MedicationList';
-import { useMedications, useDeleteMedication } from '@/features/medication/hooks/useMedication';
+import {
+  useMedications,
+  useDeleteMedication,
+  useEndMedicationToday,
+} from '@/features/medication/hooks/useMedication';
+import type { Medication } from '@/features/medication/types/medication.types';
 import { FAB } from '@/shared/components/FAB';
 import styles from './page.module.css';
 
@@ -13,6 +18,17 @@ export default function MedicationsPage({ params }: { params: Promise<{ petId: s
   const { petId } = use(params);
   const { data, loading, error } = useMedications(petId);
   const { deleteMedication } = useDeleteMedication();
+  const { endMedicationToday } = useEndMedicationToday();
+
+  // 알림이 멈춘다는 결과를 먼저 알려준다. 하루 2·3회 약은 오늘 저녁 알림까지는 나간다.
+  async function handleEndToday(item: Medication) {
+    const name = item.name || '이 약';
+    if (!window.confirm(`${name}을(를) 오늘까지만 먹일까요? 내일부터 투약 알림이 가지 않아요.`)) {
+      return;
+    }
+    const ok = await endMedicationToday(item.id);
+    if (!ok) window.alert('바꾸지 못했어요. 잠시 후 다시 시도해주세요.');
+  }
 
   function renderContent() {
     if (loading && !data) {
@@ -30,7 +46,11 @@ export default function MedicationsPage({ params }: { params: Promise<{ petId: s
       );
     }
     return (
-      <MedicationList items={data?.medications ?? []} onDelete={(id) => deleteMedication(id)} />
+      <MedicationList
+        items={data?.medications ?? []}
+        onDelete={(id) => deleteMedication(id)}
+        onEndToday={handleEndToday}
+      />
     );
   }
 

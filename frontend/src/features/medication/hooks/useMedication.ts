@@ -6,7 +6,9 @@ import { MEDICATIONS_QUERY } from '../api/medication.queries';
 import {
   CREATE_MEDICATION_MUTATION,
   DELETE_MEDICATION_MUTATION,
+  END_MEDICATION_MUTATION,
 } from '../api/medication.mutations';
+import { localToday } from '@/shared/utils/date';
 import type { CreateMedicationFormInput } from '../types/medication.types';
 
 export function useMedications(petId: string) {
@@ -55,4 +57,21 @@ export function useDeleteMedication() {
     deleteMedication: (id: string) => mutate({ variables: { id } }),
     loading,
   };
+}
+
+// 종료일 없이 등록한 약은 매일 아침·저녁 알림이 끝없이 나간다. 일찍 끊은 약을 멈추는 방법이
+// 삭제뿐이면 병원 내보내기에 쓰일 투약 이력까지 사라지므로, 종료일만 오늘로 바꾼다.
+// 저장 형식은 등록과 같은 로컬 정오다(useCreateMedication).
+export function useEndMedicationToday() {
+  const [mutate, { loading }] = useMutation(END_MEDICATION_MUTATION, {
+    refetchQueries: ['Medications', 'HomeQuery', 'CalendarQuery'],
+  });
+
+  async function endMedicationToday(id: string): Promise<boolean> {
+    const endDate = new Date(`${localToday()}T12:00:00`).toISOString();
+    const result = await mutate({ variables: { id, input: { endDate } } }).catch(() => null);
+    return result?.data?.updateMedication != null;
+  }
+
+  return { endMedicationToday, loading };
 }
