@@ -6,6 +6,7 @@ import { useCreatePet } from '@/features/pet/hooks/useCreatePet';
 import { PetForm, type PetFormValues } from '@/features/pet/components/PetForm';
 import { useToast, ToastContainer } from '@/shared/components/Toast';
 import styles from './page.module.css';
+import { takeFirstRecordType } from '@/features/health-record/utils/firstRecordType';
 
 export default function NewPetPage() {
   const router = useRouter();
@@ -21,7 +22,9 @@ export default function NewPetPage() {
     // 등록 직후 첫 기록 화면까지 바로 잇는다 — 홈을 한 번 거치면 거기서 이탈한다
     // (2026-09 가입자가 반려동물만 등록하고 기록 0건으로 떠난 지점).
     // push가 아니라 replace여야 기록 저장 후 router.back()이 빈 등록 폼이 아닌 홈으로 간다.
-    router.replace(`/records/new?petId=${result.petId}`);
+    // 가입 전에 읽은 가이드가 있으면 그 주제의 기록 유형으로 연다(takeFirstRecordType 주석).
+    const type = takeFirstRecordType();
+    router.replace(`/records/new?petId=${result.petId}${type ? `&type=${type}` : ''}`);
   }
 
   return (
