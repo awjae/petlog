@@ -1,3 +1,4 @@
+import type { FirstTouch } from '@/shared/utils/firstTouch';
 export interface RegisterConsents {
   termsOfService: boolean;
   privacyPolicy: boolean;
@@ -9,6 +10,7 @@ export interface RegisterPayload {
   password: string;
   name?: string;
   consents: RegisterConsents;
+  attribution?: FirstTouch;
 }
 
 export interface LoginPayload {

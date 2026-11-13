@@ -191,3 +191,17 @@ LEFT JOIN (
   FROM users GROUP BY 1
 ) u USING (day_kst)
 ORDER BY 1;
+
+-- 가입 경로별 가입·활성화 (users.signup_*: 가입 전 처음 들어온 공개 페이지·외부 유입처·utm_source).
+-- 이 컬럼이 생기기 전(2026-11) 가입자는 전부 NULL이라 '(기록 없음)'으로 묶인다.
+\echo ''
+\echo '=== 가입 경로별 가입 · 첫 기록 ==='
+SELECT
+  coalesce(u.signup_utm_source, u.signup_referrer, '(직접 · 기록 없음)') AS "유입처",
+  coalesce(u.signup_landing_path, '(기록 없음)')                      AS "첫 페이지",
+  count(*)                                                              AS "가입",
+  count(*) FILTER (WHERE pu.records > 0)                                AS "첫 기록"
+FROM users u
+JOIN per_user pu ON pu.id = u.id
+GROUP BY 1, 2
+ORDER BY 3 DESC;

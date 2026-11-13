@@ -1,6 +1,7 @@
 import { useMutation } from '@/shared/hooks/useMutation';
 import { registerUser, ApiError } from '../api/auth.api';
 import type { RegisterConsents } from '../types/auth.types';
+import { readFirstTouch } from '@/shared/utils/firstTouch';
 
 function mapRegisterError(err: unknown): string {
   if (err instanceof ApiError && err.statusCode === 409) return '이미 사용 중인 이메일이에요';
@@ -11,7 +12,7 @@ function mapRegisterError(err: unknown): string {
 export function useRegister() {
   const { loading, error, mutate } = useMutation(
     (email: string, password: string, consents: RegisterConsents) =>
-      registerUser({ email, password, consents }),
+      registerUser({ email, password, consents, attribution: readFirstTouch() }),
     mapRegisterError,
   );
 
