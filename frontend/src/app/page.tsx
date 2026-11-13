@@ -90,6 +90,9 @@ export default function LandingPage() {
         <Link href="/guides" className={styles.landingLogin}>
           반려동물 건강 기록 <span>가이드 보기</span>
         </Link>
+        <Link href="/tools" className={styles.landingLogin}>
+          나이 환산 등 <span>계산 도구 써보기</span>
+        </Link>
       </div>
     </main>
   );
