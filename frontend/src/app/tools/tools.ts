@@ -20,6 +20,12 @@ export const TOOLS: ToolMeta[] = [
     description:
       '체중과 생애 단계(성장기·중성화·감량)로 하루 권장 칼로리를 구하고, 사료 칼로리로 하루 급여량을 계산합니다.',
   },
+  {
+    slug: 'water-intake',
+    title: '강아지·고양이 하루 음수량 계산기',
+    description:
+      '체중으로 반려동물의 평소 하루 음수량과 많이 마시는 기준을 계산하고, 오늘 마신 양이 기준을 넘는지 확인합니다.',
+  },
 ];
 
 export function findTool(slug: string): ToolMeta {
