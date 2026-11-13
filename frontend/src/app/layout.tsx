@@ -25,6 +25,8 @@ export const metadata: Metadata = {
       'naver-site-verification': 'f2d8a6a3429f8bb20c4820d9304237a2cb104caf',
     },
   },
+  // iPhone에서 홈 화면에 추가했을 때 Safari 주소창 없이 앱처럼 열리게 한다(IOSHomeScreenHint).
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: 'default' },
 };
 
 // viewport-fit=cover: 웹뷰가 상단 카메라(펀치홀)/노치 영역까지 화면을 그리게 하고,

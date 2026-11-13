@@ -17,6 +17,7 @@ import { HomeSkeleton } from '@/features/home/components/HomeSkeleton';
 import { HomeNoPetContent } from '@/features/home/components/HomeNoPetContent';
 import { HomePhase1Content } from '@/features/home/components/HomePhase1Content';
 import { HomeAIUnlockBanner } from '@/features/home/components/HomeAIUnlockBanner';
+import { IOSHomeScreenHint } from '@/features/home/components/IOSHomeScreenHint';
 import { BottomNav } from '@/shared/components/BottomNav';
 import { FAB } from '@/shared/components/FAB';
 import { useToast, ToastContainer } from '@/shared/components/Toast';
@@ -170,6 +171,8 @@ export default function HomePage() {
             />
 
             <QuickRecordButtons petId={activePetId} />
+
+            <IOSHomeScreenHint />
 
             <UpcomingScheduleList schedules={data.upcomingSchedules} />
 
