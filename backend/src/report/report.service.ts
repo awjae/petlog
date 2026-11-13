@@ -11,10 +11,9 @@ import {
 } from '../ai/health-report-generator.interface';
 import { ReportStatus, Species } from '@prisma/client';
 import type { Report as PrismaReport } from '@prisma/client';
+import { MIN_RECORD_COUNT, MIN_RECORD_DAYS } from './report.types';
 
 const PROCESSING_TIMEOUT_MS = 5 * 60 * 1000;
-const MIN_RECORD_COUNT = 10;
-const MIN_RECORD_DAYS = 7;
 const MIN_PERIOD_DAYS = 7;
 const MAX_PERIOD_DAYS = 90;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;

@@ -23,6 +23,7 @@ export class NotificationScheduler {
     await this.notificationService.scanAndSendMedicationEnd();
     await this.notificationService.scanAndSendMedicationReminder('morning');
     await this.notificationService.scanAndSendWeeklyCheckin();
+    await this.notificationService.scanAndSendReportReady();
     this.logger.log('일일 알림 스캔 종료');
   }
 

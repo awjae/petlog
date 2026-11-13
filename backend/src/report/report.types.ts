@@ -1,6 +1,10 @@
 import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
 import { ReportStatus, ReportGeneratedBy } from '@prisma/client';
 
+// 리포트 생성 최소 조건. 리포트 생성 가능 알림(NotificationService)도 같은 기준을 본다.
+export const MIN_RECORD_COUNT = 10;
+export const MIN_RECORD_DAYS = 7;
+
 registerEnumType(ReportStatus, { name: 'ReportStatus' });
 registerEnumType(ReportGeneratedBy, { name: 'ReportGeneratedBy' });
 

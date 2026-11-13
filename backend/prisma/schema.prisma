@@ -444,6 +444,7 @@ enum NotificationType {
   medicationReminder
   weeklyCheckin
   weeklySummary
+  reportReady
 }
 
 enum NotificationReferenceType {

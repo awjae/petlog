@@ -10,6 +10,7 @@ import { PUSH_SENDER, type PushSender } from '@petlog/push';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { kstDayRange, kstWeekStart } from '../common/utils/date';
 import { MEDICATION_FREQUENCY_LABEL } from '../medication/medication.types';
+import { MIN_RECORD_COUNT, MIN_RECORD_DAYS } from '../report/report.types';
 import { NotificationPreference, UpdateNotificationPreferenceInput } from './notification.types';
 
 // 알림 설정 행이 없는 사용자(설정 화면을 아직 안 연 경우)는 전부 활성화된 것으로 간주한다.
@@ -521,6 +522,61 @@ export class NotificationService {
     }
 
     this.logger.log(`주간 요약 스캔 완료: ${sentCount}건 발송`);
+  }
+
+  // AI 리포트 생성 가능 알림. 리포트 조건(기록 10건 · 서로 다른 7일)을 처음 채운 pet에게 1회 보낸다.
+  // 리포트는 핵심 차별화 기능인데, 조건을 채웠는지는 리포트 탭을 직접 열어야만 알 수 있었다.
+  //
+  // 이미 리포트를 한 번이라도 만든 pet은 기능을 아는 사용자라 보내지 않는다. 중복 방지는
+  // pet당 평생 1회다(referenceId = petId). 기록 일수 계산은 ReportService.getReportStatus와 같다.
+  // ponytail: 설정 토글은 weeklyCheckinEnabled(주간 건강 알림)를 같이 쓴다 — 기록 관련 알림이라서다.
+  async scanAndSendReportReady(): Promise<void> {
+    const candidates = await this.prisma.healthRecord.groupBy({
+      by: ['petId'],
+      where: { deletedAt: null, pet: { deletedAt: null, user: ACTIVE_USER } },
+      having: { petId: { _count: { gte: MIN_RECORD_COUNT } } },
+    });
+
+    let sentCount = 0;
+
+    for (const { petId } of candidates) {
+      const [alreadySent, existingReport] = await Promise.all([
+        this.prisma.notification.findFirst({
+          where: { type: NotificationType.reportReady, referenceId: petId },
+        }),
+        this.prisma.report.findFirst({ where: { petId }, select: { id: true } }),
+      ]);
+      if (alreadySent || existingReport) continue;
+
+      const records = await this.prisma.healthRecord.findMany({
+        where: { petId, deletedAt: null },
+        select: { recordedAt: true },
+      });
+      const recordDays = new Set(records.map((r) => r.recordedAt.toISOString().slice(0, 10))).size;
+      if (recordDays < MIN_RECORD_DAYS) continue;
+
+      const pet = await this.prisma.pet.findUnique({
+        where: { id: petId },
+        select: { name: true, userId: true },
+      });
+      if (!pet) continue;
+
+      const preference = await this.getPreference(pet.userId);
+      if (!preference.weeklyCheckinEnabled) continue;
+
+      await this.sendAndLog({
+        userId: pet.userId,
+        type: NotificationType.reportReady,
+        title: `[Petlog] ${pet.name}의 AI 건강 리포트를 만들 수 있어요`,
+        body: `기록이 ${records.length}건 쌓였어요. 이번 달 무료 리포트로 그동안의 변화를 정리해보세요.`,
+        referenceId: petId,
+        referenceType: null,
+        path: `/reports?petId=${petId}`,
+      });
+      sentCount += 1;
+    }
+
+    this.logger.log(`리포트 생성 가능 알림 스캔 완료: ${sentCount}건 발송`);
   }
 
   private async sendAndLog(params: SendAndLogParams): Promise<void> {

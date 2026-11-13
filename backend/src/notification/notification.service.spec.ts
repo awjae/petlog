@@ -478,3 +478,82 @@ describe('NotificationService 주간 요약', () => {
     expect(push.send).not.toHaveBeenCalled();
   });
 });
+
+describe('NotificationService 리포트 생성 가능 알림', () => {
+  let service: NotificationService;
+  let push: { send: jest.Mock };
+  let prisma: {
+    healthRecord: { groupBy: jest.Mock; findMany: jest.Mock };
+    report: { findFirst: jest.Mock };
+    pet: { findUnique: jest.Mock };
+    notificationPreference: { findUnique: jest.Mock };
+    notification: { findFirst: jest.Mock; create: jest.Mock };
+    pushToken: { findMany: jest.Mock };
+  };
+
+  // 서로 다른 날짜 n일에 걸친 기록 count건 (정오 앵커).
+  const recordsOver = (days: number, count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      recordedAt: new Date(Date.UTC(2026, 9, 1 + (i % days), 3)),
+    }));
+
+  beforeEach(() => {
+    push = { send: jest.fn() };
+    prisma = {
+      healthRecord: {
+        groupBy: jest.fn().mockResolvedValue([{ petId: 'pet-1' }]),
+        findMany: jest.fn().mockResolvedValue(recordsOver(7, 10)),
+      },
+      report: { findFirst: jest.fn().mockResolvedValue(null) },
+      pet: { findUnique: jest.fn().mockResolvedValue({ name: '코코', userId: 'user-1' }) },
+      notificationPreference: { findUnique: jest.fn().mockResolvedValue(null) },
+      notification: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
+      pushToken: { findMany: jest.fn().mockResolvedValue([{ token: 'tok-1' }]) },
+    };
+    service = new NotificationService(
+      prisma as unknown as PrismaService,
+      push as unknown as PushSender,
+    );
+  });
+
+  it('기록 10건 · 서로 다른 7일을 채운 pet에게 리포트 화면으로 가는 알림을 보낸다', async () => {
+    await service.scanAndSendReportReady();
+
+    const { having, where } = prisma.healthRecord.groupBy.mock.calls[0][0];
+    expect(having).toEqual({ petId: { _count: { gte: 10 } } });
+    expect(where.pet.user.deletionRequestedAt).toBeNull();
+
+    const [log] = prisma.notification.create.mock.calls[0];
+    expect(log.data.type).toBe('reportReady');
+    expect(log.data.referenceId).toBe('pet-1');
+    expect(push.send.mock.calls[0][3]).toEqual({ path: '/reports?petId=pet-1' });
+  });
+
+  // 하루에 10건을 몰아 넣은 경우(출시 전 테스트 계정이 실제로 그랬다)는 리포트 조건 미달이다.
+  it('기록 일수가 7일 미만이면 보내지 않는다', async () => {
+    prisma.healthRecord.findMany.mockResolvedValue(recordsOver(6, 12));
+    await service.scanAndSendReportReady();
+    expect(push.send).not.toHaveBeenCalled();
+  });
+
+  it('이미 보냈거나, 리포트를 만든 적이 있으면 보내지 않는다', async () => {
+    prisma.notification.findFirst.mockResolvedValueOnce({ id: 'n1' });
+    await service.scanAndSendReportReady();
+
+    prisma.report.findFirst.mockResolvedValueOnce({ id: 'r1' });
+    await service.scanAndSendReportReady();
+
+    expect(push.send).not.toHaveBeenCalled();
+  });
+
+  it('주간 건강 알림을 끈 사용자에게는 보내지 않는다', async () => {
+    prisma.notificationPreference.findUnique.mockResolvedValue({
+      vaccinationDueEnabled: true,
+      appointmentReminderEnabled: true,
+      weeklyCheckinEnabled: false,
+      medicationReminderEnabled: true,
+    });
+    await service.scanAndSendReportReady();
+    expect(push.send).not.toHaveBeenCalled();
+  });
+});
