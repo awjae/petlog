@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { PenLine, LineChart, Sparkles } from 'lucide-react';
 import { JsonLd } from '@/shared/components/JsonLd';
@@ -91,6 +92,33 @@ export default function LandingPage() {
           반려동물 건강 기록 <span>가이드 보기</span>
         </Link>
       </div>
+      {/* 실제 앱 화면. 가입 전에는 앱이 어떻게 생겼는지 알 방법이 없었다.
+          가입 버튼을 첫 화면 아래로 밀지 않도록 CTA 다음에 둔다. 이미지는 scripts/capture-landing-screenshots.mjs로
+          실제 화면에서 다시 찍는다(손으로 편집하면 실제 앱과 어긋난다). */}
+      <section className={styles.preview} aria-label="앱 화면 미리보기">
+        <figure className={styles.previewItem}>
+          <Image
+            src="/landing/home-record.jpg"
+            width={780}
+            height={438}
+            alt="홈 화면: 7일 연속 기록 중, 오늘 1건 기록, 체중·식사·산책·메모 빠른 기록 버튼"
+            className={styles.previewImage}
+            sizes="(max-width: 480px) 100vw, 432px"
+          />
+          <figcaption className={styles.previewCaption}>홈에서 한 번 눌러 바로 기록</figcaption>
+        </figure>
+        <figure className={styles.previewItem}>
+          <Image
+            src="/landing/weight-trend.jpg"
+            width={780}
+            height={418}
+            alt="체중 변화 그래프: 최근 90일 동안 4.6kg에서 4.25kg으로 변화"
+            className={styles.previewImage}
+            sizes="(max-width: 480px) 100vw, 432px"
+          />
+          <figcaption className={styles.previewCaption}>쌓인 기록은 변화 그래프로</figcaption>
+        </figure>
+      </section>
     </main>
   );
 }
