@@ -6,6 +6,8 @@ import { readFirstTouch } from '@/shared/utils/firstTouch';
 function mapRegisterError(err: unknown): string {
   if (err instanceof ApiError && err.statusCode === 409) return '이미 사용 중인 이메일이에요';
   if (err instanceof ApiError && err.statusCode === 400) return '필수 약관에 동의해주세요';
+  if (err instanceof ApiError && err.statusCode === 429)
+    return '가입 시도가 너무 많아요. 1분 뒤에 다시 시도해주세요';
   return '잠시 후 다시 시도해주세요';
 }
 
