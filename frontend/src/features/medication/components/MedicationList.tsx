@@ -106,8 +106,13 @@ function MedicationItem({ item, onDelete, onEndToday }: MedicationItemProps) {
                 )}
               </div>
               <span className={styles.itemSub}>
-                {item.frequency && FREQUENCY_LABEL[item.frequency]} · {formatDate(item.startDate)}
-                부터
+                {/* 주기는 선택 입력이라 없을 수 있다. 없으면 "· 날짜부터"처럼 점으로 시작했다. */}
+                {[
+                  item.frequency && FREQUENCY_LABEL[item.frequency],
+                  `${formatDate(item.startDate)}부터`,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
               </span>
             </div>
             <ChevronDown
@@ -131,7 +136,7 @@ function MedicationItem({ item, onDelete, onEndToday }: MedicationItemProps) {
               <p className={styles.detailRow}>
                 <span className={styles.detailLabel}>투약 주기</span>
                 <span className={styles.detailValue}>
-                  {item.frequency && FREQUENCY_LABEL[item.frequency]}
+                  {item.frequency ? FREQUENCY_LABEL[item.frequency] : '정하지 않음'}
                 </span>
               </p>
             </div>
