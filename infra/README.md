@@ -171,7 +171,11 @@ state에 평문으로 남지 않는다.
 
 ```bash
 # 1. 태스크 정의(부트스트랩/마이그레이션 포함)를 먼저 배포한다
-cd infra && PETLOG_ENV=dev npx cdktf deploy petlog-backend-dev
+#    backend 스택만 배포하려면 의존 스택(database·network·storage·registry)을 건너뛰는 옵션이
+#    필요하다(scripts/deploy.sh와 같다). 빠뜨리면 "dependencies are not included" 에러로 멈춘다.
+#    운영 TF_VAR_* 값(domain_name, mail_provider, mail_from_* 등)을 export한 셸에서 실행하고,
+#    diff에 의도하지 않은 도메인·메일 변경이 없는지 확인한 뒤 승인한다.
+cd infra && PETLOG_ENV=dev npx cdktf deploy petlog-backend-dev --ignore-missing-stack-dependencies
 
 # 2. VPC 내부 일회성 태스크로 롤을 생성하고 SSM에 자격증명을 저장한다
 npm run db:bootstrap-roles --workspace=infra
