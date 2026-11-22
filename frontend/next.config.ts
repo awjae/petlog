@@ -13,6 +13,8 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const cloudfrontDomain = process.env.AWS_CLOUDFRONT_DOMAIN;
 
 const nextConfig: NextConfig = {
+  // 응답에 프레임워크(Next.js)를 알리지 않는다(백엔드 main.ts의 x-powered-by 비활성화와 같은 이유).
+  poweredByHeader: false,
   // AWS ECS Fargate 컨테이너 배포를 위한 standalone 빌드.
   // .next/standalone 에 실행에 필요한 최소 node_modules와 server.js가 생성된다.
   output: 'standalone',
