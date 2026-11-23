@@ -9,14 +9,14 @@ import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TRUST_PROXY_HOPS } from './common/trust-proxy';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // ECS Fargate + ALB 뒤에 있어서 이 설정 없이는 req.ip가 ALB 내부 IP를 가리킨다.
-  // 동의(UserConsent) 증적용 IP, Rate Limiting(ThrottlerGuard) 등 req.ip에 의존하는
-  // 모든 로직이 이 설정을 전제로 한다. ALB가 유일한 진입점이므로 hop 1개만 신뢰한다.
-  app.set('trust proxy', 1);
+  // 이 설정 없이는 req.ip가 ALB 내부 IP를 가리킨다. 동의(UserConsent) 증적용 IP,
+  // Rate Limiting(ThrottlerGuard) 등 req.ip에 의존하는 모든 로직이 이 설정을 전제로 한다.
+  app.set('trust proxy', TRUST_PROXY_HOPS);
   // 응답에 프레임워크(Express)를 알리지 않는다. 공격자가 알려진 취약점을 고르는 단서가 된다.
   app.disable('x-powered-by');
 
