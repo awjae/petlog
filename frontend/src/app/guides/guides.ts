@@ -24,6 +24,12 @@ export const GUIDES: GuideMeta[] = [
       '집에서 강아지 체중을 정확히 재는 방법, 얼마나 자주 재야 하는지, 어느 정도 변화부터 수의사와 상담해야 하는지 정리했습니다.',
   },
   {
+    slug: 'vaccine-schedule-calculator',
+    title: '강아지·고양이 예방접종 일정 계산기',
+    description:
+      '생년월일만 넣으면 강아지·고양이 기초 예방접종 차수별 예정일을 계산해드려요. 기초 접종을 여러 번 맞는 이유와 접종 후 기록할 것을 정리했습니다.',
+  },
+  {
     slug: 'pet-diabetes-glucose',
     title: '당뇨 강아지·고양이 혈당 기록하는 법',
     description:

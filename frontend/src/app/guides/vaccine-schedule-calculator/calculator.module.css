@@ -1,0 +1,79 @@
+.calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font: var(--font-label);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  height: 48px;
+  padding: 0 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+.result {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  font: var(--font-body);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.doseList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.dose {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+}
+
+/* 이미 지난 차수는 흐리게 — 늦게 데려온 아이라면 남은 차수만 눈에 들어오게 한다 */
+.dosePast {
+  background: var(--color-bg);
+  opacity: 0.6;
+}
+
+.doseDate {
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+}
+
+.doseVaccines {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
