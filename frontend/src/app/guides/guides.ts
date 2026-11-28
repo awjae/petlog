@@ -18,6 +18,12 @@ export const GUIDES: GuideMeta[] = [
       '반려동물이 하루에 물을 얼마나 마시면 정상인지, 집에서 음수량을 재는 방법, 많이 마실 때 확인할 것을 정리했습니다.',
   },
   {
+    slug: 'pet-calorie-calculator',
+    title: '강아지·고양이 하루 칼로리·사료 급여량 계산기',
+    description:
+      '체중과 중성화 여부만 넣으면 하루 권장 칼로리와 사료 급여량(g)을 계산해드려요. 수의 영양학 계산식과 급여량이 맞는지 확인하는 법을 정리했습니다.',
+  },
+  {
     slug: 'dog-weight-check',
     title: '강아지 체중 재는 법과 기록 기준',
     description:
