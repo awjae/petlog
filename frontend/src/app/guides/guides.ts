@@ -12,6 +12,12 @@ export interface GuideMeta {
 
 export const GUIDES: GuideMeta[] = [
   {
+    slug: 'pet-age-calculator',
+    title: '강아지·고양이 나이 계산기 (사람 나이 환산)',
+    description:
+      '강아지·고양이 나이를 사람 나이로 바로 환산해보세요. 소형견·중형견·대형견·고양이별 계산 기준과 나이에 따라 기록해야 할 것을 정리했습니다.',
+  },
+  {
     slug: 'pet-water-intake',
     title: '강아지·고양이 하루 음수량과 집에서 재는 법',
     description:
