@@ -36,6 +36,12 @@ export const GUIDES: GuideMeta[] = [
       '개와 고양이의 정상 체온 범위, 집에서 체온을 재는 방법, 범위를 벗어났을 때 확인할 것을 정리했습니다.',
   },
   {
+    slug: 'cat-vomit',
+    title: '고양이가 토했을 때 확인하고 기록할 것',
+    description:
+      '고양이 구토에서 바로 병원에 가야 하는 신호, 헤어볼·구토·역류 구분법, 진료 때 도움이 되는 기록 방법을 정리했습니다.',
+  },
+  {
     slug: 'dog-vomit',
     title: '강아지가 토했을 때 확인하고 기록할 것',
     description:
