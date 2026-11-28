@@ -41,6 +41,12 @@ export const GUIDES: GuideMeta[] = [
     description:
       '강아지 구토에서 바로 병원에 가야 하는 신호, 진료 때 수의사가 묻는 것, 토사물 색과 내용물을 기록하는 법을 정리했습니다.',
   },
+  {
+    slug: 'dog-diarrhea',
+    title: '강아지 설사할 때 확인하고 기록할 것',
+    description:
+      '강아지 설사에서 바로 병원에 가야 하는 신호, 진료 때 수의사가 묻는 것, 변 모양·색·횟수를 기록하는 법과 집에서 지켜볼 때 주의할 점을 정리했습니다.',
+  },
 ];
 
 export function findGuide(slug: string): GuideMeta {
