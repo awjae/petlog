@@ -30,6 +30,12 @@ export const GUIDES: GuideMeta[] = [
       '당뇨를 관리 중인 반려동물의 혈당을 집에서 기록할 때 함께 남겨야 할 것, 저혈당 신호, 수의사와 기록을 활용하는 법을 정리했습니다.',
   },
   {
+    slug: 'pet-food-transition',
+    title: '강아지·고양이 사료 바꾸는 법 (단계별 비율)',
+    description:
+      '사료를 바꿀 때 설사·구토 없이 넘어가는 7~10일 단계별 섞는 비율, 급여량 다시 잡는 법, 바꾸는 동안 기록할 것을 정리했습니다.',
+  },
+  {
     slug: 'pet-temperature',
     title: '강아지·고양이 정상 체온과 집에서 재는 법',
     description:
